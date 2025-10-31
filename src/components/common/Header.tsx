@@ -33,13 +33,13 @@ const Header = () => {
   const { user, loading } = useUser();
   const { logout } = useAuth();
   const router = useRouter();
-  const [scrolled, setScrolled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const scrollY = useWindowScroll();
+  const scrolled = scrollY > 0;
 
   useEffect(() => {
-    setScrolled(scrollY > 0);
-  }, [scrollY]);
-
+    setIsClient(true);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -55,21 +55,28 @@ const Header = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  if (!isClient) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-md">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="flex justify-between items-center h-20">
+            <Logo />
+            <div className="h-10 w-10"></div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-      scrolled ? "bg-background shadow-md" : "bg-transparent"
-    )}>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-md">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-20">
-          <Logo className={cn(scrolled ? "text-primary" : "text-white")} />
+          <Logo />
           
           <nav className="hidden md:flex md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={cn(
-                  "text-sm font-medium transition-colors",
-                  scrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
-                )}>
+              <Link key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
                   {link.label}
               </Link>
             ))}
@@ -110,7 +117,7 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <>
-                <Button variant={scrolled ? "ghost" : "outline"} className={cn(!scrolled && "text-white border-white/50 hover:bg-white/10 hover:text-white")} onClick={() => router.push('/login')}>Login</Button>
+                <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
                 <Button onClick={() => router.push('/signup')}>Sign Up</Button>
               </>
             )}
@@ -119,7 +126,7 @@ const Header = () => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className={cn(!scrolled && "text-white hover:bg-white/10")}>
+                <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
