@@ -34,10 +34,7 @@ const Header = () => {
   const { logout } = useAuth();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const scrollY = useWindowScroll();
   
-  const scrolled = isClient ? scrollY > 0 : false;
-
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -75,18 +72,15 @@ const Header = () => {
   return (
     <header className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled ? "bg-background shadow-sm" : "bg-transparent",
+        "bg-background shadow-sm"
       )}>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-20">
-          <Logo className={cn(scrolled ? "text-primary" : "text-white")} />
+          <Logo className="text-primary" />
           
           <nav className="hidden md:flex md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={cn(
-                  "text-sm font-medium transition-colors",
-                  scrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
-                )}>
+              <Link key={link.href} href={link.href} className="text-sm font-medium transition-colors text-foreground/80 hover:text-primary">
                   {link.label}
               </Link>
             ))}
@@ -127,8 +121,8 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <>
-                <Button variant={scrolled ? "ghost" : "outline"} className={cn(!scrolled && "text-white border-white/50 hover:bg-white/10 hover:text-white")} onClick={() => router.push('/login')}>Login</Button>
-                <Button className={cn(scrolled ? "bg-primary" : "bg-white text-primary hover:bg-white/90")} onClick={() => router.push('/signup')}>Sign Up</Button>
+                <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+                <Button className="bg-primary" onClick={() => router.push('/signup')}>Sign Up</Button>
               </>
             )}
           </div>
@@ -136,7 +130,7 @@ const Header = () => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className={cn(!scrolled && "text-white hover:bg-white/10")}>
+                <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
