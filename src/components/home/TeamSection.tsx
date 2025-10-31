@@ -11,6 +11,10 @@ const teamMembers = [
   { name: 'Michael Brown', role: 'Treasurer', imageId: 'team6' },
   { name: 'Sarah Lee', role: 'Marketing Head', imageId: 'team7' },
   { name: 'Chris Green', role: 'IT Support', imageId: 'team8' },
+  { name: 'Jessica Wong', role: 'Partnerships Lead', imageId: 'team9' },
+  { name: 'Ben Carter', role: 'Outreach Coordinator', imageId: 'team10' },
+  { name: 'Olivia Martinez', role: 'Social Media Manager', imageId: 'team11' },
+  { name: 'James Wilson', role: 'Legal Advisor', imageId: 'team12' },
 ];
 
 const TeamSection = () => {
@@ -22,7 +26,7 @@ const TeamSection = () => {
           The faces behind Prasthan Group’s vision and strength.
         </p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
         {teamMembers.map((member) => {
           const memberImage = PlaceHolderImages.find(p => p.id === member.imageId);
           return (
