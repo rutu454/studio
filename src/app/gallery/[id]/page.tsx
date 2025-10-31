@@ -72,7 +72,7 @@ export default function GalleryDetailPage() {
 
   return (
     <div className="pt-24 bg-background">
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center text-sm font-medium text-muted-foreground mb-4">
           <Link href="/gallery" className="flex items-center hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -84,25 +84,35 @@ export default function GalleryDetailPage() {
 
         <div className="flex justify-between items-start mb-2">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.description}</h1>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+            {/* <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
                 <Share2 className="h-5 w-5" />
                 <span className="sr-only">Share</span>
-            </Button>
+            </Button> */}
         </div>
         
         <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-6">{item.category}</p>
 
         {item.type === 'image' ? (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg">
-            <Image
-              src={(item.imageUrl || '').replace('/600/400', '/1200/800')}
-              alt={item.description}
-              width={1200}
-              height={800}
-              className="w-full h-auto object-contain"
-              data-ai-hint={item.imageHint}
-            />
-          </div>
+          <Image
+            src={(item.imageUrl || '').replace('/600/400', '/1200/800')}
+            alt={item.description}
+            width={1200}
+            height={800}
+            className="
+              w-full 
+              object-cover 
+              h-40         /* default for small screens */
+              sm:h-56      /* small screens (≥640px) */
+              md:h-72      /* medium screens (≥768px) */
+              lg:h-80      /* large screens (≥1024px) */
+              xl:h-96      /* extra large screens (≥1280px) */
+              rounded-lg
+            "
+            data-ai-hint={item.imageHint}
+          />
+        </div>
+        
         ) : (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
              <iframe

@@ -1,20 +1,22 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionWrapper from '@/components/common/SectionWrapper';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Youtube } from 'lucide-react';
 
-const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
+const galleryCategories = ['All', 'Diwali', 'Holi', 'Events', 'Charity'];
 
-const allGalleryItems = PlaceHolderImages.filter((img) =>
+const allGalleryImageItems = PlaceHolderImages.filter((img) =>
   img.id.startsWith('gallery')
 ).map((img, index) => ({
   ...img,
   type: 'image' as const,
-  category: galleryCategories[index % galleryCategories.length],
+  category: galleryCategories[(index % (galleryCategories.length -1)) + 1],
 }));
 
 // Add dummy video items
@@ -58,17 +60,18 @@ const videoItems = [
   },
 ];
 
-// Intersperse videos with images
-let itemsWithVideos = [...allGalleryItems];
-itemsWithVideos.splice(2, 0, videoItems[0]);
-itemsWithVideos.splice(5, 0, videoItems[1]);
-itemsWithVideos.splice(8, 0, videoItems[2]);
-itemsWithVideos.splice(11, 0, videoItems[3]);
+const allItems = [...allGalleryImageItems, ...videoItems].sort((a, b) => a.id.localeCompare(b.id));
 
 export default function GalleryPage() {
+  const [filter, setFilter] = useState('All');
+
+  const filteredItems = filter === 'All'
+    ? allItems
+    : allItems.filter(item => item.category === filter);
+
   return (
     <div className="pt-24">
-      <SectionWrapper>
+      <SectionWrapper className="pt-0">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
             Our Gallery
@@ -79,8 +82,20 @@ export default function GalleryPage() {
           </p>
         </div>
 
+        <div className="flex justify-center flex-wrap gap-2 mb-8">
+          {galleryCategories.map(category => (
+            <Button
+              key={category}
+              variant={filter === category ? 'default' : 'outline'}
+              onClick={() => setFilter(category)}
+            >
+              {category}
+            </Button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {itemsWithVideos.map((item) => (
+          {filteredItems.map((item) => (
             <Card
               key={item.id}
               className="overflow-hidden group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col"
