@@ -2,7 +2,7 @@ import SectionWrapper from '../common/SectionWrapper';
 
 const VideoSection = () => {
   return (
-    <SectionWrapper className="min-h-[80vh] flex flex-col justify-center">
+    <SectionWrapper className="py-0">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-primary">Watch Our Journey</h2>
       </div>
