@@ -3,10 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import SectionWrapper from '@/components/common/SectionWrapper';
 import { useParams, notFound } from 'next/navigation';
+import { ArrowLeft, ChevronRight, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 
 const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
 
@@ -72,49 +71,52 @@ export default function GalleryDetailPage() {
   }
 
   return (
-    <div className="pt-24">
-      <SectionWrapper className="pt-0 sm:pt-0">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <Button asChild variant="ghost" className="mb-4 pl-0">
-              <Link href="/gallery">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Gallery
-              </Link>
-            </Button>
-            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">{item.description}</h1>
-            <p className="text-lg text-muted-foreground">{item.category}</p>
-          </div>
-          
-          {item.type === 'image' ? (
-            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg">
-              <Image
-                src={(item.imageUrl || '').replace('/600/400', '/800/600')}
-                alt={item.description}
-                width={800}
-                height={600}
-                className="w-full h-auto object-contain"
-                data-ai-hint={item.imageHint}
-              />
-            </div>
-          ) : (
-            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
-               <iframe
-                  className="absolute top-0 left-0 w-full h-full"
-                  src={(item as any).videoUrl}
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-            </div>
-          )}
+    <div className="pt-24 bg-background">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <nav className="flex items-center text-sm font-medium text-muted-foreground mb-6">
+          <Link href="/gallery" className="flex items-center hover:text-primary transition-colors">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Gallery
+          </Link>
+          <ChevronRight className="h-4 w-4 mx-1" />
+          <span className="text-primary truncate">{item.description}</span>
+        </nav>
 
-          <div className="prose prose-lg max-w-none">
-            <p>{item.description}. This {item.type} captures a special moment from our {item.category} activities.</p>
-          </div>
+        <div className="flex justify-between items-start mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.description}</h1>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                <Share2 className="h-5 w-5" />
+                <span className="sr-only">Share</span>
+            </Button>
         </div>
-      </SectionWrapper>
+        
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-8">{item.category}</p>
+
+        {item.type === 'image' ? (
+          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg">
+            <Image
+              src={(item.imageUrl || '').replace('/600/400', '/1200/800')}
+              alt={item.description}
+              width={1200}
+              height={800}
+              className="w-full h-auto object-contain"
+              data-ai-hint={item.imageHint}
+            />
+          </div>
+        ) : (
+          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
+             <iframe
+                className="absolute top-0 left-0 w-full h-full"
+                src={(item as any).videoUrl}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
