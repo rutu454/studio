@@ -1,20 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionWrapper from '@/components/common/SectionWrapper';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Youtube } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-} from '@/components/ui/dialog';
 
 const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
 
@@ -75,8 +66,6 @@ itemsWithVideos.splice(8, 0, videoItems[2]);
 itemsWithVideos.splice(11, 0, videoItems[3]);
 
 export default function GalleryPage() {
-  const [selectedVideo, setSelectedVideo] = useState<typeof videoItems[0] | null>(null);
-
   return (
     <div className="pt-24">
       <SectionWrapper>
@@ -96,83 +85,37 @@ export default function GalleryPage() {
               key={item.id}
               className="overflow-hidden group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col"
             >
-              {item.type === 'image' ? (
-                <Link
+              <Link
                   href={`/gallery/${item.id}`}
                   className="flex flex-col h-full"
                 >
-                  <CardContent className="p-0 flex-grow flex flex-col">
-                    <div className="relative w-full aspect-[4/3]">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.description}
-                        fill
-                        className="object-cover"
-                        data-ai-hint={item.imageHint}
-                      />
-                    </div>
-                    <div className="p-4 mt-auto bg-card">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {item.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.category}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Link>
-              ) : (
-                <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedVideo(null)}>
-                  <DialogTrigger asChild onClick={() => setSelectedVideo(item)}>
-                    <div className="cursor-pointer flex flex-col h-full">
-                       <CardContent className="p-0 flex-grow flex flex-col">
-                        <div className="relative w-full aspect-[4/3] bg-slate-900 flex items-center justify-center">
-                           <div className="absolute inset-0">
-                            <Image
-                              src={item.imageUrl}
-                              alt={item.description}
-                              fill
-                              className="object-cover opacity-30 group-hover:opacity-40 transition-opacity"
-                              data-ai-hint={item.imageHint}
-                            />
-                          </div>
-                           <div className="relative z-10 text-white group-hover:text-primary transition-colors">
-                            <Youtube size={64} />
-                          </div>
+                <CardContent className="p-0 flex-grow flex flex-col">
+                  <div className="relative w-full aspect-[4/3]">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.description}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={item.imageHint}
+                    />
+                    {item.type === 'video' && (
+                      <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center">
+                        <div className="relative z-10 text-white group-hover:text-primary transition-colors">
+                          <Youtube size={64} />
                         </div>
-                        <div className="p-4 mt-auto bg-card">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {item.description}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.category}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </div>
-                  </DialogTrigger>
-                  {selectedVideo && selectedVideo.id === item.id && (
-                    <DialogContent className="max-w-3xl w-full p-0">
-                       <DialogHeader className="p-4">
-                        <DialogTitle>{selectedVideo.description}</DialogTitle>
-                         <DialogDescription>
-                          {selectedVideo.category}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="aspect-video">
-                        <iframe
-                          className="w-full h-full"
-                          src={selectedVideo.videoUrl}
-                          title="YouTube video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        ></iframe>
                       </div>
-                    </DialogContent>
-                  )}
-                </Dialog>
-              )}
+                    )}
+                  </div>
+                  <div className="p-4 mt-auto bg-card">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {item.description}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.category}
+                    </p>
+                  </div>
+                </CardContent>
+              </Link>
             </Card>
           ))}
         </div>
