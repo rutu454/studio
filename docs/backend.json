@@ -22,6 +22,10 @@
         "initials": {
           "type": "string",
           "description": "The user's initials (e.g., RM for Rutu M)."
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "The user's contact phone number."
         }
       },
       "required": [
