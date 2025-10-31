@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase/auth/use-auth';
@@ -17,6 +18,8 @@ import {
 import Logo from './Logo';
 import { Loader2, LogOut, User as UserIcon, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '../ui/sheet';
+import { cn } from '@/lib/utils';
+import { useWindowScroll } from '@/hooks/use-window-scroll';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -30,6 +33,13 @@ const Header = () => {
   const { user, loading } = useUser();
   const { logout } = useAuth();
   const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+  const scrollY = useWindowScroll();
+
+  useEffect(() => {
+    setScrolled(scrollY > 0);
+  }, [scrollY]);
+
 
   const handleLogout = async () => {
     await logout();
@@ -46,14 +56,20 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-sm">
+    <header className={cn(
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+      scrolled ? "bg-background shadow-md" : "bg-transparent"
+    )}>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-20">
-          <Logo />
+          <Logo className={cn(scrolled ? "text-primary" : "text-white")} />
           
           <nav className="hidden md:flex md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link key={link.href} href={link.href} className={cn(
+                  "text-sm font-medium transition-colors",
+                  scrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
+                )}>
                   {link.label}
               </Link>
             ))}
@@ -94,7 +110,7 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+                <Button variant={scrolled ? "ghost" : "outline"} className={cn(!scrolled && "text-white border-white/50 hover:bg-white/10 hover:text-white")} onClick={() => router.push('/login')}>Login</Button>
                 <Button onClick={() => router.push('/signup')}>Sign Up</Button>
               </>
             )}
@@ -103,7 +119,7 @@ const Header = () => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className={cn(!scrolled && "text-white hover:bg-white/10")}>
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
