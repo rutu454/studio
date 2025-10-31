@@ -7,6 +7,10 @@ const teamMembers = [
   { name: 'Alex Johnson', role: 'Project Director', imageId: 'team2' },
   { name: 'Priya Sharma', role: 'Community Manager', imageId: 'team3' },
   { name: 'David Chen', role: 'Lead Volunteer', imageId: 'team4' },
+  { name: 'Emily White', role: 'Event Coordinator', imageId: 'team5' },
+  { name: 'Michael Brown', role: 'Treasurer', imageId: 'team6' },
+  { name: 'Sarah Lee', role: 'Marketing Head', imageId: 'team7' },
+  { name: 'Chris Green', role: 'IT Support', imageId: 'team8' },
 ];
 
 const TeamSection = () => {

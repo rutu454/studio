@@ -6,16 +6,16 @@ const GroupPhotoSection = () => {
   const groupPhotoImage = PlaceHolderImages.find(p => p.id === 'group-photo');
 
   return (
-    <SectionWrapper className="py-12 sm:py-16">
+    <SectionWrapper>
       <div className="text-center">
         {groupPhotoImage && (
-          <div className="relative max-w-5xl mx-auto rounded-lg overflow-hidden shadow-xl">
+          <div className="relative max-w-4xl mx-auto rounded-lg overflow-hidden shadow-2xl">
             <Image
               src={groupPhotoImage.imageUrl}
               alt={groupPhotoImage.description}
               width={1200}
-              height={400}
-              className="w-full h-auto object-cover"
+              height={700}
+              className="w-full"
               data-ai-hint={groupPhotoImage.imageHint}
             />
           </div>
