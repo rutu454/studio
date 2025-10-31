@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Instagram, Mail, MessageCircle, Phone, MapPin } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import SectionWrapper from '../common/SectionWrapper';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
@@ -28,6 +30,7 @@ const formSchema = z.object({
 
 const ContactSection = () => {
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,15 +43,34 @@ const ContactSection = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Here you would typically send the form data to an API endpoint
-    console.log('Form submitted:', values);
+    if (!firestore) {
+      toast({
+        variant: "destructive",
+        title: 'Error',
+        description: 'Database service is not available. Please try again later.',
+      });
+      return;
+    }
 
-    // For now, we'll just show a success message.
-    toast({
-      title: 'Success!',
-      description: 'Your message has been sent. We will get back to you shortly.',
-    });
-    form.reset();
+    try {
+      await addDoc(collection(firestore, 'contactFormSubmissions'), {
+        ...values,
+        submissionDate: serverTimestamp(),
+      });
+
+      toast({
+        title: 'Success!',
+        description: 'Your message has been sent. We will get back to you shortly.',
+      });
+      form.reset();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        variant: "destructive",
+        title: 'Uh oh! Something went wrong.',
+        description: 'Could not send your message. Please try again.',
+      });
+    }
   }
 
   return (
