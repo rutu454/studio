@@ -71,7 +71,7 @@ export default function GalleryPage() {
 
   return (
     <div className="pt-24">
-      <SectionWrapper className="pt-0">
+      <SectionWrapper className="pt-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
             Our Gallery
