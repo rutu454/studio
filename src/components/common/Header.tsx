@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Logo from './Logo';
@@ -40,7 +39,7 @@ const Header = () => {
               <SheetContent side="right" className="p-0">
                 <SheetHeader className="p-4 border-b">
                    <Logo />
-                   <SheetTitle className="sr-only">Menu</SheetTitle>
+                   <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col h-full">
                   <nav className="flex flex-col space-y-4 p-4">
