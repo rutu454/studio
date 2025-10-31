@@ -14,7 +14,7 @@ export function useAuth() {
   const auth = useFirebaseAuth();
   const firestore = useFirestore();
 
-  const signup = async (name: string, email: string, password: string) => {
+  const signup = async (name: string, email: string, password: string, contactNumber?: string) => {
     if (!auth || !firestore) throw new Error('Firebase not initialized');
     
     const userCredential = await createUserWithEmailAndPassword(
@@ -31,13 +31,19 @@ export function useAuth() {
     const userDocRef = doc(firestore, 'users', user.uid);
     const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
 
-    setDocumentNonBlocking(userDocRef, {
+    const firestoreData: any = {
       id: user.uid,
       fullName: name,
       email: user.email,
       initials: initials,
       createdAt: serverTimestamp(),
-    }, { merge: true });
+    };
+
+    if (contactNumber) {
+      firestoreData.contactNumber = contactNumber;
+    }
+
+    setDocumentNonBlocking(userDocRef, firestoreData, { merge: true });
 
     return userCredential;
   };
