@@ -13,10 +13,10 @@ const SponsorsSection = () => {
           We thank our supporters for being part of our journey.
         </p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 items-center justify-items-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 items-center justify-items-center">
         {sponsorImages.map(sponsor => (
-          <a key={sponsor.id} href="#" className="flex justify-center items-center p-2 rounded-lg opacity-80 hover:opacity-100 transition-opacity">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden">
+          <a key={sponsor.id} href="#" className="flex justify-center items-center group">
+            <div className="relative w-40 h-40 rounded-lg overflow-hidden transform transition-transform duration-300 group-hover:scale-95">
               <Image
                 src={sponsor.imageUrl}
                 alt={sponsor.description}
