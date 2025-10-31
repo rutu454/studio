@@ -1,9 +1,12 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import SectionWrapper from '@/components/common/SectionWrapper';
 import { useParams, notFound } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function GalleryDetailPage() {
   const params = useParams();
@@ -20,6 +23,12 @@ export default function GalleryDetailPage() {
       <SectionWrapper>
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
+            <Button asChild variant="outline" className="mb-8">
+              <Link href="/gallery">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Gallery
+              </Link>
+            </Button>
             <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">{item.description}</h1>
             <p className="text-lg text-muted-foreground">{item.category}</p>
           </div>
