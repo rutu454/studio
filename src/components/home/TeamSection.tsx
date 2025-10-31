@@ -1,0 +1,47 @@
+import Image from 'next/image';
+import SectionWrapper from '../common/SectionWrapper';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+const teamMembers = [
+  { name: 'Rutu M.', role: 'Founder & CEO', imageId: 'team1' },
+  { name: 'Alex Johnson', role: 'Project Director', imageId: 'team2' },
+  { name: 'Priya Sharma', role: 'Community Manager', imageId: 'team3' },
+  { name: 'David Chen', role: 'Lead Volunteer', imageId: 'team4' },
+];
+
+const TeamSection = () => {
+  return (
+    <SectionWrapper id="team" className="bg-muted">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-primary">Meet Our Team</h2>
+        <p className="text-lg text-foreground/80 mt-2">
+          The faces behind Prasthan Group’s vision and strength.
+        </p>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        {teamMembers.map((member) => {
+          const memberImage = PlaceHolderImages.find(p => p.id === member.imageId);
+          return (
+            <div key={member.name} className="text-center group">
+              <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-4 rounded-full overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
+                {memberImage && (
+                  <Image
+                    src={memberImage.imageUrl}
+                    alt={member.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={memberImage.imageHint}
+                  />
+                )}
+              </div>
+              <h3 className="text-lg font-bold">{member.name}</h3>
+              <p className="text-sm text-muted-foreground">{member.role}</p>
+            </div>
+          );
+        })}
+      </div>
+    </SectionWrapper>
+  );
+};
+
+export default TeamSection;

@@ -1,3 +1,124 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A community group photo or symbolic image of unity.",
+      "imageUrl": "https://images.unsplash.com/photo-1758575603789-8c042dfc4a9f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjb21tdW5pdHklMjB1bml0eXxlbnwwfHx8fDE3NjE5MDEyMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "community unity"
+    },
+    {
+      "id": "about",
+      "description": "Image for about us section",
+      "imageUrl": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwZW9wbGUlMjB3b3JraW5nfGVufDB8fHx8MTc2MTg3ODQ5MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "people working"
+    },
+    {
+      "id": "gallery1",
+      "description": "Diwali celebration",
+      "imageUrl": "https://images.unsplash.com/photo-1666244454829-7f0889ec5783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkaXdhbGklMjBsaWdodHN8ZW58MHx8fHwxNzYxODkxMDU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "diwali lights"
+    },
+    {
+      "id": "gallery2",
+      "description": "Holi celebration",
+      "imageUrl": "https://images.unsplash.com/photo-1635247055412-6007edbd9af7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8aG9saSUyMGNvbG9yc3xlbnwwfHx8fDE3NjE5MDEyMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "holi colors"
+    },
+    {
+      "id": "gallery3",
+      "description": "Community event",
+      "imageUrl": "https://images.unsplash.com/photo-1591197172062-c718f82aba20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y29tbXVuaXR5JTIwZXZlbnR8ZW58MHx8fHwxNzYxODM0ODIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "community event"
+    },
+    {
+      "id": "gallery4",
+      "description": "Charity drive",
+      "imageUrl": "https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjaGFyaXR5JTIwZG9uYXRpb258ZW58MHx8fHwxNzYxODg2NDYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "charity donation"
+    },
+    {
+      "id": "gallery5",
+      "description": "Diwali another angle",
+      "imageUrl": "https://images.unsplash.com/photo-1577083753695-e010191bacb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxkaXdhbGklMjBmZXN0aXZhbHxlbnwwfHx8fDE3NjE4OTg1Mjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "diwali festival"
+    },
+    {
+      "id": "gallery6",
+      "description": "More Holi fun",
+      "imageUrl": "https://images.unsplash.com/photo-1711990727716-8ebffe1813ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZW9wbGUlMjBwbGF5aW5nJTIwaG9saXxlbnwwfHx8fDE3NjE5MDEyMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "people playing holi"
+    },
+    {
+      "id": "gallery7",
+      "description": "Event speech",
+      "imageUrl": "https://images.unsplash.com/photo-1528605105345-5344ea20e269?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cHVibGljJTIwc3BlYWtpbmd8ZW58MHx8fHwxNzYxODA2NzgyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "public speaking"
+    },
+    {
+      "id": "gallery8",
+      "description": "Volunteers at work",
+      "imageUrl": "https://images.unsplash.com/photo-1760001552685-fa470d9cd473?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx2b2x1bnRlZXJzJTIwY29tbXVuaXR5fGVufDB8fHx8MTc2MTgzMjk4Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "volunteers community"
+    },
+    {
+      "id": "team1",
+      "description": "Team member 1",
+      "imageUrl": "https://images.unsplash.com/photo-1595211877493-41a4e5f236b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE4NDUyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional portrait"
+    },
+    {
+      "id": "team2",
+      "description": "Team member 2",
+      "imageUrl": "https://images.unsplash.com/photo-1701096374092-bb70915fdc5c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NjE4OTA0NzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional headshot"
+    },
+    {
+      "id": "team3",
+      "description": "Team member 3",
+      "imageUrl": "https://images.unsplash.com/photo-1542596594-649edbc13630?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzbWlsaW5nJTIwcGVyc29ufGVufDB8fHx8MTc2MTgzODk0MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smiling person"
+    },
+    {
+      "id": "team4",
+      "description": "Team member 4",
+      "imageUrl": "https://images.unsplash.com/photo-1548061202-83d4ccfa0155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjb3Jwb3JhdGUlMjBwaG90b3xlbnwwfHx8fDE3NjE5MDEyMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "corporate photo"
+    },
+    {
+      "id": "sponsor1",
+      "description": "Sponsor logo 1",
+      "imageUrl": "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3NjE4MzAwMzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "sponsor2",
+      "description": "Sponsor logo 2",
+      "imageUrl": "https://images.unsplash.com/photo-1545231027-637d2f6210f8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxicmFuZCUyMGxvZ298ZW58MHx8fHwxNzYxODkxOTI3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "brand logo"
+    },
+    {
+      "id": "sponsor3",
+      "description": "Sponsor logo 3",
+      "imageUrl": "https://images.unsplash.com/photo-1547420242-96597f83190f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjb3Jwb3JhdGUlMjBsb2dvfGVufDB8fHx8MTc2MTgwNzg4OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "corporate logo"
+    },
+    {
+      "id": "sponsor4",
+      "description": "Sponsor logo 4",
+      "imageUrl": "https://images.unsplash.com/photo-1681928412599-8e7533ee5ef1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bG9nbyUyMGljb258ZW58MHx8fHwxNzYxODIxOTcwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "logo icon"
+    },
+    {
+      "id": "group-photo",
+      "description": "The Prasthan Group family",
+      "imageUrl": "https://images.unsplash.com/photo-1692279404576-e129fe70428a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsYXJnZSUyMGdyb3VwJTIwcGhvdG98ZW58MHx8fHwxNzYxOTAxMjA4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "large group photo"
+    },
+    {
+      "id": "video-thumbnail",
+      "description": "Thumbnail for youtube video",
+      "imageUrl": "https://images.unsplash.com/photo-1637664067012-241eb64b7675?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMHZpZGVvfGVufDB8fHx8MTc2MTc5NjExNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract video"
+    }
+  ]
 }
