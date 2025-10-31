@@ -73,10 +73,10 @@ export default function GalleryDetailPage() {
 
   return (
     <div className="pt-24">
-      <SectionWrapper>
+      <SectionWrapper className="pt-0 sm:pt-0">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <Button asChild variant="outline" className="mb-8">
+            <Button asChild variant="ghost" className="mb-4 pl-0">
               <Link href="/gallery">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Gallery
@@ -89,10 +89,10 @@ export default function GalleryDetailPage() {
           {item.type === 'image' ? (
             <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg">
               <Image
-                src={(item.imageUrl || '').replace('/600/400', '/1200/800')}
+                src={(item.imageUrl || '').replace('/600/400', '/800/600')}
                 alt={item.description}
-                width={1200}
-                height={800}
+                width={800}
+                height={600}
                 className="w-full h-auto object-contain"
                 data-ai-hint={item.imageHint}
               />
