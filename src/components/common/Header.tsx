@@ -35,7 +35,8 @@ const Header = () => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const scrollY = useWindowScroll();
-  const scrolled = scrollY > 0;
+  
+  const scrolled = isClient ? scrollY > 0 : false;
 
   useEffect(() => {
     setIsClient(true);
@@ -57,7 +58,10 @@ const Header = () => {
 
   if (!isClient) {
     return (
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-md">
+      <header className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          "bg-background shadow-sm"
+        )}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center h-20">
             <Logo />
@@ -67,16 +71,22 @@ const Header = () => {
       </header>
     );
   }
-
+  
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-md">
+    <header className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled ? "bg-background shadow-sm" : "bg-transparent",
+      )}>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-20">
-          <Logo />
+          <Logo className={cn(scrolled ? "text-primary" : "text-white")} />
           
           <nav className="hidden md:flex md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link key={link.href} href={link.href} className={cn(
+                  "text-sm font-medium transition-colors",
+                  scrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
+                )}>
                   {link.label}
               </Link>
             ))}
@@ -105,7 +115,7 @@ const Header = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push('/')}>
+                  <DropdownMenuItem onClick={() => router.push('/profile')}>
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
@@ -117,8 +127,8 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
-                <Button onClick={() => router.push('/signup')}>Sign Up</Button>
+                <Button variant={scrolled ? "ghost" : "outline"} className={cn(!scrolled && "text-white border-white/50 hover:bg-white/10 hover:text-white")} onClick={() => router.push('/login')}>Login</Button>
+                <Button className={cn(scrolled ? "bg-primary" : "bg-white text-primary hover:bg-white/90")} onClick={() => router.push('/signup')}>Sign Up</Button>
               </>
             )}
           </div>
@@ -126,7 +136,7 @@ const Header = () => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className={cn(!scrolled && "text-white hover:bg-white/10")}>
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
@@ -151,6 +161,7 @@ const Header = () => {
                       <div>
                         <div className="flex items-center space-x-2 mb-4">
                           <Avatar>
+                            <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
                             <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                               {getInitials(user.displayName)}
                             </AvatarFallback>

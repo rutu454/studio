@@ -6,19 +6,39 @@ import {
   signOut,
   updateProfile,
 } from 'firebase/auth';
-import { useAuth as useFirebaseAuth } from '@/firebase';
+import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '../non-blocking-updates';
 
 export function useAuth() {
   const auth = useFirebaseAuth();
+  const firestore = useFirestore();
 
   const signup = async (name: string, email: string, password: string) => {
-    if (!auth) throw new Error('Firebase Auth not initialized');
+    if (!auth || !firestore) throw new Error('Firebase not initialized');
+    
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-    await updateProfile(userCredential.user, { displayName: name });
+    const user = userCredential.user;
+
+    // Update Firebase Auth profile
+    await updateProfile(user, { displayName: name });
+
+    // Create user document in Firestore
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+
+    setDocumentNonBlocking(userDocRef, {
+      id: user.uid,
+      fullName: name,
+      email: user.email,
+      initials: initials,
+      createdAt: serverTimestamp(),
+    }, { merge: true });
+
     return userCredential;
   };
 
