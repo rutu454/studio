@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/firebase/auth/use-auth';
+import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -26,7 +27,8 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useUser();
+  const { logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
