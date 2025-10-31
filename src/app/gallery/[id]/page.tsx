@@ -115,6 +115,15 @@ export default function GalleryDetailPage() {
               ></iframe>
           </div>
         )}
+        
+        <div className="prose prose-lg max-w-none text-foreground/80">
+            <p>
+                This is a placeholder description for the gallery item. You can replace this text with a detailed story about the event, the people in the photo, or the significance of the moment captured.
+            </p>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+        </div>
 
       </div>
     </div>
