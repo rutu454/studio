@@ -15,13 +15,13 @@ const SponsorsSection = () => {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 items-center justify-items-center">
         {sponsorImages.map(sponsor => (
-          <a key={sponsor.id} href="#" className="flex justify-center items-center p-4 rounded-lg opacity-70 hover:opacity-100 transition-opacity border bg-card w-40 h-24">
-            <div className="relative w-32 h-16">
+          <a key={sponsor.id} href="#" className="flex justify-center items-center p-4 rounded-lg opacity-80 hover:opacity-100 transition-opacity w-40 h-40">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden">
               <Image
                 src={sponsor.imageUrl}
                 alt={sponsor.description}
                 fill
-                className="object-contain"
+                className="object-cover"
                 data-ai-hint={sponsor.imageHint}
               />
             </div>
