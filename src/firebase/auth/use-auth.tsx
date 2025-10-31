@@ -5,9 +5,11 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '../non-blocking-updates';
 
 export function useAuth() {
@@ -58,5 +60,34 @@ export function useAuth() {
     return signOut(auth);
   };
 
-  return { signup, login, logout };
+  const signInWithGoogle = async () => {
+    if (!auth || !firestore) throw new Error('Firebase not initialized');
+
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Check if user already exists in Firestore
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (!docSnap.exists()) {
+      // Create a new document for the new user
+      const name = user.displayName || 'Google User';
+      const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+      
+      const firestoreData = {
+        id: user.uid,
+        fullName: name,
+        email: user.email,
+        initials: initials,
+        createdAt: serverTimestamp(),
+      };
+      setDocumentNonBlocking(userDocRef, firestoreData, { merge: true });
+    }
+    return result;
+  };
+
+
+  return { signup, login, logout, signInWithGoogle };
 }
