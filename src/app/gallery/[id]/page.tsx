@@ -84,7 +84,7 @@ export default function GalleryDetailPage() {
 
         <div className="flex justify-between items-start mb-2">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.description}</h1>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary mt-1">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
                 <Share2 className="h-5 w-5" />
                 <span className="sr-only">Share</span>
             </Button>
