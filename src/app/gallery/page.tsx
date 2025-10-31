@@ -70,9 +70,9 @@ export default function GalleryPage() {
     : allItems.filter(item => item.category === filter);
 
   return (
-    <div className="pt-24">
+    <div className="pt-14 md:pt-0">
       <SectionWrapper className="pt-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
             Our Gallery
           </h1>
@@ -82,7 +82,7 @@ export default function GalleryPage() {
           </p>
         </div>
 
-        <div className="flex justify-center flex-wrap gap-2 mb-8">
+        <div className="flex justify-center flex-wrap gap-2 mb-6">
           {galleryCategories.map(category => (
             <Button
               key={category}
@@ -94,7 +94,7 @@ export default function GalleryPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredItems.map((item) => (
             <Card
               key={item.id}
@@ -122,7 +122,7 @@ export default function GalleryPage() {
                     )}
                   </div>
                   <div className="p-4 mt-auto bg-card">
-                    <p className="text-sm font-medium text-foreground truncate">
+                    <p className="text-md font-semibold text-foreground truncate">
                       {item.description}
                     </p>
                     <p className="text-xs text-muted-foreground">
