@@ -15,7 +15,7 @@ const GroupPhotoSection = () => {
               alt={groupPhotoImage.description}
               width={1200}
               height={400}
-              className="w-full"
+              className="w-full h-auto object-cover"
               data-ai-hint={groupPhotoImage.imageHint}
             />
           </div>
