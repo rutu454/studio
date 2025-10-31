@@ -3,12 +3,11 @@
  *
  * @core_philosophy This ruleset enforces a strict user-ownership model for user profiles
  * and allows public read access for gallery items, team members, and sponsors. Contact form submissions
- * are left open for prototyping but should be restricted to authenticated users or admins in a production environment.
+ * are writeable by anyone, which is suitable for a public contact form.
  *
  * @data_structure
  * - /users/{userId}: Stores user profile data, accessible only to the authenticated user.
- * - /contactFormSubmissions/{contactFormSubmissionId}: Stores contact form submissions. In a production environment,
- *   access should be restricted to authenticated users or admins.
+ * - /contactFormSubmissions/{contactFormSubmissionId}: Stores contact form submissions.
  * - /galleryItems/{galleryItemId}: Stores publicly accessible gallery items.
  * - /teamMembers/{teamMemberId}: Stores publicly accessible team member information.
  * - /sponsors/{sponsorId}: Stores publicly accessible sponsor information.
@@ -18,8 +17,7 @@
  *   authenticated user can access their own data.
  * - Public read access is granted for gallery items, team members, and sponsors to allow for
  *   unauthenticated access to website content.
- * - Contact form submissions are currently open but should be secured in a production
- *   environment to prevent unauthorized access.
+ * - Contact form submissions are publicly writeable to allow anyone to send a message. Read/update/delete should be restricted to admins.
  * - No user listing is allowed to prevent enumeration of user accounts.
  */
 rules_version = '2';
@@ -50,61 +48,47 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows anyone to read contact form submissions.  Write access is open for prototyping,
-     *  but SHOULD be restricted in production (e.g., to authenticated users or admins).
+     * @description Allows anyone to submit a contact form. Read/update/delete should be restricted.
      * @path /contactFormSubmissions/{contactFormSubmissionId}
-     * @allow (get, list) - Any user can read contact form submissions.
      * @allow (create) - Any user can submit the contact form.
-     * @principle In production, write access should be restricted to authenticated users or admins.
+     * @principle Allows public submissions. In production, reads should be restricted to admins.
      */
     match /contactFormSubmissions/{contactFormSubmissionId} {
-      allow get, list: if true;
       allow create: if true;
-      allow update: if false; // TODO: Restrict to admins or remove
-      allow delete: if false; // TODO: Restrict to admins or remove
+      allow get, list, update, delete: if false; // Should be restricted to admins
     }
 
     /**
-     * @description Allows anyone to read gallery items. Write access is open for prototyping,
-     *  but SHOULD be restricted in production (e.g., to authenticated users or admins).
+     * @description Allows anyone to read gallery items. Write access should be restricted to admins.
      * @path /galleryItems/{galleryItemId}
      * @allow (get, list) - Any user can read gallery items.
-     * @allow (create) - Any user can create gallery items.
      * @principle Publicly readable data. Write access should be restricted to admins in production.
      */
     match /galleryItems/{galleryItemId} {
       allow get, list: if true;
-      allow create: if false; // TODO: Restrict to admins
-      allow update: if false; // TODO: Restrict to admins
-      allow delete: if false; // TODO: Restrict to admins
+      allow create, update, delete: if false; // Should be restricted to admins
     }
 
     /**
-     * @description Allows anyone to read team member information. Write access is open for prototyping,
-     *  but SHOULD be restricted in production (e.g., to authenticated users or admins).
+     * @description Allows anyone to read team member information. Write access should be restricted to admins.
      * @path /teamMembers/{teamMemberId}
      * @allow (get, list) - Any user can read team member information.
      * @principle Publicly readable data. Write access should be restricted to admins in production.
      */
     match /teamMembers/{teamMemberId} {
       allow get, list: if true;
-      allow create: if false; // TODO: Restrict to admins
-      allow update: if false; // TODO: Restrict to admins
-      allow delete: if false; // TODO: Restrict to admins
+      allow create, update, delete: if false; // Should be restricted to admins
     }
 
     /**
-     * @description Allows anyone to read sponsor information. Write access is open for prototyping,
-     *  but SHOULD be restricted in production (e.g., to authenticated users or admins).
+     * @description Allows anyone to read sponsor information. Write access should be restricted to admins.
      * @path /sponsors/{sponsorId}
      * @allow (get, list) - Any user can read sponsor information.
      * @principle Publicly readable data. Write access should be restricted to admins in production.
      */
     match /sponsors/{sponsorId} {
       allow get, list: if true;
-      allow create: if false; // TODO: Restrict to admins
-      allow update: if false; // TODO: Restrict to admins
-      allow delete: if false; // TODO: Restrict to admins
+      allow create, update, delete: if false; // Should be restricted to admins
     }
   }
 
@@ -118,7 +102,8 @@ service cloud.firestore {
   }
 
   function isNewOwner(userId) {
-    return request.resource.data.id == userId;
+    // This check is a bit redundant with isOwnerIdImmutable on create, but good practice.
+    return request.auth.uid == userId && request.resource.data.id == userId;
   }
 
   function isExistingOwner(userId) {
