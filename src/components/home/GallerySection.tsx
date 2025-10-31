@@ -41,17 +41,19 @@ const GallerySection = () => {
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {filteredItems.map(item => (
-          <Link href={`/gallery/${item.id}`} key={item.id} legacyBehavior>
-            <a className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group">
-              <Image
-                src={item.imageUrl}
-                alt={item.description}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-110"
-                data-ai-hint={item.imageHint}
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-            </a>
+          <Link
+            href={`/gallery/${item.id}`}
+            key={item.id}
+            className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+          >
+            <Image
+              src={item.imageUrl}
+              alt={item.description}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              data-ai-hint={item.imageHint}
+            />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
           </Link>
         ))}
       </div>
