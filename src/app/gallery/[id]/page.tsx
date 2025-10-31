@@ -73,7 +73,7 @@ export default function GalleryDetailPage() {
   return (
     <div className="pt-24 bg-background">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center text-sm font-medium text-muted-foreground mb-6">
+        <nav className="flex items-center text-sm font-medium text-muted-foreground mb-4">
           <Link href="/gallery" className="flex items-center hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Gallery
@@ -82,15 +82,15 @@ export default function GalleryDetailPage() {
           <span className="text-primary truncate">{item.description}</span>
         </nav>
 
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-2">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.description}</h1>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary mt-1">
                 <Share2 className="h-5 w-5" />
                 <span className="sr-only">Share</span>
             </Button>
         </div>
         
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-8">{item.category}</p>
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-6">{item.category}</p>
 
         {item.type === 'image' ? (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg">
