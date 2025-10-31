@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Logo from './Logo';
 import { Loader2, LogOut, User as UserIcon, Menu } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '../ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '../ui/sheet';
 import { cn } from '@/lib/utils';
 import { useWindowScroll } from '@/hooks/use-window-scroll';
 
@@ -30,14 +30,9 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
   const { logout } = useAuth();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -52,28 +47,9 @@ const Header = () => {
     }
     return name.substring(0, 2).toUpperCase();
   };
-
-  if (!isClient) {
-    return (
-      <header className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          "bg-background shadow-sm"
-        )}>
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex justify-between items-center h-20">
-            <Logo />
-            <div className="h-10 w-10"></div>
-          </div>
-        </div>
-      </header>
-    );
-  }
   
   return (
-    <header className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        "bg-background shadow-sm"
-      )}>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-sm">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-20">
           <Logo className="text-primary" />
@@ -87,7 +63,7 @@ const Header = () => {
           </nav>
           
           <div className="hidden md:flex items-center space-x-2">
-            {loading ? (
+            {isUserLoading ? (
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             ) : user ? (
               <DropdownMenu>
@@ -134,12 +110,13 @@ const Header = () => {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right">
+              <SheetContent side="right" className="p-0">
+                <SheetHeader className="p-4 border-b">
+                   <Logo />
+                   <SheetTitle className="sr-only">Menu</SheetTitle>
+                </SheetHeader>
                 <div className="flex flex-col h-full">
-                  <div className="p-4">
-                     <Logo />
-                  </div>
-                  <nav className="flex flex-col space-y-4 px-4">
+                  <nav className="flex flex-col space-y-4 p-4">
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
                         <Link href={link.href} className="text-lg font-medium text-foreground hover:text-primary transition-colors">
@@ -149,7 +126,7 @@ const Header = () => {
                     ))}
                   </nav>
                   <div className="mt-auto p-4 border-t">
-                     {loading ? (
+                     {isUserLoading ? (
                       <Loader2 className="h-6 w-6 animate-spin text-primary" />
                     ) : user ? (
                       <div>
@@ -165,6 +142,9 @@ const Header = () => {
                             <p className="text-sm text-muted-foreground">{user.email}</p>
                           </div>
                         </div>
+                         <SheetClose asChild>
+                           <Button onClick={() => router.push('/profile')} className="w-full mb-2" variant="outline">Profile</Button>
+                         </SheetClose>
                         <Button onClick={handleLogout} className="w-full">Logout</Button>
                       </div>
                     ) : (
