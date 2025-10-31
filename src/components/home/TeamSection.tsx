@@ -11,10 +11,6 @@ const teamMembers = [
   { name: 'Michael Brown', role: 'Treasurer', imageId: 'team6' },
   { name: 'Sarah Lee', role: 'Marketing Head', imageId: 'team7' },
   { name: 'Chris Green', role: 'IT Support', imageId: 'team8' },
-  { name: 'Jessica Wong', role: 'Partnerships Lead', imageId: 'team9' },
-  { name: 'Ben Carter', role: 'Outreach Coordinator', imageId: 'team10' },
-  { name: 'Olivia Martinez', role: 'Social Media Manager', imageId: 'team11' },
-  { name: 'James Wilson', role: 'Legal Advisor', imageId: 'team12' },
 ];
 
 const TeamSection = () => {
