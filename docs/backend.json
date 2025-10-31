@@ -1,0 +1,271 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Prasthan Connect website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "initials": {
+          "type": "string",
+          "description": "The user's initials (e.g., RM for Rutu M)."
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "email",
+        "initials"
+      ]
+    },
+    "ContactFormSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactFormSubmission",
+      "type": "object",
+      "description": "Represents a submission from the contact form.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contact form submission."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the person submitting the form."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the person submitting the form.",
+          "format": "email"
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "The contact number of the person submitting the form."
+        },
+        "message": {
+          "type": "string",
+          "description": "The message submitted through the contact form."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "The date and time when the contact form was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "email",
+        "contactNumber",
+        "message",
+        "submissionDate"
+      ]
+    },
+    "GalleryItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GalleryItem",
+      "type": "object",
+      "description": "Represents an item in the image gallery.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the gallery item."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the gallery item."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the gallery item."
+        },
+        "mediaUrl": {
+          "type": "string",
+          "description": "The URL of the image or video.",
+          "format": "uri"
+        },
+        "mediaType": {
+          "type": "string",
+          "description": "The type of media (image or video)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of gallery item (e.g., Diwali, Holi, Events, Charity)."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "mediaUrl",
+        "mediaType",
+        "category"
+      ]
+    },
+    "TeamMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TeamMember",
+      "type": "object",
+      "description": "Represents a member of the Prasthan Group team.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the team member."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the team member."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the team member within the organization."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "The URL of the team member's photo.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "role",
+        "photoUrl"
+      ]
+    },
+    "Sponsor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Sponsor",
+      "type": "object",
+      "description": "Represents a sponsor of the Prasthan Group.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the sponsor."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the sponsor."
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "The URL of the sponsor's logo.",
+          "format": "uri"
+        },
+        "websiteUrl": {
+          "type": "string",
+          "description": "The URL of the sponsor's website.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "logoUrl"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Access is restricted to the user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user. This is used for path-based access control."
+            }
+          ]
+        }
+      },
+      {
+        "path": "contactFormSubmissions/{contactFormSubmissionId}",
+        "definition": {
+          "entityName": "ContactFormSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/ContactFormSubmission"
+          },
+          "description": "Stores contact form submissions.  Potentially accessible to admins. No denormalization is required.",
+          "params": [
+            {
+              "name": "contactFormSubmissionId",
+              "description": "The unique identifier for the contact form submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "galleryItems/{galleryItemId}",
+        "definition": {
+          "entityName": "GalleryItem",
+          "schema": {
+            "$ref": "#/backend/entities/GalleryItem"
+          },
+          "description": "Stores gallery items (images and videos). Publicly readable.",
+          "params": [
+            {
+              "name": "galleryItemId",
+              "description": "The unique identifier for the gallery item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "teamMembers/{teamMemberId}",
+        "definition": {
+          "entityName": "TeamMember",
+          "schema": {
+            "$ref": "#/backend/entities/TeamMember"
+          },
+          "description": "Stores team member information. Publicly readable.",
+          "params": [
+            {
+              "name": "teamMemberId",
+              "description": "The unique identifier for the team member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "sponsors/{sponsorId}",
+        "definition": {
+          "entityName": "Sponsor",
+          "schema": {
+            "$ref": "#/backend/entities/Sponsor"
+          },
+          "description": "Stores sponsor information. Publicly readable.",
+          "params": [
+            {
+              "name": "sponsorId",
+              "description": "The unique identifier for the sponsor."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "Given the requirements for a static organizational website with Firebase Authentication for Prasthan Group, the Firestore structure is designed to primarily store data related to users and contact form submissions. The key focus is on enabling secure access to user data and managing contact form information efficiently. This structure prioritizes simplicity and ease of maintenance since most of the website content is static.\n\nThe `users/{userId}` collection stores user profiles. This is a path-based ownership model, providing excellent security and manageability. No denormalization is required here, as access control is directly based on the authenticated `userId`.\n\nThe `contactFormSubmissions` collection stores submissions from the contact form. This collection is intended to be accessed by admins (not implemented here, but the structure allows for it) and does not require user-specific access control. Therefore, it resides at the root level. If admin roles were implemented, a separate `/roles_admin/{uid}` collection would be used to manage admin privileges without custom claims.\n\nThis design achieves Authorization Independence because user data is secured via path-based ownership, eliminating the need for `get()` calls in security rules. QAPs are supported inherently by segregating user data and contact form submissions into separate collections with distinct security postures.  The `users` collection is secured using the `request.auth.uid == userId` pattern, ensuring that only the authenticated user can access their own data.  The `contactFormSubmissions` collection, designed for potential admin access, can be secured using an existence check against a `/roles_admin/{uid}` collection (not implemented in this response due to the prompt's constraints, but structurally supported)."
+  }
+}
