@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import SectionWrapper from '@/components/common/SectionWrapper';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 
 const galleryCategories = [
@@ -17,8 +16,6 @@ const allGalleryItems = PlaceHolderImages.filter(img => img.id.startsWith('galle
 }));
 
 export default function GalleryPage() {
-  const [selectedImage, setSelectedImage] = useState<(typeof allGalleryItems)[0] | null>(null);
-
   return (
     <div className="pt-24">
       <SectionWrapper>
@@ -31,8 +28,8 @@ export default function GalleryPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {allGalleryItems.map((item) => (
-            <Dialog key={item.id}>
-              <DialogTrigger asChild>
+            <Link href={`/gallery/${item.id}`} key={item.id} legacyBehavior>
+              <a className="block">
                 <Card className="overflow-hidden cursor-pointer group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
                   <CardContent className="p-0">
                     <div className="aspect-w-4 aspect-h-3">
@@ -51,18 +48,8 @@ export default function GalleryPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl p-0 border-0">
-                <Image
-                  src={item.imageUrl.replace('/600/400', '/1200/800')}
-                  alt={item.description}
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto object-contain rounded-lg"
-                  data-ai-hint={item.imageHint}
-                />
-              </DialogContent>
-            </Dialog>
+              </a>
+            </Link>
           ))}
         </div>
       </SectionWrapper>

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import SectionWrapper from '../common/SectionWrapper';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const categories = ['All', 'Diwali', 'Holi', 'Events', 'Charity'];
 const galleryItemsData = PlaceHolderImages.filter(p => p.id.startsWith('gallery')).slice(0, 8).map((img, index) => ({
@@ -16,7 +15,6 @@ const galleryItemsData = PlaceHolderImages.filter(p => p.id.startsWith('gallery'
 
 const GallerySection = () => {
   const [filter, setFilter] = useState('All');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const filteredItems = filter === 'All'
     ? galleryItemsData
@@ -43,30 +41,18 @@ const GallerySection = () => {
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {filteredItems.map(item => (
-          <Dialog key={item.id}>
-            <DialogTrigger asChild>
-              <div className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.description}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  data-ai-hint={item.imageHint}
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-              </div>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl p-0 border-0">
-               <Image
-                  src={item.imageUrl.replace('/600/400', '/1200/800').replace('/400/600', '/800/1200')}
-                  alt={item.description}
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto object-contain rounded-lg"
-                  data-ai-hint={item.imageHint}
-                />
-            </DialogContent>
-          </Dialog>
+          <Link href={`/gallery/${item.id}`} key={item.id} legacyBehavior>
+            <a className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group">
+              <Image
+                src={item.imageUrl}
+                alt={item.description}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                data-ai-hint={item.imageHint}
+              />
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+            </a>
+          </Link>
         ))}
       </div>
       
