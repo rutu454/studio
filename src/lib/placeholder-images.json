@@ -109,42 +109,6 @@
       "imageHint": "man portrait"
     },
     {
-      "id": "sponsor1",
-      "description": "Human image 1",
-      "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwb3J0cmFpdHxlbnwwfHx8fDE3NjE4NTM4MTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "human portrait"
-    },
-    {
-      "id": "sponsor2",
-      "description": "Human image 2",
-      "imageUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwZW9wbGV8ZW58MHx8fHwxNzYxOTAxMjA3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person smiling"
-    },
-    {
-      "id": "sponsor3",
-      "description": "Human image 3",
-      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxoZWFkc2hvdHxlbnwwfHx8fDE3NjE5MDQ5ODl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "man headshot"
-    },
-    {
-      "id": "sponsor4",
-      "description": "Human image 4",
-      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8d29tYW58ZW58MHx8fHwxNzYxODkxNDM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "woman portrait"
-    },
-    {
-      "id": "sponsor5",
-      "description": "Human image 5",
-      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwb3J0cmFpdCUyMG1hbnxlbnwwfHx8fDE3NjE5NDE1NTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "portrait man"
-    },
-    {
-      "id": "sponsor6",
-      "description": "Human image 6",
-      "imageUrl": "https://images.unsplash.com/photo-1554151228-14d9def656e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwb3J0cmFpdCUyMHdvbWFufGVufDB8fHx8MTc2MTk0MTU1NXww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "portrait woman"
-    },
-    {
       "id": "group-photo",
       "description": "The Prasthan Group family",
       "imageUrl": "https://images.unsplash.com/photo-1692279404576-e129fe70428a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsYXJnZSUyMGdyb3VwJTIwcGhvdG98ZW58MHx8fHwxNzYxOTAxMjA4fDA&ixlib=rb-4.1.0&q=80&w=1080",
