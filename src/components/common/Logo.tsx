@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-
+import l from '@/assets/l.png';
 interface LogoProps {
   className?: string;
 }
@@ -9,7 +9,14 @@ interface LogoProps {
 const Logo = ({ className }: LogoProps) => {
   return (
     <Link href="/" className={cn("flex items-center", className)}>
-      <Image src="/logo.png" alt="Prasthan Group Logo" width={170} height={40} priority />
+     <Image 
+  src={l} 
+  alt="Prasthan Group Logo" 
+  width={170} 
+  height={200}   // increased from 60 to 100
+  priority 
+/>
+
     </Link>
   );
 };

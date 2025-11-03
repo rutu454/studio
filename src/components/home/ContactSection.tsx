@@ -97,7 +97,7 @@ const ContactSection = () => {
             </div>
           </div>
           <div className="flex space-x-4 pt-4">
-            <a href="#" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><Instagram /></a>
+            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><Instagram /></a>
             <a href="#" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><MessageCircle /></a>
           </div>
         </div>
