@@ -100,14 +100,14 @@ export default function ContactSection() {
           </div>
           <h4 className="text-lg font-semibold mt-8 mb-4">Follow Us</h4>
           <div className="flex space-x-4">
-            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-background hover:bg-primary/10 transition-colors">
-              <Instagram className="w-6 h-6 text-primary" />
+            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="text-primary transition-colors hover:text-primary/80">
+              <Instagram className="w-6 h-6" />
             </a>
-            <a href="#" className="p-2 rounded-full bg-background hover:bg-primary/10 transition-colors">
-              <Facebook className="w-6 h-6 text-primary" />
+            <a href="#" className="text-primary transition-colors hover:text-primary/80">
+              <Facebook className="w-6 h-6" />
             </a>
-            <a href="#" className="p-2 rounded-full bg-background hover:bg-primary/10 transition-colors">
-                <WhatsAppIcon className="w-6 h-6 text-primary" />
+            <a href="#" className="text-primary transition-colors hover:text-primary/80">
+                <WhatsAppIcon className="w-6 h-6" />
             </a>
           </div>
         </div>
