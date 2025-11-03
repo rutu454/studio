@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface LogoProps {
   className?: string;
@@ -7,8 +8,8 @@ interface LogoProps {
 
 const Logo = ({ className }: LogoProps) => {
   return (
-    <Link href="/" className={cn("text-2xl font-bold font-headline text-primary", className)}>
-      Prasthan Group
+    <Link href="/" className={cn("flex items-center", className)}>
+      <Image src="/logo.png" alt="Prasthan Group Logo" width={170} height={40} priority />
     </Link>
   );
 };
