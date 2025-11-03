@@ -7,12 +7,13 @@ import { useParams, notFound } from 'next/navigation';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 
 const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
@@ -92,12 +93,37 @@ const allItems = [...allGalleryImageItems, ...videoItems];
 export default function GalleryDetailPage() {
   const params = useParams();
   const { id } = params;
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
 
   const item = allItems.find((itm) => itm.id === id);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCurrent(api.selectedScrollSnap());
+
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap());
+    };
+
+    api.on('select', onSelect);
+
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
 
   if (!item) {
     notFound();
   }
+
+  const scrollTo = (index: number) => {
+    api?.scrollTo(index);
+  };
+
 
   return (
     <div className="pt-24 bg-background">
@@ -119,29 +145,43 @@ export default function GalleryDetailPage() {
 
         {item.type === 'image' ? (
           item.images.length > 1 ? (
-             <Carousel 
-                className="w-full mb-8 rounded-lg overflow-hidden shadow-lg group"
-                plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-                opts={{ loop: true }}
-              >
-                <CarouselContent>
-                    {item.images.map((image, index) => (
-                    <CarouselItem key={index}>
-                        <div className="relative aspect-[3/2]">
-                            <Image
-                                src={image.url}
-                                alt={`${item.description} ${index + 1}`}
-                                fill
-                                className="object-cover"
-                                data-ai-hint={image.hint}
-                            />
-                        </div>
-                    </CarouselItem>
-                    ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Carousel>
+            <div className="mb-8">
+              <Carousel 
+                  setApi={setApi}
+                  className="w-full rounded-lg overflow-hidden shadow-lg group"
+                  plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
+                  opts={{ loop: true }}
+                >
+                  <CarouselContent>
+                      {item.images.map((image, index) => (
+                      <CarouselItem key={index}>
+                          <div className="relative aspect-[3/2]">
+                              <Image
+                                  src={image.url}
+                                  alt={`${item.description} ${index + 1}`}
+                                  fill
+                                  className="object-cover"
+                                  data-ai-hint={image.hint}
+                              />
+                          </div>
+                      </CarouselItem>
+                      ))}
+                  </CarouselContent>
+              </Carousel>
+              <div className="flex justify-center items-center gap-2 mt-4">
+                {item.images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => scrollTo(i)}
+                    className={cn(
+                      'h-2 w-2 rounded-full transition-all',
+                      current === i ? 'w-4 bg-primary' : 'bg-primary/50'
+                    )}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
           ) : (
             <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
               <Image
