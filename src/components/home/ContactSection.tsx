@@ -106,7 +106,7 @@ export default function ContactSection() {
             <a href="#" className="text-primary transition-colors hover:text-primary/80">
               <Facebook className="w-6 h-6" />
             </a>
-            <a href="#" className="text-primary transition-colors hover:text-primary/80">
+            <a href="https://wa.me/6353996012" target="_blank" rel="noopener noreferrer" className="text-primary transition-colors hover:text-primary/80">
                 <WhatsAppIcon className="w-6 h-6" />
             </a>
           </div>
