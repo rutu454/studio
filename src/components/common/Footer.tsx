@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Instagram, MessageCircle } from 'lucide-react';
+import { Instagram, MessageCircle, Facebook } from 'lucide-react';
 import Logo from './Logo';
 
 const Footer = () => {
@@ -14,6 +14,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><Instagram size={20} /></a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors"><Facebook size={20} /></a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors"><MessageCircle size={20} /></a>
             </div>
           </div>
