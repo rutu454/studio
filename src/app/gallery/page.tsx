@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionWrapper from '@/components/common/SectionWrapper';
@@ -12,8 +12,10 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselApi,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
+import { cn } from '@/lib/utils';
 
 const galleryCategories = ['All', 'Diwali', 'Holi', 'Events', 'Charity'];
 
@@ -90,6 +92,71 @@ const videoItems = [
 
 const allItems = [...allGalleryImageItems, ...videoItems].sort((a, b) => a.id.localeCompare(b.id));
 
+const GalleryCarousel = ({ item }: { item: GalleryImageItem }) => {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCurrent(api.selectedScrollSnap());
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap());
+    };
+    api.on('select', onSelect);
+
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
+
+  const scrollTo = (index: number) => {
+    api?.scrollTo(index);
+  };
+
+  return (
+    <div className="relative w-full aspect-[4/3]">
+      <Carousel
+          setApi={setApi}
+          className="w-full h-full"
+          plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
+          opts={{ loop: true }}
+      >
+          <CarouselContent>
+          {item.images.map((image, index) => (
+              <CarouselItem key={index}>
+                  <Link href={`/gallery/${item.id}`} className="block relative w-full aspect-[4/3] cursor-pointer">
+                      <Image
+                      src={image.url}
+                      alt={item.description}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={image.hint}
+                      />
+                  </Link>
+              </CarouselItem>
+          ))}
+          </CarouselContent>
+      </Carousel>
+      <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-1">
+        {item.images.map((_, i) => (
+            <button
+                key={i}
+                onClick={() => scrollTo(i)}
+                className={cn(
+                    'h-1.5 w-1.5 rounded-full transition-all duration-300',
+                    'bg-white/50 backdrop-blur-sm group-hover:bg-white/80',
+                    current === i ? 'w-3 bg-white' : 'hover:bg-white'
+                )}
+                aria-label={`Go to slide ${i + 1}`}
+            />
+        ))}
+        </div>
+    </div>
+  );
+}
+
+
 export default function GalleryPage() {
   const [filter, setFilter] = useState('All');
 
@@ -146,27 +213,7 @@ export default function GalleryPage() {
                         </div>
                      </Link>
                   ) : item.images.length > 1 ? (
-                    <Carousel
-                        className="w-full h-full"
-                        plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-                        opts={{ loop: true }}
-                    >
-                        <CarouselContent>
-                        {item.images.map((image, index) => (
-                            <CarouselItem key={index}>
-                                <Link href={`/gallery/${item.id}`} className="block relative w-full aspect-[4/3] cursor-pointer">
-                                    <Image
-                                    src={image.url}
-                                    alt={item.description}
-                                    fill
-                                    className="object-cover"
-                                    data-ai-hint={image.hint}
-                                    />
-                                </Link>
-                            </CarouselItem>
-                        ))}
-                        </CarouselContent>
-                    </Carousel>
+                    <GalleryCarousel item={item as GalleryImageItem} />
                   ) : (
                     <Link href={`/gallery/${item.id}`} className="block relative w-full h-full cursor-pointer">
                         <Image
