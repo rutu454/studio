@@ -9,8 +9,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 
 const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
@@ -133,8 +131,6 @@ export default function GalleryDetailPage() {
                     </CarouselItem>
                     ))}
                 </CarouselContent>
-                 <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Carousel>
           ) : (
             <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
