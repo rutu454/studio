@@ -37,6 +37,18 @@
       "imageHint": "diwali lights"
     },
     {
+      "id": "gallery1-2",
+      "description": "Diwali celebration",
+      "imageUrl": "https://images.unsplash.com/photo-1667578823129-b7a8b7ed97c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGl3YWxpJTIwbGFtcHN8ZW58MHx8fHwxNzYyMTY1NTI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "diwali lamps"
+    },
+    {
+      "id": "gallery1-3",
+      "description": "Diwali celebration",
+      "imageUrl": "https://images.unsplash.com/photo-1739900725562-a20a5b4573fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxkaXdhbGklMjBmaXJld29ya3N8ZW58MHx8fHwxNzYyMTY1NTI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "diwali fireworks"
+    },
+    {
       "id": "gallery2",
       "description": "Holi celebration",
       "imageUrl": "https://images.unsplash.com/photo-1635247055412-6007edbd9af7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8aG9saSUyMGNvbG9yc3xlbnwwfHx8fDE3NjE5MDEyMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
