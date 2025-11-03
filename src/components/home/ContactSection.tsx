@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Instagram, Mail, MessageCircle, Phone, MapPin, Facebook } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, Facebook } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,19 @@ const formSchema = z.object({
   message: z.string().min(10, 'Message must be at least 10 characters'),
 });
 
+const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M16.75 13.96c.25.13.43.2.5.28.07.1.13.4.15.65.02.25.03.5.03.78 0 .27-.01.53-.04.8-.03.27-.06.51-.1.71-.04.2-.1.4-.15.55a.86.86 0 0 1-.22.35c-.1.14-.22.25-.35.34-.13.09-.28.16-.44.2a3.3 3.3 0 0 1-2.02.32c-.34-.02-.67-.08-1-.18s-.63-.25-.92-.42c-.29-.17-.57-.38-.82-.61-.25-.23-.48-.5-.69-.78s-.4-.59-.57-.88c-.17-.29-.32-.58-.45-.85a9.2 9.2 0 0 1-.55-2.2c-.02-.17-.03-.34-.03-.5 0-.1 0-.2.02-.3l.04-.3c.02-.1.05-.2.07-.3.02-.1.05-.18.07-.25s.05-.14.07-.2a.3.3 0 0 1 .08-.13c.03-.04.06-.08.08-.1a.3.3 0 0 1 .1-.08c.04-.02.08-.04.1-.05s.07-.02.1-.03.07-.02.1-.02h.13c.03 0 .07 0 .1.02l.1.02c.04 0 .07.02.1.03l.1.05c.02.02.05.04.07.07s.03.05.05.08a.4.4 0 0 1 .05.1c.02.03.03.07.05.1h.02c.02.03.03.07.05.1l.05.1.05.12.04.1c.02.05.03.1.04.15s.02.1.02.15a.42.42 0 0 1-.02.15.5.5 0 0 1-.04.13l-.05.1c-.02.04-.04.07-.07.1a.43.43 0 0 1-.3.18l-.13.03c-.05 0-.1 0-.13-.02a.49.49 0 0 1-.18-.09.92.92 0 0 1-.2-.17c-.06-.07-.12-.15-.17-.23-.05-.08-.1-.17-.14-.25s-.08-.17-.1-.25c-.03-.08-.05-.17-.07-.25a2.58 2.58 0 0 1-.1-.4.5.5 0 0 1-.02-.28.5.5 0 0 1 .08-.28c.05-.08.1-.15.18-.2a.6.6 0 0 1 .2-.12.83.83 0          0 1 .3-.07c.1-.02.2-.02.3-.02h.17c.1 0 .2 0 .3.02a.8.8 0 0 1 .3.08.6.6 0 0 1 .22.13c.08.06.14.13.2.2.05.08.1.17.13.25.03.08.05.17.07.25s.03.17.03.25a.5.5 0 0 1-.02.2.5.5 0 0 1-.05.18l-.1.15-.12.12-.14.1c-.05.03-.1.05-.15.07a.4.4 0 0 1-.16.03h-.1a.4.4 0 0 1-.18-.04.4.4 0 0 1-.15-.1.68.68 0 0 1-.14-.18.9.9 0 0 1-.1-.2c-.03-.06-.06-.13-.08-.19-.02-.06-.04-.12-.06-.18a1.9 1.9 0 0 0-.16-.38 3.48 3.48 0 0 0-.57-1c-.2-.3-.42-.58-.67-.82-.25-.24-.52-.45-.8-.63s-.56-.33-.85-.45-.58-.2-.86-.23c-.28-.03-.56-.05-.82-.05-.27 0-.53.02-.78.05a3.2 3.2 0 0 0-2.27 1.2c-.2.22-.38.48-.52.75s-.25.57-.34.88a4.1 4.1 0 0 0-.13 1.18c0 .1.01.2.02.3l.03.3c.02.1.04.2.07.3s.05.18.08.25.06.14.08.2c.02.07.05.13.07.2a.3.3 0 0 1 .1.12c.03.05.06.08.08.12a.3.3 0 0 1 .08.1c.03.03.07.05.1.08l.1.05h.1c.05 0 .1 0 .15-.02l.13-.03a.5.5 0 0 1 .15-.05.52.52          0 0 1 .14.04c.05.03.1.06.13.1a.5.5 0 0 1 .1.13c.03.05.06.1.08.15s.03.1.04.15.02.1.02.15a.42.42 0 0 1-.02.15.5.5 0 0 1-.04.13l-.05.1c-.02.04-.04.07-.07.1a.43.43 0 0 1-.3.18l-.13.03c-.05 0-.1 0-.13-.02a.49.49 0 0 1-.18-.09.92.92 0 0 1-.2-.17c-.06-.07-.12-.15-.17-.23-.05-.08-.1-.17-.14-.25s-.08-.17-.1-.25c-.03-.08-.05-.17-.07-.25a2.58 2.58 0 0 1-.1-.4.5.5 0 0 1-.02-.28c0-.1.02-.18.05-.25a.48.48 0 0 1 .12-.18.5.5 0 0 1 .18-.1.8.8 0 0 1 .54-.02c.1 0 .2.02.3.05a.8.8 0 0 1 .3.1.6.6 0 0 1 .2.15c.07.07.13.15.18.23.05.08.1.18.13.27a1.2 1.2 0 0 1 .05.3c.02.1.02.2.02.3a.5.5 0 0 1-.02.2.5.5 0 0 1-.05.18l-.1.15-.12.12-.14.1c-.05.03-.1.05-.15.07-.06.02-.12.03-.17.03h-.1a.4.4 0 0          1-.18-.04.4.4 0 0 1-.15-.1.68.68 0 0 1-.14-.18.9.9 0 0 1-.1-.2c-.03-.06-.06-.13-.08-.19s-.04-.12-.06-.18a1.9 1.9 0 0 0-.16-.38c-.1-.2-.23-.38-.36-.57a3.48 3.48 0 0 0-.57-1 6.8 6.8 0 0 0-2.3-1.6c-.3-.18-.6-.32-.93-.42s-.65-.16-1-.18a3.3 3.3 0 0 0-2.02.32c-.16.07-.3.14-.44.22a1.8 1.8 0 0 0-.7.75c-.1.15-.2.32-.28.5s-.14.37-.18.55c-.04.18-.08.37-.1.55s-.05.35-.06.52-.02.33-.02.5c0 .27.01.53.04.8a3.2 3.2 0 0 0 .4 1.58c.2.3.42.58.67.82.25.24.52.45.8.63s.56.33.85.45.58.2.86.23c.28.03.56.05.82.05.27 0 .53-.02.78-.05s.5-.08.73-.15.45-.15.65-.25.4-.2.58-.33a1.8 1.8 0 0 0 .7-.75c.1-.15.2-.32.28-.5s.14-.37.18-.55c.04-.18.08-.37.1-.55s.05-.35.06-.52.02-.33.02-.5c0-.27-.01-.53-.04-.8a3.2 3.2 0 0 0-.4-1.58Z"/>
+    </svg>
+);
+
 const ContactSection = () => {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -42,16 +55,15 @@ const ContactSection = () => {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!firestore) {
       toast({
-        variant: "destructive",
+        variant: 'destructive',
         title: 'Error',
-        description: 'Database service is not available. Please try again later.',
+        description: 'An unexpected error occurred. Please try again later.',
       });
       return;
     }
-
     try {
       await addDoc(collection(firestore, 'contactFormSubmissions'), {
         ...values,
@@ -60,46 +72,57 @@ const ContactSection = () => {
 
       toast({
         title: 'Success!',
-        description: 'Your message has been sent. We will get back to you shortly.',
+        description: 'Your message has been sent.',
       });
       form.reset();
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Error adding document: ', error);
       toast({
-        variant: "destructive",
+        variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: 'Could not send your message. Please try again.',
+        description: 'There was a problem with your request.',
       });
     }
-  }
+  };
 
   return (
     <SectionWrapper id="contact">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary">Contact Us</h2>
-        <p className="text-lg text-foreground/80 mt-2">Have a question or want to get involved? Reach out!</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-primary">Get in Touch</h2>
+        <p className="text-lg text-foreground/80 mt-2">
+          We would love to hear from you.
+        </p>
       </div>
       <div className="grid md:grid-cols-2 gap-12">
-        <div className="space-y-6 bg-muted p-8 rounded-lg">
-          <h3 className="text-2xl font-bold">Get in Touch</h3>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4">
-              <MapPin className="text-primary mt-1 flex-shrink-0" />
-              <span>Prasthan Group Office, 123 Unity Lane, Progress City, 12345</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Phone className="text-primary flex-shrink-0" />
-              <span>+1 (234) 567-890</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Mail className="text-primary flex-shrink-0" />
-              <span>contact@prasthangroup.org</span>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <MapPin className="w-8 h-8 text-primary" />
+            <div>
+              <h3 className="text-xl font-semibold">Our Address</h3>
+              <p className="text-muted-foreground">123 Unity Lane, Progress City, 12345</p>
             </div>
           </div>
-          <div className="flex space-x-4 pt-4">
-            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><Instagram /></a>
-            <a href="#" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><Facebook /></a>
-            <a href="#" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><MessageCircle /></a>
+          <div className="flex items-center gap-4">
+            <Mail className="w-8 h-8 text-primary" />
+            <div>
+              <h3 className="text-xl font-semibold">Email Us</h3>
+              <p className="text-muted-foreground">contact@prasthangroup.org</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Phone className="w-8 h-8 text-primary" />
+            <div>
+              <h3 className="text-xl font-semibold">Call Us</h3>
+              <p className="text-muted-foreground">+1 (234) 567-890</p>
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t">
+            <h3 className="text-xl font-semibold mb-4">Follow Us</h3>
+            <div className="flex space-x-6">
+              <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><Instagram size={28} /></a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Facebook size={28} /></a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><WhatsAppIcon className="h-7 w-7" /></a>
+            </div>
           </div>
         </div>
         <div>
@@ -111,7 +134,9 @@ const ContactSection = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
-                    <FormControl><Input placeholder="Your Name" {...field} className="rounded-md" /></FormControl>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -121,8 +146,10 @@ const ContactSection = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl><Input type="email" placeholder="your.email@example.com" {...field} className="rounded-md" /></FormControl>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="john.doe@example.com" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -133,7 +160,9 @@ const ContactSection = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Contact Number (Optional)</FormLabel>
-                    <FormControl><Input placeholder="Your Phone Number" {...field} className="rounded-md" /></FormControl>
+                    <FormControl>
+                      <Input placeholder="+1 (234) 567-890" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -144,13 +173,15 @@ const ContactSection = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Message</FormLabel>
-                    <FormControl><Textarea placeholder="Your message..." {...field} className="rounded-md" /></FormControl>
+                    <FormControl>
+                      <Textarea placeholder="Your message..." {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" size="lg" className="rounded-md" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Submitting...' : 'Submit'}
+              <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </Form>
