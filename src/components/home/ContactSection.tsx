@@ -87,7 +87,7 @@ export default function ContactSection() {
           <div className="space-y-4 text-foreground/80">
             <div className="flex items-center gap-4">
               <MapPin className="w-6 h-6 text-primary" />
-              <span>123 Unity Lane, Progress City, 12345</span>
+              <span>404-B, 4th Floor, B. M. Square-2, Up On HDFC Bank, Opp. Reliance Fresh, Rajlaxmi Park, Junagadh, India, Gujarat</span>
             </div>
             <div className="flex items-center gap-4">
               <Phone className="w-6 h-6 text-primary" />
