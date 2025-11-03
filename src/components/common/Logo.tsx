@@ -10,7 +10,7 @@ interface LogoProps {
 const Logo = ({ className }: LogoProps) => {
   return (
     <Link href="/" className={cn("flex items-center", className)}>
-      <div className="relative w-[150px] h-[50px] md:w-[170px] md:h-[60px]">
+      <div className="relative w-[150px] h-[50px] md:w-[170px] md:h-[60px] lg:w-[200px] lg:h-[70px]">
         <Image 
           src={l} 
           alt="Prasthan Group Logo" 
