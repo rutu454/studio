@@ -10,6 +10,8 @@ import {
   CarouselContent,
   CarouselItem,
 } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+
 
 const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
 
@@ -115,7 +117,11 @@ export default function GalleryDetailPage() {
 
         {item.type === 'image' ? (
           item.images.length > 1 ? (
-             <Carousel className="w-full mb-8 rounded-lg overflow-hidden shadow-lg group">
+             <Carousel 
+                className="w-full mb-8 rounded-lg overflow-hidden shadow-lg group"
+                plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
+                opts={{ loop: true }}
+              >
                 <CarouselContent>
                     {item.images.map((image, index) => (
                     <CarouselItem key={index}>
