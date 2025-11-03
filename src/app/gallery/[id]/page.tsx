@@ -4,18 +4,47 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useParams, notFound } from 'next/navigation';
-import { ArrowLeft, ChevronRight, Share2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
 
-const allGalleryItems = PlaceHolderImages.filter((img) =>
-  img.id.startsWith('gallery')
-).map((img, index) => ({
-  ...img,
-  type: 'image' as const,
-  category: galleryCategories[index % galleryCategories.length],
-}));
+type GalleryImageItem = {
+  id: string;
+  description: string;
+  category: string;
+  type: 'image';
+  images: {
+    url: string;
+    hint: string;
+  }[];
+};
+
+const allGalleryImageItems = PlaceHolderImages.filter((p) =>
+  p.id.startsWith('gallery')
+).reduce((acc, current) => {
+  let item = acc.find((it) => it.description === current.description);
+  if (!item) {
+    const categoryIndex = acc.length % (galleryCategories.length);
+    item = {
+      id: current.id,
+      description: current.description,
+      category: galleryCategories[categoryIndex],
+      type: 'image',
+      images: [],
+    };
+    acc.push(item);
+  }
+  item.images.push({ url: current.imageUrl, hint: current.imageHint });
+  return acc;
+}, [] as GalleryImageItem[]);
+
 
 const videoItems = [
     {
@@ -23,9 +52,10 @@ const videoItems = [
       type: 'video' as const,
       description: 'Our Journey',
       category: 'Events',
-      imageUrl:
-        PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
-      imageHint: 'video abstract',
+      images: [{
+        url: PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
+        hint: 'video abstract',
+      }],
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     },
     {
@@ -33,8 +63,7 @@ const videoItems = [
       type: 'video' as const,
       description: 'Community Outreach',
       category: 'Charity',
-      imageUrl: 'https://picsum.photos/seed/vid2/600/400',
-      imageHint: 'community work',
+      images: [{url: 'https://picsum.photos/seed/vid2/600/400', hint: 'community work'}],
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     },
     {
@@ -42,8 +71,7 @@ const videoItems = [
       type: 'video' as const,
       description: 'Diwali Gala',
       category: 'Diwali',
-      imageUrl: 'https://picsum.photos/seed/vid3/600/400',
-      imageHint: 'celebration festival',
+      images: [{url: 'https://picsum.photos/seed/vid3/600/400', hint: 'celebration festival'}],
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     },
     {
@@ -51,13 +79,12 @@ const videoItems = [
       type: 'video' as const,
       description: 'Holi Highlights',
       category: 'Holi',
-      imageUrl: 'https://picsum.photos/seed/vid4/600/400',
-      imageHint: 'color festival',
+      images: [{url: 'https://picsum.photos/seed/vid4/600/400', hint: 'color festival'}],
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     },
   ];
 
-const allItems = [...allGalleryItems, ...videoItems];
+const allItems = [...allGalleryImageItems, ...videoItems];
 
 
 export default function GalleryDetailPage() {
@@ -84,35 +111,42 @@ export default function GalleryDetailPage() {
 
         <div className="flex justify-between items-start mb-2">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.description}</h1>
-            {/* <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                <Share2 className="h-5 w-5" />
-                <span className="sr-only">Share</span>
-            </Button> */}
         </div>
         
         <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-6">{item.category}</p>
 
         {item.type === 'image' ? (
-          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg">
-          <Image
-            src={(item.imageUrl || '').replace('/600/400', '/1200/800')}
-            alt={item.description}
-            width={1200}
-            height={800}
-            className="
-              w-full 
-              object-cover 
-              h-40         /* default for small screens */
-              sm:h-56      /* small screens (≥640px) */
-              md:h-72      /* medium screens (≥768px) */
-              lg:h-80      /* large screens (≥1024px) */
-              xl:h-96      /* extra large screens (≥1280px) */
-              rounded-lg
-            "
-            data-ai-hint={item.imageHint}
-          />
-        </div>
-        
+          item.images.length > 1 ? (
+             <Carousel className="w-full mb-8 rounded-lg overflow-hidden shadow-lg group">
+                <CarouselContent>
+                    {item.images.map((image, index) => (
+                    <CarouselItem key={index}>
+                        <div className="relative aspect-[3/2]">
+                            <Image
+                                src={image.url}
+                                alt={`${item.description} ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                data-ai-hint={image.hint}
+                            />
+                        </div>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+                 <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Carousel>
+          ) : (
+            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
+              <Image
+                src={item.images[0].url}
+                alt={item.description}
+                fill
+                className="object-cover"
+                data-ai-hint={item.images[0].hint}
+              />
+            </div>
+          )
         ) : (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
              <iframe
