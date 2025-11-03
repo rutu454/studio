@@ -7,6 +7,24 @@
       "imageHint": "community unity"
     },
     {
+      "id": "hero2",
+      "description": "People holding hands in a circle.",
+      "imageUrl": "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb21tdW5pdHl8ZW58MHx8fHwxNzYxODM0ODIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "community circle"
+    },
+    {
+      "id": "hero3",
+      "description": "Volunteers working together.",
+      "imageUrl": "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx2b2x1bnRlZXJzfGVufDB8fHx8MTc2MTgzMjk4Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "volunteers together"
+    },
+    {
+      "id": "hero4",
+      "description": "A group of diverse people smiling.",
+      "imageUrl": "https://images.unsplash.com/photo-1529066749944-d968b2582f53?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaXZlcnNlJTIwZ3JvdXB8ZW58MHx8fHwxNzYyNTM3MzEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "diverse group"
+    },
+    {
       "id": "about",
       "description": "Image for about us section",
       "imageUrl": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwZW9wbGUlMjB3b3JraW5nfGVufDB8fHx8MTc2MTg3ODQ5MHww&ixlib=rb-4.1.0&q=80&w=1080",
@@ -107,6 +125,18 @@
       "description": "Team member 8",
       "imageUrl": "https://images.unsplash.com/photo-1624395213043-fa2e123b2656?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE4ODE5NTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "man portrait"
+    },
+    {
+      "id": "team9",
+      "description": "Team member 9",
+      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE4NDUyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional portrait"
+    },
+    {
+      "id": "team10",
+      "description": "Team member 10",
+      "imageUrl": "https://images.unsplash.com/photo-1614283233556-f35b7c841493?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE4NDUyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional portrait"
     },
     {
       "id": "group-photo",
