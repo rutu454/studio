@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Instagram, Mail, MessageCircle, Phone, MapPin } from 'lucide-react';
+import { Instagram, Mail, MessageCircle, Phone, MapPin, Facebook } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -98,6 +98,7 @@ const ContactSection = () => {
           </div>
           <div className="flex space-x-4 pt-4">
             <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><Instagram /></a>
+            <a href="#" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><Facebook /></a>
             <a href="#" className="p-3 bg-background rounded-full text-primary hover:bg-primary hover:text-primary-foreground transition-colors"><MessageCircle /></a>
           </div>
         </div>
