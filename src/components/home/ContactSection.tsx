@@ -95,7 +95,7 @@ export default function ContactSection() {
             </div>
             <div className="flex items-center gap-4">
               <Mail className="w-6 h-6 text-primary" />
-              <span>contact@prasthangroup.org</span>
+              <span>prasthanjnd@gmail.com</span>
             </div>
           </div>
           <h4 className="text-lg font-semibold mt-8 mb-4">Follow Us</h4>
@@ -178,3 +178,5 @@ export default function ContactSection() {
     </SectionWrapper>
   );
 }
+
+    
