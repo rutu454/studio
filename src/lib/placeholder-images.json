@@ -19,12 +19,6 @@
       "imageHint": "volunteers together"
     },
     {
-      "id": "hero4",
-      "description": "A group of diverse people smiling.",
-      "imageUrl": "https://images.unsplash.com/photo-1529066749944-d968b2582f53?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaXZlcnNlJTIwZ3JvdXB8ZW58MHx8fHwxNzYyNTM3MzEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "diverse group"
-    },
-    {
       "id": "about",
       "description": "Image for about us section",
       "imageUrl": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwZW9wbGUlMjB3b3JraW5nfGVufDB8fHx8MTc2MTg3ODQ5MHww&ixlib=rb-4.1.0&q=80&w=1080",
