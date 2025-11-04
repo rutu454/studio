@@ -27,7 +27,7 @@ const TeamSection = () => {
           const memberImage = PlaceHolderImages.find(p => p.id === member.imageId);
           return (
             <div key={member.name} className="text-center group">
-              <div className="relative w-40 h-40 md:w-32 md:h-32 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
+              <div className="relative w-40 h-40 md:w-32 md:h-32 lg:h-36 lg:w-36 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
                 {memberImage && (
                   <Image
                     src={memberImage.imageUrl}

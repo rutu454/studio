@@ -54,8 +54,8 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-12 border-t border-gray-700 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Prasthan Group. All rights reserved.</p>
-          <p>Designed with ❤️ by Prasthan Team.</p>
+          <p>&copy; 2025 Prasthan Group. All rights reserved.</p>
+          <p>Designed with ❤️ by Sparkdegishine.</p>
         </div>
       </div>
     </footer>
