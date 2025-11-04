@@ -48,7 +48,7 @@ const Footer = () => {
             <h3 className="text-sm font-semibold tracking-wider uppercase">Contact</h3>
             <ul className="mt-4 space-y-2 text-gray-400">
               <li>404-B, 4th Floor, B. M. Square-2, Up On HDFC Bank, Opp. Reliance Fresh, Rajlaxmi Park, Junagadh, India, Gujarat</li>
-              <li>+1 (234) 567-890</li>
+              <li>99740 10005</li>
               <li>contact@prasthangroup.org</li>
             </ul>
           </div>

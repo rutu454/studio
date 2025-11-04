@@ -85,13 +85,13 @@ export default function ContactSection() {
         <div className="bg-muted p-8 rounded-lg">
           <h3 className="text-2xl font-bold mb-6">Get in Touch</h3>
           <div className="space-y-4 text-foreground/80">
-            <div className="flex items-center gap-4">
-              <MapPin className="w-6 h-6 text-primary" />
+            <div className="flex items-start gap-4">
+              <MapPin className="w-6 h-6 text-primary flex-shrink-0" />
               <span>404-B, 4th Floor, B. M. Square-2, Up On HDFC Bank, Opp. Reliance Fresh, Rajlaxmi Park, Junagadh, India, Gujarat</span>
             </div>
             <div className="flex items-center gap-4">
               <Phone className="w-6 h-6 text-primary" />
-              <span>+1 (234) 567-890</span>
+              <span>99740 10005</span>
             </div>
             <div className="flex items-center gap-4">
               <Mail className="w-6 h-6 text-primary" />
