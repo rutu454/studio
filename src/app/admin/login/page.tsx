@@ -34,8 +34,8 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'prasthanjnd@gmail.com',
+      password: 'prasthan@2025',
     },
   });
 
@@ -74,15 +74,16 @@ export default function LoginPage() {
       router.push('/admin/dashboard');
     }
   }, [user, isAdmin, isUserLoading, router]);
-  
-  // isLoading is true if Firebase is checking the user OR if we have a user but haven't confirmed their admin status yet.
+
+  // Determine if the page is in a loading state.
+  // Loading is true if Firebase is checking the user OR if we have a user but haven't yet confirmed their admin status.
   const isLoading = isUserLoading || (user && isAdmin === undefined);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // If user is logged in and we have confirmed they are NOT an admin, show access denied.
+  // If a user is logged in but is NOT an admin, show access denied.
   if (user && isAdmin === false) {
     return (
        <div className="min-h-screen flex items-center justify-center bg-muted p-4">
@@ -96,52 +97,57 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
+  }
+  
+  // If there is no user, and we are not loading, show the login form.
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center text-primary">Admin Login</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="admin@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Signing In...' : 'Sign In'}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center text-primary">Admin Login</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="admin@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  // Fallback for any other state, though it should not be reached.
+  return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 }
