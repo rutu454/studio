@@ -2,58 +2,26 @@
  * @file Firebase Security Rules for Firestore.
  *
  * Core Philosophy:
- * This ruleset enforces a strict admin-user model, where access to the admin panel (and associated Firestore data) is granted solely based on the existence of a corresponding document in the `/admin_users` collection, with the document ID matching the user's Firebase Auth UID.
- *
- * Data Structure:
- * The Firestore database contains a single top-level collection, `/admin_users/{adminUserId}`, which stores administrator user data.
- *
- * Key Security Decisions:
- * - User listing is explicitly denied to prevent unauthorized discovery of admin accounts.
- * - The existence of a document in `/admin_users` whose ID matches the authenticated user's UID grants full admin privileges.
- * - Data validation is minimal, focusing on authorization and relational integrity checks.
+ * This ruleset enforces a default-deny policy. All reads and writes are
+ * disallowed unless explicitly permitted by a rule. For this application,
+ * since admin authentication is handled statically in the application code,
+ * there is no need for Firestore-based access control for the admin panel.
+ * The contact form submissions are write-only for any user.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Grants access to admin user data based on UID.
-     * @path /admin_users/{adminUserId}
-     * @allow (create) User with UID 'user_abc' can create an admin_users document if adminUserId is 'user_abc'.
-     * @allow (get) User with UID 'user_abc' can read their admin_users document if adminUserId is 'user_abc'.
-     * @allow (update) User with UID 'user_abc' can update their admin_users document if adminUserId is 'user_abc'.
-     * @allow (delete) User with UID 'user_abc' can delete their admin_users document if adminUserId is 'user_abc'.
-     * @deny (create) User with UID 'user_xyz' cannot create an admin_users document if adminUserId is 'user_abc'.
-     * @deny (get) User with UID 'user_xyz' cannot read the admin_users document for user 'user_abc'.
-     * @principle Enforces document ownership for all operations on admin_users.
-     */
-    match /admin_users/{adminUserId} {
-      // Helper function to check if the authenticated user is the owner of the document.
-      function isOwner(adminUserId) {
-        return request.auth != null && request.auth.uid == adminUserId;
-      }
+    // Default deny all reads and writes to any collection not specified below.
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
-      // Helper function to check if the authenticated user is the owner of the document and it exists.
-      function isExistingOwner(adminUserId) {
-        return isOwner(adminUserId) && resource != null;
-      }
-
-      // Allow a user to create their own admin_users document.
-      allow create: if isOwner(adminUserId)
-                      && request.resource.data.id == adminUserId;
-
-      // Allow a user to get their own admin_users document.
-      allow get: if isOwner(adminUserId);
-
-      // Allow a user to update their own admin_users document.
-      allow update: if isExistingOwner(adminUserId)
-                      && request.resource.data.id == resource.data.id; // Enforce immutability of the id field
-
-      // Allow a user to delete their own admin_users document.
-      allow delete: if isExistingOwner(adminUserId);
-
-      // Prevent listing of admin_users documents.
-      allow list: if false;
+    // Allow anyone to submit a contact form message.
+    // Deny read, update, or delete access to everyone to protect privacy.
+    match /contactFormSubmissions/{submissionId} {
+      allow create: if true;
+      allow read, update, delete: if false;
     }
   }
 }

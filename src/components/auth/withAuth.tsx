@@ -1,27 +1,27 @@
 'use client';
 
-import { useUser } from '@/firebase/auth/use-auth';
+import { useAuth } from '@/firebase/auth/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, ComponentType } from 'react';
 
 export default function withAuth<P extends object>(WrappedComponent: ComponentType<P>) {
   const WithAuthComponent = (props: P) => {
-    const { user, isUserLoading } = useUser();
+    const { isManuallySignedIn, isUserLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
-      // If loading is finished and there's no user, redirect to login.
-      if (!isUserLoading && !user) {
+      // If auth state is not loading and the user is not manually signed in, redirect.
+      if (!isUserLoading && !isManuallySignedIn) {
         router.replace('/admin/login');
       }
-    }, [user, isUserLoading, router]);
+    }, [isManuallySignedIn, isUserLoading, router]);
 
-    // While loading, you can show a loader or nothing.
-    if (isUserLoading || !user) {
+    // While loading or if not signed in, show a loader.
+    if (isUserLoading || !isManuallySignedIn) {
       return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
-    // If user is logged in, render the component.
+    // If user is manually signed in, render the component.
     return <WrappedComponent {...props} />;
   };
   

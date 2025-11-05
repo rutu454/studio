@@ -24,8 +24,12 @@ const formSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+// --- Static Admin Credentials ---
+const ADMIN_EMAIL = "admin@example.com";
+const ADMIN_PASSWORD = "password";
+
 export default function LoginPage() {
-  const { signInWithEmail, user, isUserLoading } = useAuth();
+  const { user, isUserLoading, manualSignIn, signOut } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -38,30 +42,31 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      await signInWithEmail(values.email, values.password);
-      // The redirect is handled by the useEffect
-    } catch (error: any) {
+    if (values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+      // Use a manual sign-in state without calling Firebase
+      manualSignIn();
+      router.push('/admin/dashboard');
+    } else {
        toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: 'Invalid email or password.',
       });
     }
   }
 
   useEffect(() => {
-    if (!isUserLoading && user) {
-      router.push('/admin/dashboard');
+    // On initial load, if there's a Firebase user from a previous session, log them out
+    // to enforce the static login page.
+    if (user) {
+      signOut();
     }
-  }, [user, isUserLoading, router]);
+  }, [user, signOut]);
 
   if (isUserLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   }
 
-  // If user is already logged in, they will be redirected by the useEffect.
-  // We render the form so they don't see a flash of content.
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">

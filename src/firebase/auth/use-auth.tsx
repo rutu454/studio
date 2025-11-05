@@ -1,54 +1,47 @@
 'use client';
 
+import { useState } from 'react';
 import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  Auth,
 } from 'firebase/auth';
 import { useFirebase, useUser as useFirebaseUser } from '@/firebase/provider';
 
-// Re-export useUser for consistency
+// Re-export useUser for consistency, though it's less critical now
 export const useUser = useFirebaseUser;
 
-export function useAuth() {
-  const { auth, ...userContext } = useFirebase();
+// A simple in-memory state for manual sign-in
+let memoryIsSignedIn = false;
 
-  const signInWithEmail = async (email: string, password: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will handle the user state update
-    } catch (error) {
-      console.error('Error signing in with email and password', error);
-      throw error;
-    }
+export function useAuth() {
+  const { auth, isUserLoading: isFirebaseUserLoading } = useFirebase();
+  // This state is just to trigger re-renders in components using the hook
+  const [isManuallySignedIn, setIsManuallySignedIn] = useState(memoryIsSignedIn);
+
+  const manualSignIn = () => {
+    memoryIsSignedIn = true;
+    setIsManuallySignedIn(true);
   };
 
-  const signUpWithEmail = async (email: string, password: string) => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will handle the user state update
-    } catch (error) {
-      console.error('Error signing up with email and password', error);
-      throw error;
-    }
+  const manualSignOut = () => {
+    memoryIsSignedIn = false;
+    setIsManuallySignedIn(false);
   };
 
   const signOut = async () => {
+    manualSignOut(); // Sign out from our manual state
     try {
-      await firebaseSignOut(auth);
-      // onAuthStateChanged will handle the user state update
+      if (auth.currentUser) {
+        await firebaseSignOut(auth); // Also sign out from Firebase if a user exists
+      }
     } catch (error) {
-      console.error('Error signing out', error);
-      throw error;
+      console.error('Error signing out from Firebase', error);
     }
   };
 
   return {
-    ...userContext,
-    signInWithEmail,
-    signUpWithEmail,
-    signOut,
+    isManuallySignedIn,
+    isUserLoading: isFirebaseUserLoading, // We can still use Firebase's initial loading state
+    manualSignIn,
+    signOut, // Use this for logout
   };
 }
