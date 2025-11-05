@@ -82,8 +82,8 @@ export default function LoginPage() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // If user is logged in but we have confirmed they are NOT an admin, show access denied.
-  if (user && !isAdmin) {
+  // If user is logged in and we have confirmed they are NOT an admin, show access denied.
+  if (user && isAdmin === false) {
     return (
        <div className="min-h-screen flex items-center justify-center bg-muted p-4">
         <Card className="w-full max-w-sm text-center">
