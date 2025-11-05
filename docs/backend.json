@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "ContactFormSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactFormSubmission",
+      "type": "object",
+      "description": "Represents a contact form submission from the website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contact form submission."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the person submitting the form."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the person submitting the form.",
+          "format": "email"
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "The contact number of the person submitting the form."
+        },
+        "message": {
+          "type": "string",
+          "description": "The message or description provided in the form."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "The date and time when the form was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "email",
+        "contactNumber",
+        "message",
+        "submissionDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/contactFormSubmissions/{contactFormSubmissionId}",
+        "definition": {
+          "entityName": "ContactFormSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/ContactFormSubmission"
+          },
+          "description": "Stores contact form submissions.  No denormalized authorization fields are required as there is no user-based access control.  The {contactFormSubmissionId} is the document ID.",
+          "params": [
+            {
+              "name": "contactFormSubmissionId",
+              "description": "The unique identifier for the contact form submission."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "Given the application's core focus on static content and Firebase Authentication for a simple organizational website, the primary need is to handle contact form submissions. Since authentication is handled directly by Firebase Auth and no other data besides the contact form submissions needs to be stored, a single collection is sufficient. Authorization Independence isn't a major concern here because there are no complex relationships or user-specific data stores outside of authentication, and all documents in the `contactFormSubmissions` collection will have the same security posture. The design does not need user specific paths, membership models, or global roles because access is limited to storing the results of the contact form submission. There are no listing requirements (QAPs) to consider, therefore, segregation is not needed. The system is a simple contact form."
+  }
+}
