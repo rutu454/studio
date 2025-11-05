@@ -26,16 +26,15 @@ export function useAuth() {
 
     // Set admin status to "checking"
     setIsAdmin(undefined);
-    const adminDocRef = doc(firestore, `admin_user/${user.uid}`);
+    const adminDocRef = doc(firestore, `admin_users/${user.uid}`);
     
     try {
-      const docSnap = await getDoc(adminDocRef);
+      const docSnap = await getDoc(adminDoc_ref);
       // Set admin status based on whether the document exists.
       setIsAdmin(docSnap.exists());
     } catch (error) {
       // If there's any error (e.g., permissions), they are not an admin.
       setIsAdmin(false);
-      console.error("Error checking admin status:", error);
 
       // Specifically handle permission denied errors by emitting a contextual error.
       if (error instanceof Error && (error.message.includes('permission-denied') || error.message.includes('insufficient permissions'))) {
