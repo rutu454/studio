@@ -25,11 +25,11 @@ const formSchema = z.object({
 });
 
 // --- Static Admin Credentials ---
-const ADMIN_EMAIL = "admin@example.com";
-const ADMIN_PASSWORD = "password";
+const ADMIN_EMAIL = "prasthanjnd@gmail.com";
+const ADMIN_PASSWORD = "prasthan@2025";
 
 export default function LoginPage() {
-  const { user, isUserLoading, manualSignIn, signOut } = useAuth();
+  const { isManuallySignedIn, isUserLoading, manualSignIn, signOut } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -56,12 +56,11 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    // On initial load, if there's a Firebase user from a previous session, log them out
-    // to enforce the static login page.
-    if (user) {
-      signOut();
+    // If a user is already manually signed in, redirect them to the dashboard
+    if (isManuallySignedIn) {
+      router.push('/admin/dashboard');
     }
-  }, [user, signOut]);
+  }, [isManuallySignedIn, router]);
 
   if (isUserLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>
