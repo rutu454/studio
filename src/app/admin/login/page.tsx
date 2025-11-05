@@ -75,13 +75,14 @@ export default function LoginPage() {
     }
   }, [user, isAdmin, isUserLoading, router]);
   
+  // isLoading is true if Firebase is checking the user OR if we have a user but haven't confirmed their admin status yet.
   const isLoading = isUserLoading || (user && isAdmin === undefined);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // If user is logged in but not an admin, don't show login form, show access denied.
+  // If user is logged in but we have confirmed they are NOT an admin, show access denied.
   if (user && !isAdmin) {
     return (
        <div className="min-h-screen flex items-center justify-center bg-muted p-4">
