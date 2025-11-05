@@ -13,8 +13,7 @@ import { useFirebase, useUser as useFirebaseUser } from '@/firebase/provider';
 export const useUser = useFirebaseUser;
 
 export function useAuth() {
-  const { auth } = useFirebase();
-  const userContext = useFirebaseUser();
+  const { auth, ...userContext } = useFirebase();
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
