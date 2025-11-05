@@ -69,21 +69,32 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    // Redirect if user is logged in and is an admin
-    if (!isUserLoading && user && isAdmin) {
+    // This effect handles redirection based on auth state.
+    // It will run whenever the auth state (user, isAdmin, isUserLoading) changes.
+    
+    // If Firebase isn't done loading, we don't know the user's state, so we wait.
+    if (isUserLoading) {
+      return;
+    }
+
+    // If we have a user and we have confirmed they are an admin, redirect to the dashboard.
+    if (user && isAdmin) {
       router.push('/admin/dashboard');
     }
+
   }, [user, isAdmin, isUserLoading, router]);
 
-  // Determine if the page is in a loading state.
-  // Loading is true if Firebase is checking the user OR if we have a user but haven't yet confirmed their admin status.
+  // This is the central loading check for the page.
+  // We are in a loading state if:
+  // 1. Firebase is still determining the user's auth state (`isUserLoading`).
+  // 2. We have a user, but we haven't yet finished checking if they are an admin (`isAdmin` is undefined).
   const isLoading = isUserLoading || (user && isAdmin === undefined);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-  // If a user is logged in but is NOT an admin, show access denied.
+  
+  // After loading, if a user exists but they are NOT an admin, show Access Denied.
   if (user && isAdmin === false) {
     return (
        <div className="min-h-screen flex items-center justify-center bg-muted p-4">
@@ -100,7 +111,7 @@ export default function LoginPage() {
     );
   }
   
-  // If there is no user, and we are not loading, show the login form.
+  // After loading, if there is no user, show the login form.
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted p-4">
@@ -148,6 +159,7 @@ export default function LoginPage() {
     );
   }
 
-  // Fallback for any other state, though it should not be reached.
+  // This state should ideally not be reached, but it acts as a fallback.
+  // It might show briefly if redirection is happening.
   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 }
