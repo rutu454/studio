@@ -12,10 +12,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="font-body antialiased bg-muted/40">
-        <FirebaseClientProvider>{children}</FirebaseClientProvider>
-      </body>
-    </html>
+    <div className="bg-muted/40 min-h-screen">
+      <FirebaseClientProvider>{children}</FirebaseClientProvider>
+    </div>
   );
 }
