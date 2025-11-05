@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,12 +22,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>
-            <Header />
-            <main>{children}</main>
-            <Footer />
-            <Toaster />
-        </FirebaseClientProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          <Toaster />
       </body>
     </html>
   );

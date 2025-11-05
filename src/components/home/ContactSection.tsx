@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Instagram, Mail, Phone, MapPin, Facebook } from 'lucide-react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +18,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import SectionWrapper from '../common/SectionWrapper';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
@@ -39,7 +37,6 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function ContactSection() {
   const { toast } = useToast();
-  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,19 +49,16 @@ export default function ContactSection() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore) return;
+    // Since this is a static site, we can't send the form data to a server.
+    // We'll just show a success message to the user.
     try {
-      await addDoc(collection(firestore, 'contactFormSubmissions'), {
-        ...values,
-        submissionDate: serverTimestamp(),
-      });
       toast({
-        title: 'Success!',
-        description: 'Your message has been sent.',
+        title: 'Thank you for your message!',
+        description: 'We will get back to you shortly.',
       });
       form.reset();
     } catch (error) {
-      console.error('Error adding document: ', error);
+      console.error('Error displaying toast: ', error);
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
@@ -178,5 +172,3 @@ export default function ContactSection() {
     </SectionWrapper>
   );
 }
-
-    

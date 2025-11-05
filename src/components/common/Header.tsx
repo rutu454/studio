@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Logo from './Logo';
-import { Menu, Shield } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '../ui/sheet';
 
 const navLinks = [
@@ -27,9 +27,6 @@ const Header = () => {
                   {link.label}
               </Link>
             ))}
-             <Link href="/admin/dashboard" className="text-sm font-medium transition-colors text-foreground/80 hover:text-primary">
-                <Shield size={20} />
-              </Link>
           </nav>
           
           <div className="md:hidden">
@@ -53,12 +50,6 @@ const Header = () => {
                         </Link>
                       </SheetClose>
                     ))}
-                     <SheetClose asChild>
-                        <Link href="/admin/dashboard" className="text-lg font-medium text-foreground hover:text-primary transition-colors flex items-center">
-                          <Shield className="mr-2 h-5 w-5" />
-                          Admin
-                        </Link>
-                      </SheetClose>
                   </nav>
                 </div>
               </SheetContent>
