@@ -6,12 +6,12 @@ const GroupPhotoSection = () => {
   return (
     <SectionWrapper>
       <div className="text-center">
-      <div className="relative mx-auto rounded-lg overflow-hidden shadow-2xl h-[80vh] w-full">
+      <div className="relative mx-auto rounded-lg overflow-hidden shadow-2xl h-[50vh] md:h-[80vh] w-full">
   <Image
     src={groupPhoto}
     alt="Group photo of the Prasthan team"
     fill
-    className="object-cover object-[center_30%]" 
+    className="object-cover object-center" 
     priority
   />
 </div>
