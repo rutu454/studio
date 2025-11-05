@@ -2,26 +2,52 @@
 
 import { useAuth } from '@/firebase/auth/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect, ComponentType } from 'react';
+import { useEffect, ComponentType, useState } from 'react';
 
 export default function withAuth<P extends object>(WrappedComponent: ComponentType<P>) {
   const WithAuthComponent = (props: P) => {
-    const { isManuallySignedIn, isUserLoading } = useAuth();
+    const { user, isAdmin, isUserLoading } = useAuth();
     const router = useRouter();
+    const [status, setStatus] = useState<'checking' | 'admin' | 'redirecting'>('checking');
 
     useEffect(() => {
-      // If auth state is not loading and the user is not manually signed in, redirect.
-      if (!isUserLoading && !isManuallySignedIn) {
-        router.replace('/admin/login');
+      // Don't do anything until Firebase has loaded the user state
+      if (isUserLoading) {
+        return;
       }
-    }, [isManuallySignedIn, isUserLoading, router]);
+      
+      // If there is no user, redirect to login
+      if (!user) {
+        setStatus('redirecting');
+        router.replace('/admin/login');
+        return;
+      }
 
-    // While loading or if not signed in, show a loader.
-    if (isUserLoading || !isManuallySignedIn) {
+      // If there is a user, but we are still checking for admin status, wait.
+      // isAdmin is `undefined` while the check is in progress.
+      if (isAdmin === undefined) {
+        setStatus('checking');
+        return;
+      }
+      
+      // If user is not an admin, redirect to login.
+      if (!isAdmin) {
+        setStatus('redirecting');
+        router.replace('/admin/login');
+        return;
+      }
+
+      // If user is an admin, allow access.
+      if (isAdmin) {
+        setStatus('admin');
+      }
+
+    }, [user, isAdmin, isUserLoading, router]);
+
+    if (status !== 'admin') {
       return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
-    // If user is manually signed in, render the component.
     return <WrappedComponent {...props} />;
   };
   

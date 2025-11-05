@@ -1,47 +1,67 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
+  signInWithEmailAndPassword as firebaseSignIn,
   signOut as firebaseSignOut,
+  Auth,
 } from 'firebase/auth';
+import { doc, getDoc, Firestore } from 'firebase/firestore';
 import { useFirebase, useUser as useFirebaseUser } from '@/firebase/provider';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
-// Re-export useUser for consistency, though it's less critical now
+// Re-export useUser from provider for components to get the basic user object
 export const useUser = useFirebaseUser;
 
-// A simple in-memory state for manual sign-in
-let memoryIsSignedIn = false;
-
 export function useAuth() {
-  const { auth, isUserLoading: isFirebaseUserLoading } = useFirebase();
-  // This state is just to trigger re-renders in components using the hook
-  const [isManuallySignedIn, setIsManuallySignedIn] = useState(memoryIsSignedIn);
+  const { auth, firestore, user, isUserLoading, userError } = useFirebase();
+  const [isAdmin, setIsAdmin] = useState<boolean | undefined>(undefined); // undefined means "still checking"
 
-  const manualSignIn = () => {
-    memoryIsSignedIn = true;
-    setIsManuallySignedIn(true);
-  };
+  const checkAdminStatus = useCallback(async () => {
+    if (!user || !firestore) {
+      setIsAdmin(false); // No user or firestore, so can't be admin
+      return;
+    }
 
-  const manualSignOut = () => {
-    memoryIsSignedIn = false;
-    setIsManuallySignedIn(false);
+    setIsAdmin(undefined); // Start check
+    const adminDocRef = doc(firestore, `admin_users/${user.uid}`);
+    
+    try {
+      const docSnap = await getDoc(adminDocRef);
+      setIsAdmin(docSnap.exists());
+    } catch (error) {
+      setIsAdmin(false);
+      console.error("Error checking admin status:", error);
+       if (error instanceof Error && error.message.includes('permission-denied')) {
+        const permissionError = new FirestorePermissionError({
+          path: adminDocRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+       }
+    }
+  }, [user, firestore]);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [checkAdminStatus]);
+
+  const signInWithEmailAndPassword = (email: string, password: string) => {
+    return firebaseSignIn(auth, email, password);
   };
 
   const signOut = async () => {
-    manualSignOut(); // Sign out from our manual state
-    try {
-      if (auth.currentUser) {
-        await firebaseSignOut(auth); // Also sign out from Firebase if a user exists
-      }
-    } catch (error) {
-      console.error('Error signing out from Firebase', error);
-    }
+    await firebaseSignOut(auth);
+    setIsAdmin(false); // Reset admin status on sign out
   };
 
   return {
-    isManuallySignedIn,
-    isUserLoading: isFirebaseUserLoading, // We can still use Firebase's initial loading state
-    manualSignIn,
-    signOut, // Use this for logout
+    user,
+    isUserLoading,
+    userError,
+    isAdmin,
+    signInWithEmailAndPassword,
+    signOut,
   };
 }

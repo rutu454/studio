@@ -3,10 +3,7 @@
  *
  * Core Philosophy:
  * This ruleset enforces a default-deny policy. All reads and writes are
- * disallowed unless explicitly permitted by a rule. For this application,
- * since admin authentication is handled statically in the application code,
- * there is no need for Firestore-based access control for the admin panel.
- * The contact form submissions are write-only for any user.
+ * disallowed unless explicitly permitted by a rule.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -22,6 +19,20 @@ service cloud.firestore {
     match /contactFormSubmissions/{submissionId} {
       allow create: if true;
       allow read, update, delete: if false;
+    }
+
+    // Rules for the admin_users collection
+    match /admin_users/{userId} {
+      // Allow an authenticated user to read their OWN admin document.
+      // This is crucial for the application to verify if the user is an admin.
+      allow get: if request.auth != null && request.auth.uid == userId;
+
+      // Prevent anyone from listing all admin users.
+      allow list: if false;
+      
+      // Prevent creating, updating, or deleting admin documents from the client.
+      // These should be managed from the Firebase Console for security.
+      allow create, update, delete: if false;
     }
   }
 }

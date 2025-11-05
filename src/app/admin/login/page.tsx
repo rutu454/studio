@@ -16,22 +16,20 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/firebase/auth/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { FirebaseError } from 'firebase/app';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-// --- Static Admin Credentials ---
-const ADMIN_EMAIL = "prasthanjnd@gmail.com";
-const ADMIN_PASSWORD = "prasthan@2025";
-
 export default function LoginPage() {
-  const { isManuallySignedIn, isUserLoading, manualSignIn, signOut } = useAuth();
+  const { user, isAdmin, signInWithEmailAndPassword, isUserLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,29 +40,64 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
-      // Use a manual sign-in state without calling Firebase
-      manualSignIn();
-      router.push('/admin/dashboard');
-    } else {
-       toast({
+    setIsSubmitting(true);
+    try {
+      await signInWithEmailAndPassword(values.email, values.password);
+      // The useEffect will handle redirection on successful login and admin check
+    } catch (error) {
+      console.error(error);
+      let description = 'An unexpected error occurred.';
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            description = 'Invalid email or password.';
+            break;
+          default:
+            description = 'Failed to sign in. Please try again.';
+        }
+      }
+      toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Invalid email or password.',
+        description,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   useEffect(() => {
-    // If a user is already manually signed in, redirect them to the dashboard
-    if (isManuallySignedIn) {
+    // Redirect if user is logged in and is an admin
+    if (!isUserLoading && user && isAdmin) {
       router.push('/admin/dashboard');
     }
-  }, [isManuallySignedIn, router]);
+  }, [user, isAdmin, isUserLoading, router]);
+  
+  const isLoading = isUserLoading || (user && isAdmin === undefined);
 
-  if (isUserLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
+  // If user is logged in but not an admin, don't show login form, show access denied.
+  if (user && !isAdmin) {
+    return (
+       <div className="min-h-screen flex items-center justify-center bg-muted p-4">
+        <Card className="w-full max-w-sm text-center">
+          <CardHeader>
+            <CardTitle className="text-2xl text-destructive">Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>You do not have permission to access the admin panel.</p>
+            <Button onClick={() => router.push('/')} variant="outline" className="mt-4">Go to Homepage</Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
@@ -101,8 +134,8 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
           </Form>
