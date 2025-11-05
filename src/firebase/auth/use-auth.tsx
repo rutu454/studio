@@ -26,7 +26,7 @@ export function useAuth() {
 
     // Set admin status to "checking"
     setIsAdmin(undefined);
-    const adminDocRef = doc(firestore, `admin_users/${user.uid}`);
+    const adminDocRef = doc(firestore, `admin_user/${user.uid}`);
     
     try {
       const docSnap = await getDoc(adminDocRef);
