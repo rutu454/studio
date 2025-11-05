@@ -1,67 +1,57 @@
 {
   "entities": {
-    "ContactFormSubmission": {
+    "AdminUser": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ContactFormSubmission",
+      "title": "AdminUser",
       "type": "object",
-      "description": "Represents a submission from the contact form.",
+      "description": "Represents an administrator user with access to the admin panel.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the contact form submission."
+          "description": "Unique identifier for the AdminUser entity."
         },
-        "fullName": {
+        "username": {
           "type": "string",
-          "description": "The full name of the person submitting the form."
+          "description": "The username of the administrator."
         },
         "email": {
           "type": "string",
-          "description": "The email address of the person submitting the form.",
+          "description": "The email address of the administrator.",
           "format": "email"
-        },
-        "contactNumber": {
-          "type": "string",
-          "description": "The contact number of the person submitting the form."
-        },
-        "message": {
-          "type": "string",
-          "description": "The message submitted through the contact form."
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "The date and time when the contact form was submitted.",
-          "format": "date-time"
         }
       },
       "required": [
-        "fullName",
-        "email",
-        "message",
-        "submissionDate"
+        "id",
+        "username",
+        "email"
       ]
     }
   },
   "auth": {
-    "providers": []
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "contactFormSubmissions/{contactFormSubmissionId}",
+        "path": "/admin_users/{adminUserId}",
         "definition": {
-          "entityName": "ContactFormSubmission",
+          "entityName": "AdminUser",
           "schema": {
-            "$ref": "#/backend/entities/ContactFormSubmission"
+            "$ref": "#/backend/entities/AdminUser"
           },
-          "description": "Stores contact form submissions. Publicly writable.",
+          "description": "Stores administrator user data. The existence of a document with a matching UID in this collection grants admin privileges.",
           "params": [
             {
-              "name": "contactFormSubmissionId",
-              "description": "The unique identifier for the contact form submission."
+              "name": "adminUserId",
+              "description": "The unique identifier of the administrator user, matching the Firebase Auth UID."
             }
           ]
         }
       }
-    ]
+    ],
+    "reasoning": "Given the requirement for a static organizational website with Firebase Authentication for administrators, a simple Firestore structure is sufficient. We will store admin user data within a dedicated collection. This design prioritizes simplicity and avoids unnecessary complexity, as the application primarily serves static content. \n\nAuthorization Independence: In this specific scenario, authorization independence is achieved by storing admin user credentials and roles (if necessary) directly in the `/admin_users` collection. Security rules can directly check the existence of a document in this collection based on the authenticated user's UID (`request.auth.uid`), without needing to perform `get()` operations on parent documents or other collections. This ensures that authorization checks are atomic and not dependent on external data. For more complex applications (not the case here), we would need to denormalize authorization data into subcollections.\n\nQAPs (Rules are not Filters): Since the only data stored in Firestore relates to admin users, QAPs are easily satisfied. Listing operations can be secured by ensuring that only authenticated admins (identified by their UID) can access the `/admin_users` collection. The homogenous security posture enforced on this collection ensures that rules are simple and not used as filters."
   }
 }
