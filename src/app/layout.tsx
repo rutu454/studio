@@ -3,6 +3,7 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Prasthan Connect',
@@ -22,10 +23,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+        <FirebaseClientProvider>
           <Header />
           <main>{children}</main>
           <Footer />
           <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

@@ -1,6 +1,8 @@
-{
-  "projects": {
-    "default": "studio-8466476924-ce943"
- 
-  }
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyBIb8VKTSMyRz7fA0l9FKkna33LOkuNfcY",
+  authDomain: "studio-8466476924-ce943.firebaseapp.com",
+  projectId: "studio-8466476924-ce943",
+  storageBucket: "studio-8466476924-ce943.firebasestorage.app",
+  messagingSenderId: "886653697105",
+  appId: "1:886653697105:web:91961f7400f61b8c6b0c70"
+};

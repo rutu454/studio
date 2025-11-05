@@ -1,34 +1,11 @@
-/**
- * @file Firestore Security Rules
- * @description This ruleset governs access to the `contactFormSubmissions` collection, which stores data from contact form submissions.
- *
- * Core Philosophy: All contact form submissions are considered public write-only. There is no access control based on user identity.
- *
- * Data Structure:
- * - `/contactFormSubmissions/{contactFormSubmissionId}`: Stores contact form submissions.
- *
- * Key Security Decisions:
- * - Contact form submissions are write-only, meaning anyone can submit the form.
- * - Listing and getting of existing contact form submissions are explicitly denied.
- * - No user authentication or ownership is enforced, as this is a public-facing contact form.
- */
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Controls access to the `contactFormSubmissions` collection.
-     * @path /contactFormSubmissions/{contactFormSubmissionId}
-     * @allow (create) Anyone can create a contact form submission.
-     * @deny (get, list, update, delete) No one can retrieve, list, update or delete contact form submissions.
-     * @principle Allows public submissions to the contact form without any authentication requirements.
-     */
-    match /contactFormSubmissions/{contactFormSubmissionId} {
-      allow get: if false;
-      allow list: if false;
+    // Anyone can submit a contact form, but no one can read, update or delete them.
+    match /contactFormSubmissions/{submissionId} {
+      allow read, update, delete: if false;
       allow create: if true;
-      allow update: if false;
-      allow delete: if false;
     }
   }
 }
