@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Users, Handshake, CalendarDays } from 'lucide-react';
+import { Users, Handshake, CalendarDays, Award } from 'lucide-react';
 import SectionWrapper from '../common/SectionWrapper';
 
 interface CounterProps {
@@ -66,7 +66,7 @@ const StaticCounter: React.FC<{ icon: React.ElementType; value: string; label: s
 };
 
 const counters = [
-  { icon: CalendarDays, endValue: 100, label: 'Events Organized' },
+  { icon: Award, endValue: 100, label: 'Events Organized' },
   { icon: Users, endValue: 8000, label: 'People Helped' },
   { icon: Handshake, endValue: 50, label: 'Helping Hands' },
 ];
