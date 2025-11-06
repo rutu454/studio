@@ -169,7 +169,7 @@ export default function GalleryPage() {
       <SectionWrapper className="pt-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Our Gallery
+            Moments that Inspire
           </h1>
           <p className="text-lg text-foreground/80 max-w-2xl mx-auto">
             A collection of moments from our events, celebrations, and community
