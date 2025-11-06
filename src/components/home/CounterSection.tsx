@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Users, Handshake, CalendarDays } from 'lucide-react';
+import { Users2, Handshake, CalendarDays } from 'lucide-react';
 import SectionWrapper from '../common/SectionWrapper';
 
 const CalendarStar = (props: React.SVGProps<SVGSVGElement>) => (
@@ -93,7 +93,7 @@ const StaticCounter: React.FC<{ icon: React.ElementType; value: string; label: s
 
 const counters = [
   { icon: CalendarStar, endValue: 100, label: 'Events Organized' },
-  { icon: Users, endValue: 8000, label: 'People Helped' },
+  { icon: Users2, endValue: 8000, label: 'People Helped' },
   { icon: Handshake, endValue: 50, label: 'Helping Hands' },
 ];
 
