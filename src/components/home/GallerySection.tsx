@@ -120,7 +120,7 @@ const GallerySection = () => {
 
   const filteredItems =
     filter === 'All'
-      ? galleryItemsData.slice(0, 8) // Limit to 8 items for the homepage
+      ? galleryItemsData.slice(0, 4) // Limit to 4 items for the homepage
       : galleryItemsData.filter((item) => item.category === filter);
 
   return (
