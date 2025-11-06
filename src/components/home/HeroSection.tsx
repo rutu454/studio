@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const HeroSection = () => {
-  const heroImages = PlaceHolderImages.filter(p => p.id.startsWith('hero'));
+  const heroImages = PlaceHolderImages.filter(p => p.id.startsWith('hero')).slice(0, 3);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
