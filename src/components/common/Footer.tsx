@@ -43,7 +43,7 @@ const Footer = () => {
             <a href="https://www.facebook.com/PrasthanGroup/" target="_blank" rel="noopener noreferrer" className="hover:text-white">
               <Facebook className="w-6 h-6" />
             </a>
-             <a href="https://wa.me/6353996012" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+             <a href="https://wa.me/9426982100" target="_blank" rel="noopener noreferrer" className="hover:text-white">
               <WhatsAppIcon className="w-6 h-6" />
             </a>
           </div>
