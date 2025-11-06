@@ -8,9 +8,10 @@ const VideoSection = () => {
       </div>
       <div className="w-full max-w-4xl mx-auto">
         <div className="relative" style={{ paddingBottom: '56.25%' }}>
+
           <iframe
             className="absolute top-0 left-0 w-full h-full rounded-lg shadow-xl"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Example video
+            src="https://www.youtube.com/embed/JrjrTnR3uyQ?si=rMsX22DdwNhS_35D" // Example video
             title="YouTube video player"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
