@@ -1,19 +1,18 @@
 import Image from 'next/image';
 import SectionWrapper from '../common/SectionWrapper';
-import groupPhoto from '../../assets/group photo.jpg'; // 👈 import your image directly
+import groupPhoto from '../../assets/groupimage.jpg';
 
 const GroupPhotoSection = () => {
   return (
     <SectionWrapper>
-      <div className="text-center">
-        <div className="relative mx-auto rounded-lg overflow-hidden shadow-2xl w-full">
+      <div className="flex justify-center items-center">
+        <div className="relative w-full md:w-4/5 lg:w-4/5 max-h-screen overflow-hidden rounded-lg shadow-2xl">
           <Image
             src={groupPhoto}
             alt="Group photo of the Prasthan team"
-            layout="responsive"
             width={1200}
-            height={800} 
-            className="object-cover"
+            height={800}
+            className="object-contain w-full h-auto md:max-h-screen"
             priority
           />
         </div>

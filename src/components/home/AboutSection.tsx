@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import SectionWrapper from '../common/SectionWrapper';
-import aboutImage from '../../assets/group photo.jpg';
+import aboutImage from '../../assets/aboutimage.jpg';
 
 const AboutSection = () => {
 
