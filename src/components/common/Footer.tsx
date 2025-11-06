@@ -47,8 +47,12 @@ const Footer = () => {
               <WhatsAppIcon className="w-6 h-6" />
             </a>
           </div>
-          <div className="md:text-center">
-            <a href="mailto:prasthanjnd@gmail.com" className="underline hover:text-white">prasthanjnd@gmail.com</a>
+          <div className="flex justify-center md:justify-start gap-8">
+            <Link href="/" className="hover:text-white">Home</Link>
+            <Link href="/about" className="hover:text-white">About</Link>
+            <Link href="/gallery" className="hover:text-white">Gallery</Link>
+            <Link href="/#team" className="hover:text-white">Member</Link>
+            <Link href="/#contact" className="hover:text-white">Contact</Link>
           </div>
           <div className="md:text-right">
             <Link href="#" className="hover:text-white">Privacy Policy</Link>
