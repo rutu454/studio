@@ -2,10 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import SectionWrapper from '../common/SectionWrapper';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import aboutImage from '../../assets/group photo.jpg';
 
 const AboutSection = () => {
-  const aboutImage = PlaceHolderImages.find(p => p.id === 'about');
 
   return (
     <SectionWrapper>
@@ -20,15 +19,13 @@ const AboutSection = () => {
           </Button>
         </div>
         <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
-          {aboutImage && (
             <Image
-              src={aboutImage.imageUrl}
-              alt={aboutImage.description}
+              src={aboutImage}
+              alt="Prasthan Group members holding Indian flags"
               fill
               className="object-cover"
-              data-ai-hint={aboutImage.imageHint}
+              data-ai-hint="group photo outdoors"
             />
-          )}
         </div>
       </div>
     </SectionWrapper>
