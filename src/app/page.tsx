@@ -8,6 +8,7 @@ import TeamSection from '@/components/home/TeamSection';
 import SloganSection from '@/components/home/SloganSection';
 import GroupPhotoSection from '@/components/home/GroupPhotoSection';
 import ContactSection from '@/components/home/ContactSection';
+import BankDetailsSection from '@/components/home/BankDetailsSection';
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
       <SloganSection />
       <GroupPhotoSection />
       <ContactSection />
+      <BankDetailsSection />
     </>
   );
 }
