@@ -15,36 +15,41 @@ const Footer = () => {
   return (
     <footer className="bg-[#CC0000] text-[#f0f0f0]">
       <div className="max-w-[1200px] mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="space-y-4">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-6">
             <Logo />
-            <p className="text-sm text-[#f0f0f0]/80">
+            <p className="text-sm text-[#f0f0f0]/80 max-w-md mx-auto mt-2">
               Spreading knowledge, compassion, and unity among society.
             </p>
-            <div className="flex space-x-4">
-              <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="text-[#f0f0f0]/80 hover:text-white transition-colors"><Instagram size={20} /></a>
-              <a href="https://www.facebook.com/PrasthanGroup/" target="_blank" rel="noopener noreferrer" className="text-[#f0f0f0]/80 hover:text-white transition-colors"><Facebook size={20} /></a>
-              <a href="https://wa.me/6353996012" target="_blank" rel="noopener noreferrer" className="text-[#f0f0f0]/80 hover:text-white transition-colors"><WhatsAppIcon className="w-5 h-5" /></a>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 w-full max-w-sm mb-8">
+            <div>
+              <h3 className="text-sm font-semibold tracking-wider uppercase">Quick Links</h3>
+              <ul className="mt-4 space-y-2">
+                <li><Link href="/" className="text-base text-[#f0f0f0]/80 hover:text-white">Home</Link></li>
+                <li><Link href="/about" className="text-base text-[#f0f0f0]/80 hover:text-white">About</Link></li>
+                <li><Link href="/gallery" className="text-base text-[#f0f0f0]/80 hover:text-white">Gallery</Link></li>
+                <li><Link href="/#team" className="text-base text-[#f0f0f0]/80 hover:text-white">Team</Link></li>
+                <li><Link href="/#contact" className="text-base text-[#f0f0f0]/80 hover:text-white">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold tracking-wider uppercase">Legal</h3>
+              <ul className="mt-4 space-y-2">
+                <li><a href="#" className="text-base text-[#f0f0f0]/80 hover:text-white">Privacy Policy</a></li>
+                <li><a href="#" className="text-base text-[#f0f0f0]/80 hover:text-white">Terms of Service</a></li>
+              </ul>
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold tracking-wider uppercase">Quick Links</h3>
-            <ul className="mt-4 space-y-2">
-              <li><Link href="/" className="text-base text-[#f0f0f0]/80 hover:text-white">Home</Link></li>
-              <li><Link href="/about" className="text-base text-[#f0f0f0]/80 hover:text-white">About</Link></li>
-              <li><Link href="/gallery" className="text-base text-[#f0f0f0]/80 hover:text-white">Gallery</Link></li>
-              <li><Link href="/#team" className="text-base text-[#f0f0f0]/80 hover:text-white">Team</Link></li>
-              <li><Link href="/#contact" className="text-base text-[#f0f0f0]/80 hover:text-white">Contact</Link></li>
-            </ul>
-          </div>
-           <div>
-            <h3 className="text-sm font-semibold tracking-wider uppercase">Legal</h3>
-            <ul className="mt-4 space-y-2">
-              <li><a href="#" className="text-base text-[#f0f0f0]/80 hover:text-white">Privacy Policy</a></li>
-              <li><a href="#" className="text-base text-[#f0f0f0]/80 hover:text-white">Terms of Service</a></li>
-            </ul>
+
+          <div className="flex space-x-6">
+            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="text-[#f0f0f0]/80 hover:text-white transition-colors"><Instagram size={24} /></a>
+            <a href="https://www.facebook.com/PrasthanGroup/" target="_blank" rel="noopener noreferrer" className="text-[#f0f0f0]/80 hover:text-white transition-colors"><Facebook size={24} /></a>
+            <a href="https://wa.me/6353996012" target="_blank" rel="noopener noreferrer" className="text-[#f0f0f0]/80 hover:text-white transition-colors"><WhatsAppIcon className="w-6 h-6" /></a>
           </div>
         </div>
+        
         <div className="mt-12 border-t border-gray-700 pt-8 text-center text-sm text-[#f0f0f0]/80">
           <p>&copy; 2025 Prasthan Group. All rights reserved.</p>
           <p>Designed with ❤️ by Sparkdigishine.</p>
@@ -55,7 +60,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
-    
-
-    
