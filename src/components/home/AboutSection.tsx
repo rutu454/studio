@@ -13,7 +13,7 @@ const AboutSection = () => {
         <div className="space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold text-primary">About Us</h2>
           <p className="text-lg text-foreground/80 leading-relaxed">
-            Prasthan Group is a community-driven organization dedicated to fostering positive change through education, social initiatives, and empowerment programs. Our mission is to build a compassionate and sustainable society.
+            Along with social service and various scientific experiences, Prasthan Group works in different creative fields. Through its social and problem-solving initiatives, the group helps people in need and spreads awareness. The main aim of Prasthan Group is to bring together youth interested in social service and creative activities, giving them a common platform to work for social betterment.
           </p>
           <Button asChild>
             <Link href="/about">Read More</Link>

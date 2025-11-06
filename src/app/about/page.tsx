@@ -9,6 +9,13 @@ export default function AboutPage() {
           
           <div className="space-y-12">
             <div>
+              <h2 className="text-3xl font-bold mb-4">Who We Are</h2>
+              <p className="text-lg text-foreground/80 leading-relaxed">
+                Along with social service and various scientific experiences, Prasthan Group works in different creative fields. Through its social and problem-solving initiatives, the group helps people in need and spreads awareness. The main aim of Prasthan Group is to bring together youth interested in social service and creative activities, giving them a common platform to work for social betterment.
+              </p>
+            </div>
+
+            <div>
               <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
               <p className="text-lg text-foreground/80 leading-relaxed">
                 To empower individuals and communities through social initiatives, education, and growth programs. We are dedicated to creating a positive impact by fostering an environment of learning, support, and collective progress.
@@ -19,13 +26,6 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mb-4">Our Vision</h2>
               <p className="text-lg text-foreground/80 leading-relaxed">
                 To build a sustainable and compassionate society where every person thrives. We envision a future where equal opportunities are accessible to all, and where communities work together in harmony for the greater good.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Who We Are</h2>
-              <p className="text-lg text-foreground/80 leading-relaxed">
-                Prasthan Group is a non-profit organization driven by a passionate team of volunteers, community leaders, and professionals. We believe in the power of collective action and are committed to addressing key social challenges through innovative and sustainable solutions. Our members come from diverse backgrounds, united by a common goal of making a difference.
               </p>
             </div>
 
