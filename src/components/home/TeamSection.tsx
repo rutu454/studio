@@ -22,12 +22,12 @@ const TeamSection = () => {
           The faces behind Prasthan Group’s vision and strength.
         </p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 justify-center">
         {teamMembers.map((member) => {
           const memberImage = PlaceHolderImages.find(p => p.id === member.imageId);
           return (
-            <div key={member.name} className="text-center group">
-              <div className="relative w-40 h-40 md:w-32 md:h-32 lg:h-36 lg:w-36 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
+            <div key={member.name} className="text-center group flex flex-col items-center">
+              <div className="relative w-36 h-36 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
                 {memberImage && (
                   <Image
                     src={memberImage.imageUrl}
