@@ -35,7 +35,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm items-center">
+        <div className="flex flex-col items-center gap-8 text-sm">
           <div className="flex gap-4">
             <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="hover:text-white">
               <Instagram className="w-6 h-6" />
@@ -47,14 +47,14 @@ const Footer = () => {
               <WhatsAppIcon className="w-6 h-6" />
             </a>
           </div>
-          <div className="flex justify-center md:justify-start gap-8">
+          <div className="flex justify-center flex-wrap gap-8">
             <Link href="/" className="hover:text-white">Home</Link>
             <Link href="/about" className="hover:text-white">About</Link>
             <Link href="/gallery" className="hover:text-white">Gallery</Link>
             <Link href="/#team" className="hover:text-white">Member</Link>
             <Link href="/#contact" className="hover:text-white">Contact</Link>
           </div>
-          <div className="md:text-right">
+          <div>
             <Link href="#" className="hover:text-white">Privacy Policy</Link>
           </div>
         </div>
