@@ -84,7 +84,7 @@ export default function ContactSection() {
       </div>
       <div className="grid md:grid-cols-2 gap-12">
         <div className="bg-muted p-8 rounded-lg">
-          <h3 className="text-2xl font-bold mb-6">Get in Touch</h3>
+          <h3 className="text-2xl font-bold mb-6">Let’s Work for a Better Tomorrow</h3>
           <div className="space-y-4 text-foreground/80">
             <div className="flex items-start gap-4">
               <MapPin className="w-6 h-6 text-primary flex-shrink-0" />
