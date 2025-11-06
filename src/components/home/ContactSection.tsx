@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Instagram, Mail, Phone, MapPin, Facebook } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, Facebook, Award } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -97,6 +97,10 @@ export default function ContactSection() {
             <div className="flex items-center gap-4">
               <Mail className="w-6 h-6 text-primary" />
               <span>prasthanjnd@gmail.com</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Award className="w-6 h-6 text-primary" />
+              <span>Trust Reg. No.: E/6897/Junagadh</span>
             </div>
           </div>
           <h4 className="text-lg font-semibold mt-8 mb-4">Follow Us</h4>
