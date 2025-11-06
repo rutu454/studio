@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Instagram, Facebook } from 'lucide-react';
 import Logo from './Logo';
+import Image from 'next/image';
+import logo from '../../assets/footer.png';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -17,32 +19,33 @@ const Footer = () => {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm mb-16">
-          <div>
-            <h3 className="font-bold text-white mb-2">Our Mission</h3>
-            <p>Spreading knowledge, compassion, and unity among society.</p>
-          </div>
-          <div className="md:text-center">
-            <h3 className="font-bold text-white mb-2">Since 2012</h3>
-            <Link href="/gallery" className="underline hover:text-white">View Our Work</Link>
-          </div>
-          <div className="md:text-right">
-            <h3 className="font-bold text-white mb-2">Junagadh, India</h3>
-            <p>&copy; {new Date().getFullYear()} Prasthan Group</p>
-          </div>
-        </div>
+       
 
         {/* Logo */}
         <div className="text-center my-16">
-          <Logo className="text-white inline-block" />
+      
+  <Image 
+    src={logo} 
+    alt="logo" 
+    width={350} 
+    height={400} 
+    className="mx-auto h-72 w-auto"
+  />
+
         </div>
 
         {/* Bottom row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm items-center">
           <div className="flex gap-4">
-            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="hover:text-white">Instagram</a>
-            <a href="https://www.facebook.com/PrasthanGroup/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Facebook</a>
-             <a href="https://wa.me/6353996012" target="_blank" rel="noopener noreferrer" className="hover:text-white">WhatsApp</a>
+            <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              <Instagram className="w-6 h-6" />
+            </a>
+            <a href="https://www.facebook.com/PrasthanGroup/" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              <Facebook className="w-6 h-6" />
+            </a>
+             <a href="https://wa.me/6353996012" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              <WhatsAppIcon className="w-6 h-6" />
+            </a>
           </div>
           <div className="md:text-center">
             <a href="mailto:prasthanjnd@gmail.com" className="underline hover:text-white">prasthanjnd@gmail.com</a>
