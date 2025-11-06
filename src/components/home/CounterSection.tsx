@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Users, Briefcase, Handshake, CalendarDays } from 'lucide-react';
+import { Users, Handshake, CalendarDays } from 'lucide-react';
 import SectionWrapper from '../common/SectionWrapper';
 
 interface CounterProps {
@@ -53,17 +53,29 @@ const Counter: React.FC<CounterProps> = ({ icon: Icon, endValue, label }) => {
   );
 };
 
+const StaticCounter: React.FC<{ icon: React.ElementType; value: string; label: string }> = ({ icon: Icon, value, label }) => {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="w-24 h-24 rounded-full border-4 border-primary flex items-center justify-center mb-4">
+        <Icon className="w-10 h-10 text-primary" />
+      </div>
+      <p className="text-4xl font-bold font-headline">{value}</p>
+      <p className="text-lg text-muted-foreground">{label}</p>
+    </div>
+  );
+};
+
 const counters = [
-  { icon: Users, endValue: 500, label: 'Members Joined' },
-  { icon: Briefcase, endValue: 100, label: 'Projects Completed' },
-  { icon: Handshake, endValue: 50, label: 'Communities Reached' },
-  { icon: CalendarDays, endValue: 200, label: 'Events Organized' },
+  { icon: CalendarDays, endValue: 100, label: 'Events Organized' },
+  { icon: Users, endValue: 8000, label: 'People Helped' },
+  { icon: Handshake, endValue: 50, label: 'Helping Hands' },
 ];
 
 const CounterSection = () => {
   return (
     <SectionWrapper>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <StaticCounter icon={CalendarDays} value="2012" label="Since" />
         {counters.map((counter, index) => (
           <Counter key={index} {...counter} />
         ))}
