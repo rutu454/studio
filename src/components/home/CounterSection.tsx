@@ -54,6 +54,8 @@ const Counter: React.FC<CounterProps> = ({ icon: Icon, endValue, label, isVisibl
         }
       };
       window.requestAnimationFrame(step);
+    } else {
+        setCount(0); // Reset when not visible
     }
   }, [isVisible, endValue]);
 
@@ -99,10 +101,7 @@ const CounterSection = () => {
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setIsVisible(true);
-              observer.unobserve(entry.target);
-            }
+            setIsVisible(entry.isIntersecting);
           });
         },
         { threshold: 0.1 }
@@ -128,7 +127,7 @@ const CounterSection = () => {
             <div 
                 key={index}
                 className={cn(
-                    'transition-all duration-700 transform',
+                    'transition-all duration-1000 transform',
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 )}
                 style={{ transitionDelay: `${index * 100}ms` }}

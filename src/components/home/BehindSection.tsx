@@ -12,10 +12,7 @@ const BehindSection = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(entry.target);
-          }
+          setIsVisible(entry.isIntersecting);
         });
       },
       { threshold: 0.1 }
@@ -37,7 +34,7 @@ const BehindSection = () => {
     <SectionWrapper ref={sectionRef} className="bg-[#CC0000]">
       <div
         className={cn(
-          'text-center max-w-3xl mx-auto transition-all duration-700 ease-in-out',
+          'text-center max-w-3xl mx-auto transition-all duration-1000 ease-in-out',
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         )}
       >

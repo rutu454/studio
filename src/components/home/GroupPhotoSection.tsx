@@ -14,10 +14,7 @@ const GroupPhotoSection = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(entry.target);
-          }
+          setIsVisible(entry.isIntersecting);
         });
       },
       { threshold: 0.1 }
@@ -39,7 +36,7 @@ const GroupPhotoSection = () => {
     <SectionWrapper ref={sectionRef}>
       <div
         className={cn(
-          'flex justify-center items-center transition-all duration-700',
+          'flex justify-center items-center transition-all duration-1000',
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         )}
       >
