@@ -15,7 +15,7 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-gray-300 font-code py-12">
+    <footer className="bg-[#CC0000] text-gray-300 font-code py-12">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top row */}
