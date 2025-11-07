@@ -12,6 +12,7 @@ interface CounterProps {
   isVisible: boolean;
 }
 
+
 const Counter: React.FC<CounterProps> = ({ icon: Icon, endValue, label, isVisible }) => {
   const [count, setCount] = useState(0);
   const duration = 2000;
