@@ -6,7 +6,7 @@ const GroupPhotoSection = () => {
   return (
     <SectionWrapper>
       <div className="flex justify-center items-center">
-        <div className="relative w-full md:w-4/5 lg:w-4/5 max-h-screen overflow-hidden rounded-lg shadow-2xl">
+        <div className="relative w-full md:w-4/5 lg:w-4/5 max-h-screen overflow-hidden rounded-lg shadow-xl">
           <Image
             src={groupPhoto}
             alt="Group photo of the Prasthan team"

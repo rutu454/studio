@@ -75,7 +75,7 @@ export default function ContactSection() {
   }
 
   return (
-    <SectionWrapper id="contact">
+    <SectionWrapper id="contact" className="py-12 sm:py-16">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-primary">Contact Us</h2>
         <p className="text-lg text-foreground/80 mt-2">
