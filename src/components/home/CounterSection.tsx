@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Users2, Handshake, CalendarDays } from 'lucide-react';
 import SectionWrapper from '../common/SectionWrapper';
+import { cn } from '@/lib/utils';
 
 const CalendarStar = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -97,13 +98,54 @@ const counters = [
   { icon: Handshake, endValue: 50, label: 'Helping Hands' },
 ];
 
+const allCounters = [
+    { component: StaticCounter, props: { icon: CalendarDays, value: "2012", label: "Since" } },
+    ...counters.map(c => ({ component: Counter, props: c }))
+];
+
 const CounterSection = () => {
+    const [isVisible, setIsVisible] = useState(false);
+    const sectionRef = useRef<HTMLDivElement>(null);
+  
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setIsVisible(true);
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+  
+      if (sectionRef.current) {
+        observer.observe(sectionRef.current);
+      }
+  
+      return () => {
+        if (sectionRef.current) {
+          observer.unobserve(sectionRef.current);
+        }
+      };
+    }, []);
+
+
   return (
-    <SectionWrapper className="bg-primary/10 py-0 sm:py-0">
+    <SectionWrapper ref={sectionRef} className="bg-primary/10 py-0 sm:py-0">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12">
-        <StaticCounter icon={CalendarDays} value="2012" label="Since" />
-        {counters.map((counter, index) => (
-          <Counter key={index} {...counter} />
+        {allCounters.map((item, index) => (
+            <div 
+                key={index}
+                className={cn(
+                    'transition-all duration-700 transform',
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                )}
+                style={{ transitionDelay: `${index * 100}ms` }}
+            >
+                <item.component {...item.props as any} />
+            </div>
         ))}
       </div>
     </SectionWrapper>
