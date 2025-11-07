@@ -23,16 +23,18 @@ const Footer = () => {
 
         {/* Logo */}
         <div className="text-center my-16">
-      
-  <Image 
-    src={logo} 
-    alt="logo" 
-    width={350} 
-    height={400} 
-    className="mx-auto h-72 w-auto"
+  <Image
+    src={logo}
+    alt="logo"
+    width={350}
+    height={400}
+    unoptimized
+    quality={100}
+    sizes="(max-width: 768px) 80vw, 350px"
+    className="mx-auto h-72 w-auto object-contain"
   />
+</div>
 
-        </div>
 
         {/* Bottom row */}
         <div className="flex flex-col items-center gap-8 text-sm">

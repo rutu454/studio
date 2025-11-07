@@ -2,7 +2,7 @@ import SectionWrapper from '../common/SectionWrapper';
 
 const VideoSection = () => {
   return (
-    <SectionWrapper className="py-0">
+    <SectionWrapper className="py-20 sm:py-0">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-primary">Steps Toward a Better Tomorrow</h2>
       </div>
