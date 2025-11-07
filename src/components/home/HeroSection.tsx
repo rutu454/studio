@@ -1,7 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import b1 from '../../assets/prasthan group banner (3).png';
+import b2 from '../../assets/prasthan group banner (4).png';
+import b3 from '../../assets/prasthan group banner (6).png';
+
 import {
   Carousel,
   CarouselApi,
@@ -16,18 +19,17 @@ const HeroSection = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
-  const heroImages = PlaceHolderImages.filter((p) =>
-    p.id.startsWith('hero')
-  ).slice(0, 3);
+  // ✅ Use your own banners
+  const heroImages = [
+    { id: 1, src: b1, alt: 'Banner 1' },
+    { id: 2, src: b2, alt: 'Banner 2' },
+    { id: 3, src: b3, alt: 'Banner 3' },
+  ];
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
+    if (!api) return;
     setCurrent(api.selectedScrollSnap());
-    const onSelect = () => {
-      setCurrent(api.selectedScrollSnap());
-    };
+    const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on('select', onSelect);
     return () => {
       api.off('select', onSelect);
@@ -39,31 +41,33 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative h-[90vh] w-full">
+    <section className="relative w-full h-[90vh] hidden lg:block">
       <Carousel
         setApi={setApi}
-        className="w-full h-full"
-        plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
+        className="w-full h-full pt-20"
+        plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
         opts={{ loop: true }}
       >
         <CarouselContent>
-          {heroImages.map((heroImage, index) => (
-            <CarouselItem key={heroImage.id}>
-              <div className="relative h-[90vh] w-full">
-                <Image
-                  src={heroImage.imageUrl}
-                  alt={heroImage.description}
-                  fill
-                  priority={index === 0}
-                  className="object-cover"
-                  data-ai-hint={heroImage.imageHint}
-                />
+          {heroImages.map((img, index) => (
+            <CarouselItem key={img.id}>
+              <div className="relative w-auto h-[75vh]">
+              <Image
+  src={img.src}
+  alt={img.alt}
+  fill
+  unoptimized
+  quality={100}
+  className="object-cover object-center"
+/>
                 <div className="absolute inset-0 bg-black/40" />
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
       </Carousel>
+
+      {/* Navigation Dots */}
       <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-2">
         {heroImages.map((_, i) => (
           <button

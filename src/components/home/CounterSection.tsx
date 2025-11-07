@@ -99,7 +99,7 @@ const counters = [
 
 const CounterSection = () => {
   return (
-    <SectionWrapper className="py-0 sm:py-0">
+    <SectionWrapper className="bg-primary/10 py-0 sm:py-0">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12">
         <StaticCounter icon={CalendarDays} value="2012" label="Since" />
         {counters.map((counter, index) => (
