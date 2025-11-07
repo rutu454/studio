@@ -3,7 +3,7 @@ import SectionWrapper from '../common/SectionWrapper';
 const VideoSection = () => {
   return (
     <SectionWrapper>
-      <div className="text-center mb-6 md:mb-12">
+      <div className="text-center mb-4 md:mb-8">
         <h2 className="text-3xl md:text-4xl font-bold text-primary">Steps Toward a Better Tomorrow</h2>
       </div>
       <div className="w-full max-w-4xl mx-auto">
