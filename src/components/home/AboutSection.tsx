@@ -42,8 +42,8 @@ const AboutSection = () => {
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div
           className={cn(
-            'space-y-6 transition-all duration-700',
-            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
+            'space-y-6 transition-all duration-700 ease-in-out',
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           )}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-primary">About Us</h2>
@@ -56,8 +56,8 @@ const AboutSection = () => {
         </div>
         <div
           className={cn(
-            'relative h-80 w-full rounded-lg overflow-hidden shadow-xl transition-all duration-700',
-            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
+            'relative h-80 w-full rounded-lg overflow-hidden shadow-xl transition-all duration-700 ease-in-out',
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           )}
           style={{ transitionDelay: '200ms' }}
         >
