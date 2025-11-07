@@ -16,10 +16,8 @@ const AboutSection = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(entry.target);
-          }
+          // Set visibility based on whether the element is in the viewport
+          setIsVisible(entry.isIntersecting);
         });
       },
       { threshold: 0.1 }
