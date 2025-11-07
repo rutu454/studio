@@ -1,35 +1,9 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Users2, Handshake, CalendarDays } from 'lucide-react';
+import { Users2, Handshake, CalendarDays, Award } from 'lucide-react';
 import SectionWrapper from '../common/SectionWrapper';
 import { cn } from '@/lib/utils';
-
-const CalendarStar = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-    <line x1="16" x2="16" y1="2" y2="6" />
-    <line x1="8" x2="8" y1="2" y2="6" />
-    <line x1="3" x2="21" y1="10" y2="10" />
-    <path d="m12 14-1.5 3 3-2-3 2 1.5 3" />
-    <path d="M12 17.5l-1.5 3-1.04-.96" />
-    <path d="M12 17.5l1.5 3 1.04-.96" />
-    <path d="M12 14v3.5" />
-    <path d="m10.5 17-3-2" />
-    <path d="m13.5 17 3-2" />
-  </svg>
-);
 
 interface CounterProps {
   icon: React.ElementType;
@@ -83,7 +57,7 @@ const StaticCounter: React.FC<{ icon: React.ElementType; value: string; label: s
 };
 
 const counters = [
-  { icon: CalendarStar, endValue: 100, label: 'Events Organized' },
+  { icon: Award, endValue: 100, label: 'Events Organized' },
   { icon: Users2, endValue: 8000, label: 'People Helped' },
   { icon: Handshake, endValue: 50, label: 'Helping Hands' },
 ];
