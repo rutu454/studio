@@ -15,14 +15,14 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const Footer = () => {
   return (
-    <footer className="bg-[#CC0000] text-gray-300 font-code py-12">
+    <footer className="bg-[#CC0000] text-gray-300 font-code py-8">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top row */}
        
 
         {/* Logo */}
-        <div className="text-center my-16">
+        <div className="text-center my-8">
   <Image
     src={logo}
     alt="logo"
@@ -31,13 +31,13 @@ const Footer = () => {
     unoptimized
     quality={100}
     sizes="(max-width: 768px) 80vw, 350px"
-    className="mx-auto h-72 w-auto object-contain"
+    className="mx-auto h-56 w-auto object-contain"
   />
 </div>
 
 
         {/* Bottom row */}
-        <div className="flex flex-col items-center gap-8 text-sm">
+        <div className="flex flex-col items-center gap-6 text-sm">
           <div className="flex gap-4">
             <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="hover:text-white">
               <Instagram className="w-6 h-6" />
@@ -49,7 +49,7 @@ const Footer = () => {
               <WhatsAppIcon className="w-6 h-6" />
             </a>
           </div>
-          <div className="flex justify-center flex-wrap gap-8">
+          <div className="flex justify-center flex-wrap gap-x-6 gap-y-2">
             <Link href="/" className="hover:text-white">Home</Link>
             <Link href="/about" className="hover:text-white">About</Link>
             <Link href="/gallery" className="hover:text-white">Gallery</Link>
@@ -61,7 +61,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="text-center text-xs mt-16 text-gray-500">
+        <div className="text-center text-xs mt-8 text-gray-300">
             <p>Designed with ❤️ by Sparkdigishine.</p>
         </div>
 
