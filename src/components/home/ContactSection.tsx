@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Instagram, Mail, Phone, MapPin, Facebook, Award } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, Facebook, Award, Banknote } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -103,6 +103,30 @@ export default function ContactSection() {
               <span>Trust Reg. No.: E/6897/Junagadh</span>
             </div>
           </div>
+          
+          <h4 className="text-lg font-semibold mt-8 mb-4 flex items-center gap-2">
+            <Banknote className="w-6 h-6 text-primary" />
+            Bank Details
+          </h4>
+           <div className="bg-background/50 rounded-lg p-4 text-left space-y-2 text-sm">
+              <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold col-span-1">Name</span>
+                  <span className="col-span-2">: PRASTHAN GROUP</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold col-span-1">Bank</span>
+                  <span className="col-span-2">: HDFC Bank</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold col-span-1">Ac. No.</span>
+                  <span className="col-span-2">: 50200003515810</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold col-span-1">IFSC</span>
+                  <span className="col-span-2">: HDFC0000231</span>
+              </div>
+          </div>
+
           <h4 className="text-lg font-semibold mt-8 mb-4">Follow Us</h4>
           <div className="flex space-x-4">
             <a href="https://www.instagram.com/prasthangroup/?hl=en" target="_blank" rel="noopener noreferrer" className="text-primary transition-colors hover:text-primary/80">
