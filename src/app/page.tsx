@@ -16,6 +16,7 @@ export default function Home() {
       <HeroSection />
       <AboutSection />
       <CounterSection />
+      <div className="py-10" />
       <VideoSection />
       <BehindSection />
       <GallerySection />
