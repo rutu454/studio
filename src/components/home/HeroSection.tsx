@@ -24,37 +24,44 @@ const HeroSection = () => {
   const [current, setCurrent] = useState(0);
   const [currentMobile, setCurrentMobile] = useState(0);
 
-  // ✅ Desktop banners (medium & large screens)
   const heroImages = [
     { id: 1, src: b1, alt: 'Banner 1' },
     { id: 2, src: b2, alt: 'Banner 2' },
     { id: 3, src: b3, alt: 'Banner 3' },
   ];
 
-  // ✅ Mobile banners (small screens)
   const mobileImages = [
     { id: 4, src: b4, alt: 'Mobile Banner 1' },
     { id: 5, src: b5, alt: 'Mobile Banner 2' },
     { id: 6, src: b6, alt: 'Mobile Banner 3' },
   ];
-
-  // ✅ Desktop carousel behavior
   useEffect(() => {
-    if (!api) return;
+    if (!api) return undefined; // ✅ Explicitly return undefined
+  
     setCurrent(api.selectedScrollSnap());
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on('select', onSelect);
-    return () => api.off('select', onSelect);
+    onSelect();
+  
+    return () => {
+      api.off('select', onSelect);
+    };
   }, [api]);
-
-  // ✅ Mobile carousel behavior
+  
+  
   useEffect(() => {
-    if (!mobileApi) return;
+    if (!mobileApi) return undefined; // ✅ Explicitly return undefined
+  
     setCurrentMobile(mobileApi.selectedScrollSnap());
     const onSelect = () => setCurrentMobile(mobileApi.selectedScrollSnap());
     mobileApi.on('select', onSelect);
-    return () => mobileApi.off('select', onSelect);
+    onSelect();
+  
+    return () => {
+      mobileApi.off('select', onSelect);
+    };
   }, [mobileApi]);
+  
 
   const scrollTo = (index: number) => api?.scrollTo(index);
   const scrollToMobile = (index: number) => mobileApi?.scrollTo(index);
