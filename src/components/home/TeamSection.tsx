@@ -67,7 +67,7 @@ const TeamSection = () => {
               )}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className="relative w-36 h-36 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
+              <div className="relative w-28 h-28 md:w-36 md:h-36 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg transform transition-transform duration-300 group-hover:scale-105">
                 {memberImage && (
                   <Image
                     src={memberImage.imageUrl}
