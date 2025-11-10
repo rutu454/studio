@@ -99,6 +99,15 @@ export default function MobileBannerPage() {
     }
   }
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   return (
     <>
       <h1 className="text-3xl font-bold text-primary mb-6">Mobile Banners</h1>
@@ -214,7 +223,7 @@ export default function MobileBannerPage() {
                       banners.map((banner) => (
                         <TableRow key={banner.id}>
                           <TableCell>
-                            {banner.imageUrl ? (
+                            {isValidUrl(banner.imageUrl) ? (
                               <Image
                                 src={banner.imageUrl}
                                 alt={banner.title}
