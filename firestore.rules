@@ -19,5 +19,15 @@ service cloud.firestore {
     match /webBanners/{bannerId} {
       allow read, write: if true;
     }
+
+    // For now, allow anyone to read and write gallery content for admin functionality.
+    // TODO: Secure this to only allow authenticated admin users.
+    match /galleryCategories/{categoryId} {
+        allow read, write: if true;
+    }
+
+    match /galleryItems/{itemId} {
+        allow read, write: if true;
+    }
   }
 }

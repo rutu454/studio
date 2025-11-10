@@ -104,6 +104,59 @@
         "status",
         "createdAt"
       ]
+    },
+    "GalleryCategory": {
+      "title": "Gallery Category",
+      "type": "object",
+      "description": "A category for gallery items.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the category."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the category creation."
+        }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "type": "object",
+      "description": "An item in the gallery, which can be an image or a video.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title or description of the gallery item."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the item."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image", "video"],
+          "description": "The type of media."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the image or video."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the video thumbnail (if applicable)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the item creation."
+        }
+      },
+      "required": ["title", "category", "type", "url", "createdAt"]
     }
   },
   "auth": {
@@ -127,6 +180,18 @@
         "$ref": "#/entities/WebBanner"
       },
       "description": "Stores all web banners for the website."
+    },
+    "/galleryCategories/{categoryId}": {
+        "schema": {
+            "$ref": "#/entities/GalleryCategory"
+        },
+        "description": "Stores all gallery categories."
+    },
+    "/galleryItems/{itemId}": {
+        "schema": {
+            "$ref": "#/entities/GalleryItem"
+        },
+        "description": "Stores all gallery items (images and videos)."
     }
   }
 }

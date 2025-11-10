@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Bell, Home, LineChart, LogOut, Package, Package2, Users, Smartphone, Monitor } from 'lucide-react';
+import { Bell, Home, LineChart, LogOut, Package, Package2, Users, Smartphone, Monitor, GalleryHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Logo from '../common/Logo';
 import { SheetClose } from '../ui/sheet';
@@ -18,6 +18,7 @@ const navLinks = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
   { href: '/admin/dashboard/web-banner', label: 'Web Banner', icon: Monitor },
   { href: '/admin/dashboard/mobile-banner', label: 'Mobile Banner', icon: Smartphone },
+  { href: '/admin/dashboard/gallery', label: 'Gallery', icon: GalleryHorizontal },
   // Add more links here in the future
 ];
 
