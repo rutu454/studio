@@ -2,8 +2,7 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu, Home } from 'lucide-react';
-import Link from 'next/link';
+import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 
 export default function Header({
@@ -32,14 +31,6 @@ export default function Header({
         </div>
       <div className="flex-1">
         <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
-      </div>
-      <div className="flex items-center gap-2">
-         <Button asChild variant="outline">
-             <Link href="/">
-                 <Home className="mr-2 h-4 w-4" />
-                 View Site
-             </Link>
-         </Button>
       </div>
     </header>
   );
