@@ -4,8 +4,8 @@ import Image from 'next/image';
 import SectionWrapper from '../common/SectionWrapper';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import b from '@/assets/prasthan group banner (8).png';
-import b1 from '@/assets/prasthan group responsive banner (4).png';
+import b from '../../assets/prasthan group banner (8).png';
+import b1 from '../../assets/prasthan group responsive banner (4).png';
 
 const TeamSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -36,8 +36,9 @@ const TeamSection = () => {
   }, []);
 
   return (
-    <SectionWrapper id="team" className="bg-muted">
+    <SectionWrapper id="team" className="bg-[#CC0000] py-0 sm:py-0">
       <div
+        ref={sectionRef}
         className={cn(
           'w-full flex justify-center transition-all duration-700 transform',
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
@@ -48,8 +49,12 @@ const TeamSection = () => {
           <Image
             src={b}
             alt="Prasthan Group Banner"
-            className="w-full h-auto object-cover rounded-lg shadow-md"
+            width={1920}
+            height={1080}
             priority
+            unoptimized
+            quality={100}
+            className="object-contain"
           />
         </div>
 
@@ -58,8 +63,12 @@ const TeamSection = () => {
           <Image
             src={b1}
             alt="Prasthan Group Mobile Banner"
-            className="w-full h-auto object-cover rounded-lg shadow-md"
+            width={1080}
+            height={1080}
             priority
+            unoptimized
+            quality={100}
+            className="max-w-full max-h-full object-contain"
           />
         </div>
       </div>
