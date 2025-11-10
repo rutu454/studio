@@ -214,13 +214,15 @@ export default function MobileBannerPage() {
                       banners.map((banner) => (
                         <TableRow key={banner.id}>
                           <TableCell>
-                            <Image
-                              src={banner.imageUrl}
-                              alt={banner.title}
-                              width={100}
-                              height={50}
-                              className="rounded-md object-cover"
-                            />
+                            {banner.imageUrl ? (
+                              <Image
+                                src={banner.imageUrl}
+                                alt={banner.title}
+                                width={100}
+                                height={50}
+                                className="rounded-md object-cover"
+                              />
+                            ) : null}
                           </TableCell>
                           <TableCell className="font-medium">{banner.title}</TableCell>
                           <TableCell>{banner.position}</TableCell>
