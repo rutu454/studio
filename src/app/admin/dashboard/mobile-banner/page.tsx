@@ -4,9 +4,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, DocumentData } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { MoreHorizontal } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +29,7 @@ const formSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
   position: z.coerce.number().int().positive({ message: 'Position must be a positive number.' }),
   status: z.boolean().default(false),
+  imageFile: z.instanceof(File).optional(),
 });
 
 type MobileBanner = z.infer<typeof formSchema> & { id: string; imageUrl: string };
@@ -36,7 +39,9 @@ export default function MobileBannerPage() {
   const firestore = useFirestore();
   const [banners, setBanners] = useState<MobileBanner[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingBanner, setEditingBanner] = useState<MobileBanner | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,51 +78,57 @@ export default function MobileBannerPage() {
   
   useEffect(() => {
     if (editingBanner) {
-      form.reset(editingBanner);
+      form.reset({
+        ...editingBanner,
+        imageFile: undefined, // Clear file input on edit
+      });
     } else {
       form.reset({
         imageUrl: '',
         title: '',
         position: banners ? banners.length + 1 : 1,
         status: true,
+        imageFile: undefined,
       });
+    }
+     if (fileInputRef.current) {
+        fileInputRef.current.value = '';
     }
   }, [editingBanner, form, banners]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!firestore) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Firestore is not initialized.',
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'Firestore is not initialized.' });
       return;
     }
+    
+    setIsSubmitting(true);
+    let finalImageUrl = values.imageUrl;
 
     try {
-      if (editingBanner) {
-        // Update existing banner
-        const bannerRef = doc(firestore, 'mobileBanners', editingBanner.id);
-        await updateDoc(bannerRef, {
-            ...values,
-        });
-        toast({
-          title: 'Banner Updated',
-          description: 'The banner has been updated successfully.',
-        });
+       if (values.imageFile) {
+        const storage = getStorage();
+        const imageRef = ref(storage, `mobileBanners/${uuidv4()}-${values.imageFile.name}`);
+        const snapshot = await uploadBytes(imageRef, values.imageFile);
+        finalImageUrl = await getDownloadURL(snapshot.ref);
+      }
 
+      const bannerData = {
+        title: values.title,
+        position: values.position,
+        status: values.status,
+        imageUrl: finalImageUrl,
+      };
+
+      if (editingBanner) {
+        const bannerRef = doc(firestore, 'mobileBanners', editingBanner.id);
+        await updateDoc(bannerRef, bannerData);
+        toast({ title: 'Banner Updated', description: 'The banner has been updated successfully.' });
       } else {
-        // Create new banner
         const bannersCollection = collection(firestore, 'mobileBanners');
-        await addDoc(bannersCollection, {
-          ...values,
-          createdAt: new Date(),
-        });
-        toast({
-          title: 'Banner Created',
-          description: 'The new mobile banner has been saved successfully.',
-        });
+        await addDoc(bannersCollection, { ...bannerData, createdAt: new Date() });
+        toast({ title: 'Banner Created', description: 'The new mobile banner has been saved.' });
       }
       
       setEditingBanner(null);
@@ -129,6 +140,8 @@ export default function MobileBannerPage() {
         title: 'Uh oh! Something went wrong.',
         description: 'There was a problem saving the banner. Please try again.',
       });
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
@@ -150,12 +163,11 @@ export default function MobileBannerPage() {
     }
   };
 
-
-  const isValidUrl = (url: string) => {
+  const isValidUrl = (url: string | undefined | null): url is string => {
     if (!url) return false;
     try {
       new URL(url);
-      return true;
+      return url.startsWith('http://') || url.startsWith('https://');
     } catch (e) {
       return false;
     }
@@ -170,7 +182,7 @@ export default function MobileBannerPage() {
             <CardHeader>
               <CardTitle>{editingBanner ? 'Edit Banner' : 'Create New Banner'}</CardTitle>
               <CardDescription>
-                {editingBanner ? 'Update the details for this banner.' : 'Add a new banner to be displayed on the mobile version of the site.'}
+                {editingBanner ? 'Update the details for this banner.' : 'Add a new banner for the mobile site.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -178,19 +190,23 @@ export default function MobileBannerPage() {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
                     control={form.control}
+                    name="imageFile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Upload Image</FormLabel>
+                        <FormControl>
+                           <Input type="file" ref={fileInputRef} onChange={(e) => field.onChange(e.target.files?.[0])} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image</FormLabel>
-                        <FormControl>
-                          <Input type="file" onChange={(e) => {
-                              // This is a mock. In a real app, you'd upload the file and get a URL.
-                          }} />
-                        </FormControl>
-                        <FormMessage />
-                         <p className="text-xs text-muted-foreground pt-2">
-                           Note: File upload is for demonstration. Please enter an image URL below to save the banner.
-                         </p>
+                        <FormLabel>Or Enter Image URL</FormLabel>
                         <FormControl>
                            <Input
                                 type="text"
@@ -199,6 +215,7 @@ export default function MobileBannerPage() {
                                 value={field.value ?? ''}
                               />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -249,7 +266,7 @@ export default function MobileBannerPage() {
                     )}
                   />
                   <div className="flex items-center gap-2">
-                    <Button type="submit">{editingBanner ? 'Update Banner' : 'Save Banner'}</Button>
+                    <Button type="submit" disabled={isSubmitting}>{editingBanner ? 'Update Banner' : 'Save Banner'}</Button>
                     {editingBanner && (
                         <Button variant="outline" onClick={() => setEditingBanner(null)}>Cancel</Button>
                     )}
@@ -335,8 +352,7 @@ export default function MobileBannerPage() {
                                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                         <AlertDialogDescription>
                                             This action cannot be undone. This will permanently delete the banner.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
+                                        </ALDHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                                         <AlertDialogAction onClick={() => handleDelete(banner.id)}>Delete</AlertDialogAction>
