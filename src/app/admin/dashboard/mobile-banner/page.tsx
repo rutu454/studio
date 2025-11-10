@@ -127,7 +127,7 @@ export default function MobileBannerPage() {
         toast({ title: 'Banner Updated', description: 'The banner has been updated successfully.' });
       } else {
         const bannersCollection = collection(firestore, 'mobileBanners');
-        await addDoc(bannersCollection, { ...bannerData, createdAt: new Date() });
+        await addDoc(bannersCollection, { ...bannerData, createdAt: serverTimestamp() });
         toast({ title: 'Banner Created', description: 'The new mobile banner has been saved.' });
       }
       
