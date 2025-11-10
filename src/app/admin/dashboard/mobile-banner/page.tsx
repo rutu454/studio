@@ -100,6 +100,7 @@ export default function MobileBannerPage() {
   }
 
   const isValidUrl = (url: string) => {
+    if (!url) return false;
     try {
       new URL(url);
       return true;
@@ -239,7 +240,11 @@ export default function MobileBannerPage() {
                                 height={50}
                                 className="rounded-md object-cover"
                               />
-                            ) : null}
+                            ) : (
+                              <div className="h-12 w-24 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                                No Image
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell className="font-medium">{banner.title}</TableCell>
                           <TableCell>{banner.position}</TableCell>
