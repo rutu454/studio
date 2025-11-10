@@ -102,6 +102,13 @@ export default function MobileBannerPage() {
 
   const openCreateDialog = () => {
     setEditingBanner(null);
+    form.reset({
+        imageUrl: '',
+        title: '',
+        position: banners ? banners.length + 1 : 1,
+        status: true,
+        imageFile: undefined,
+    });
     setDialogOpen(true);
   }
 
