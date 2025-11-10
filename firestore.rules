@@ -13,5 +13,11 @@ service cloud.firestore {
     match /mobileBanners/{bannerId} {
       allow read, write: if true;
     }
+
+    // For now, allow anyone to read and write banners for admin functionality.
+    // TODO: Secure this to only allow authenticated admin users.
+    match /webBanners/{bannerId} {
+      allow read, write: if true;
+    }
   }
 }
