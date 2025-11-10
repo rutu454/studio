@@ -84,7 +84,13 @@ export default function MobileBannerPage() {
                   <FormItem>
                     <FormLabel>Image URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/banner.jpg" {...field} />
+                       <div className="flex items-center">
+                        <Input
+                            type="text"
+                            placeholder="https://example.com/image.png"
+                            {...field}
+                          />
+                       </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
