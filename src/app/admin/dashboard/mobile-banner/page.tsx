@@ -126,17 +126,22 @@ export default function MobileBannerPage() {
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
+                        <FormLabel>Image</FormLabel>
                         <FormControl>
-                           <div className="flex items-center">
-                            <Input
-                                type="text"
-                                placeholder="https://example.com/image.png"
-                                {...field}
-                              />
-                           </div>
+                          <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0] || null)} />
                         </FormControl>
                         <FormMessage />
+                         <p className="text-xs text-muted-foreground pt-2">
+                           Note: File upload is for demonstration. Please enter an image URL below to save the banner.
+                         </p>
+                        <FormControl>
+                           <Input
+                                type="text"
+                                placeholder="https://example.com/image.png"
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                        </FormControl>
                       </FormItem>
                     )}
                   />
