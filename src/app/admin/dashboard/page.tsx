@@ -1,25 +1,18 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem('isAdminAuthenticated');
-    router.replace('/admin');
-  };
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
-      <div className="w-full max-w-md text-center">
-        <h1 className="text-3xl font-bold text-primary mb-4">Admin Dashboard</h1>
-        <p className="text-muted-foreground mb-8">Welcome to the admin panel.</p>
-        <Button onClick={handleLogout} variant="destructive">
-          Logout
-        </Button>
-      </div>
+    <div>
+      <h1 className="text-3xl font-bold text-primary mb-6">Admin Dashboard</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Welcome, Admin!</CardTitle>
+          <CardDescription>This is your control panel. You can manage the website content from here.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>Select an option from the sidebar to get started.</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
