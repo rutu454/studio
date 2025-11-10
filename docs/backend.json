@@ -64,7 +64,6 @@
         }
       },
       "required": [
-        "imageUrl",
         "title",
         "position",
         "status",

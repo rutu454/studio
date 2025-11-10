@@ -19,13 +19,13 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
-  imageUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  imageUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')).optional(),
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
   position: z.coerce.number().int().positive({ message: 'Position must be a positive number.' }),
   status: z.boolean().default(false),
 });
 
-type MobileBanner = z.infer<typeof formSchema> & { id: string };
+type MobileBanner = z.infer<typeof formSchema> & { id: string; imageUrl: string };
 
 export default function MobileBannerPage() {
   const { toast } = useToast();
@@ -128,7 +128,11 @@ export default function MobileBannerPage() {
                       <FormItem>
                         <FormLabel>Image</FormLabel>
                         <FormControl>
-                          <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0] || null)} />
+                          <Input type="file" onChange={(e) => {
+                              // This is a mock. In a real app, you'd upload the file and get a URL.
+                              // For now, we're not doing anything with the selected file.
+                              // The user still needs to provide a URL in the text input.
+                          }} />
                         </FormControl>
                         <FormMessage />
                          <p className="text-xs text-muted-foreground pt-2">
@@ -138,8 +142,7 @@ export default function MobileBannerPage() {
                            <Input
                                 type="text"
                                 placeholder="https://example.com/image.png"
-                                value={field.value}
-                                onChange={field.onChange}
+                                {...field}
                               />
                         </FormControl>
                       </FormItem>
