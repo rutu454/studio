@@ -1,11 +1,9 @@
 'use client';
 
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu, Home, Package2 } from 'lucide-react';
+import { Menu, Home } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import Sidebar from './Sidebar';
 
 export default function Header({
@@ -25,6 +23,9 @@ export default function Header({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs p-0">
+               <SheetHeader className='p-4 border-b'>
+                 <SheetTitle className='sr-only'>Admin Menu</SheetTitle>
+               </SheetHeader>
                <Sidebar sidebarOpen={true} setSidebarOpen={() => {}} isMobile={true} />
             </SheetContent>
           </Sheet>
