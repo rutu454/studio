@@ -7,5 +7,11 @@ service cloud.firestore {
       allow read, update, delete: if false;
       allow create: if true;
     }
+
+    // For now, allow anyone to read and write banners for admin functionality.
+    // TODO: Secure this to only allow authenticated admin users.
+    match /mobileBanners/{bannerId} {
+      allow read, write: if true;
+    }
   }
 }

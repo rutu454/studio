@@ -28,7 +28,48 @@
           "description": "The date and time of the submission."
         }
       },
-      "required": ["fullName", "email", "message", "submissionDate"]
+      "required": [
+        "fullName",
+        "email",
+        "message",
+        "submissionDate"
+      ]
+    },
+    "MobileBanner": {
+      "title": "Mobile Banner",
+      "type": "object",
+      "description": "A banner to be displayed on mobile devices.",
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the banner."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Whether the banner is active and should be displayed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the banner creation."
+        }
+      },
+      "required": [
+        "imageUrl",
+        "title",
+        "position",
+        "status",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -40,6 +81,12 @@
         "$ref": "#/entities/ContactFormSubmission"
       },
       "description": "Stores all submissions from the contact form."
+    },
+    "/mobileBanners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/MobileBanner"
+      },
+      "description": "Stores all mobile banners for the website."
     }
   }
 }
