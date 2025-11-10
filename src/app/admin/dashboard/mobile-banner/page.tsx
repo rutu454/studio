@@ -102,13 +102,6 @@ export default function MobileBannerPage() {
 
   const openCreateDialog = () => {
     setEditingBanner(null);
-    form.reset({
-        imageUrl: '',
-        title: '',
-        position: banners ? banners.length + 1 : 1,
-        status: true,
-        imageFile: undefined,
-    });
     setDialogOpen(true);
   }
 
@@ -125,7 +118,7 @@ export default function MobileBannerPage() {
     }
     
     setIsSubmitting(true);
-    let finalImageUrl = values.imageUrl;
+    let finalImageUrl = editingBanner?.imageUrl || '';
 
     try {
        if (values.imageFile) {
@@ -133,6 +126,8 @@ export default function MobileBannerPage() {
         const imageRef = ref(storage, `mobileBanners/${uuidv4()}-${values.imageFile.name}`);
         const snapshot = await uploadBytes(imageRef, values.imageFile);
         finalImageUrl = await getDownloadURL(snapshot.ref);
+      } else if (values.imageUrl) {
+        finalImageUrl = values.imageUrl;
       }
 
       const bannerData = {
