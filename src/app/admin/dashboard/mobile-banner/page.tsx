@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, DocumentData } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
@@ -163,6 +163,36 @@ export default function MobileBannerPage() {
     }
   };
 
+  const seedDummyBanners = async () => {
+    if (!firestore) return;
+    const batch = writeBatch(firestore);
+    const dummyBanners = [
+        { title: 'Special Discount 50% OFF', position: 1, status: true, imageUrl: 'https://picsum.photos/seed/banner1/1080/1080' },
+        { title: 'New Summer Collection Arrived', position: 2, status: true, imageUrl: 'https://picsum.photos/seed/banner2/1080/1080' },
+        { title: 'Flash Sale - Limited Time', position: 3, status: false, imageUrl: 'https://picsum.photos/seed/banner3/1080/1080' },
+        { title: 'Join Our Community Events', position: 4, status: true, imageUrl: 'https://picsum.photos/seed/banner4/1080/1080' },
+    ];
+
+    try {
+        dummyBanners.forEach(banner => {
+            const bannerRef = doc(collection(firestore, 'mobileBanners'));
+            batch.set(bannerRef, { ...banner, createdAt: serverTimestamp() });
+        });
+        await batch.commit();
+        toast({
+            title: 'Dummy Data Seeded',
+            description: '4 dummy banners have been created.',
+        });
+    } catch (error) {
+        console.error('Error seeding dummy banners: ', error);
+        toast({
+            variant: 'destructive',
+            title: 'Seeding Failed',
+            description: 'Could not create dummy banners.',
+        });
+    }
+  };
+
   const isValidUrl = (url: string | undefined | null): url is string => {
     if (!url) return false;
     try {
@@ -278,9 +308,14 @@ export default function MobileBannerPage() {
         </div>
         <div className="lg:col-span-2">
            <Card>
-             <CardHeader>
-               <CardTitle>Existing Banners</CardTitle>
-               <CardDescription>A list of all banners currently in the system.</CardDescription>
+             <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Existing Banners</CardTitle>
+                    <CardDescription>A list of all banners currently in the system.</CardDescription>
+                </div>
+                {!isLoading && banners && banners.length === 0 && (
+                    <Button onClick={seedDummyBanners} variant="secondary">Seed Data</Button>
+                )}
              </CardHeader>
              <CardContent>
               <div className="border rounded-lg">
@@ -352,7 +387,8 @@ export default function MobileBannerPage() {
                                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                         <AlertDialogDescription>
                                             This action cannot be undone. This will permanently delete the banner.
-                                        </ALDHeader>
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                                         <AlertDialogAction onClick={() => handleDelete(banner.id)}>Delete</AlertDialogAction>
