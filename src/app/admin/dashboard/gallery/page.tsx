@@ -1,11 +1,11 @@
 'use client';
 
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { MoreHorizontal, PlusCircle, Trash2, Video, Image as ImageIcon } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +24,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Category name must be at least 2 characters.'),
@@ -32,6 +33,7 @@ type GalleryCategory = { id: string; name: string };
 
 const galleryItemSchema = z.object({
     title: z.string().min(2, 'Title is required.'),
+    description: z.string().optional(),
     category: z.string().min(1, 'Category is required.'),
     type: z.enum(['image', 'video'], { required_error: 'You must select a media type.' }),
     url: z.string().optional(),
@@ -62,6 +64,7 @@ export default function GalleryPage() {
         resolver: zodResolver(galleryItemSchema),
         defaultValues: {
             title: '',
+            description: '',
             category: '',
             type: 'image',
         },
@@ -103,6 +106,7 @@ export default function GalleryPage() {
             } else {
                 itemForm.reset({
                     title: '',
+                    description: '',
                     category: '',
                     type: 'image',
                     url: '',
@@ -141,7 +145,6 @@ export default function GalleryPage() {
                 thumbnailUrl = mediaUrl;
             } else if (values.type === 'video' && values.url) {
                 mediaUrl = values.url;
-                // Extract video ID from YouTube URL for thumbnail
                 const videoId = values.url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
                 if (videoId) {
                     thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
@@ -150,6 +153,7 @@ export default function GalleryPage() {
 
             const itemData = {
                 title: values.title,
+                description: values.description,
                 category: values.category,
                 type: values.type,
                 url: mediaUrl,
@@ -202,7 +206,6 @@ export default function GalleryPage() {
                 <h1 className="text-3xl font-bold text-primary">Gallery Management</h1>
             </div>
 
-            {/* Category Management */}
             <Card>
                 <CardHeader className='flex-row items-center justify-between'>
                     <div>
@@ -268,7 +271,6 @@ export default function GalleryPage() {
                 </CardContent>
             </Card>
 
-            {/* Gallery Item Management */}
             <Card>
                 <CardHeader className="flex-row items-center justify-between">
                     <div>
@@ -287,6 +289,9 @@ export default function GalleryPage() {
                                 <form onSubmit={itemForm.handleSubmit(onItemSubmit)} className="space-y-4">
                                     <FormField control={itemForm.control} name="title" render={({ field }) => (
                                         <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Diwali Celebration 2023" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField control={itemForm.control} name="description" render={({ field }) => (
+                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A detailed description of the gallery item." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={itemForm.control} name="category" render={({ field }) => (
                                         <FormItem><FormLabel>Category</FormLabel>

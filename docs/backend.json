@@ -129,7 +129,11 @@
       "properties": {
         "title": {
           "type": "string",
-          "description": "The title or description of the gallery item."
+          "description": "The title of the gallery item."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the gallery item."
         },
         "category": {
           "type": "string",
