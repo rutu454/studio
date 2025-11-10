@@ -46,7 +46,7 @@ const TeamSection = () => {
   }, []);
 
   return (
-    <SectionWrapper ref={sectionRef} id="team" className="bg-muted">
+    <SectionWrapper id="team" className="bg-muted">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-primary">Meet Our Team</h2>
         <p className="text-lg text-foreground/80 mt-2">
