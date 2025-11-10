@@ -135,7 +135,7 @@ export default function GalleryPage() {
 
         try {
             let mediaUrl = editingItem?.url || '';
-            let thumbnailUrl: string | undefined = editingItem?.thumbnailUrl;
+            let thumbnailUrl: string | undefined | null = editingItem?.thumbnailUrl;
 
             if (values.type === 'image' && values.imageFile) {
                 const storage = getStorage();
@@ -148,17 +148,24 @@ export default function GalleryPage() {
                 const videoId = values.url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
                 if (videoId) {
                     thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                } else {
+                    thumbnailUrl = null;
                 }
+            } else if (values.type === 'image' && !values.imageFile && !editingItem) {
+                 thumbnailUrl = null;
             }
 
-            const itemData = {
+            const itemData: any = {
                 title: values.title,
                 description: values.description,
                 category: values.category,
                 type: values.type,
                 url: mediaUrl,
-                thumbnailUrl,
             };
+            
+            if (thumbnailUrl) {
+              itemData.thumbnailUrl = thumbnailUrl;
+            }
 
             if (editingItem) {
                 await updateDoc(doc(firestore, 'galleryItems', editingItem.id), itemData);
@@ -173,8 +180,10 @@ export default function GalleryPage() {
         } catch (error: any) {
             console.error('Failed to save gallery item:', error);
             let description = 'Failed to save gallery item. Please try again.';
-            if (error.code === 'storage/unauthorized' || error.message.includes('CORS')) {
+            if (error.code === 'storage/unauthorized' || (error.message && error.message.includes('CORS'))) {
                 description = 'Image upload failed. This is likely a CORS configuration issue on your Firebase Storage bucket. Please check your CORS settings.';
+            } else if (error.message && error.message.includes('invalid data')) {
+                description = 'Failed to save to database. Some fields may be missing or have invalid values.';
             }
             toast({ variant: 'destructive', title: 'Error', description });
         } finally {
