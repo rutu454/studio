@@ -5,7 +5,7 @@ import SectionWrapper from '../common/SectionWrapper';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import b from '../../assets/prasthan group banner (8).png';
-import b1 from '../../assets/prasthan group responsive banner (4).png';
+import b1 from '../../assets/prasthan group responsive banner (6).png';
 
 const TeamSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -24,19 +24,15 @@ const TeamSection = () => {
       { threshold: 0.1 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <SectionWrapper id="team" className="bg-[#CC0000] py-0 sm:py-0">
+    <SectionWrapper
+      id="team"
+      className="bg-[#CC0000] sm:py-4" // reduced padding (was py-0 sm:py-0)
+    >
       <div
         ref={sectionRef}
         className={cn(
@@ -54,7 +50,7 @@ const TeamSection = () => {
             priority
             unoptimized
             quality={100}
-            className="object-contain"
+            className="object-contain w-full h-auto"
           />
         </div>
 
@@ -68,7 +64,7 @@ const TeamSection = () => {
             priority
             unoptimized
             quality={100}
-            className="max-w-full max-h-full object-contain"
+            className="object-contain w-full h-auto"
           />
         </div>
       </div>

@@ -3,8 +3,8 @@ import SectionWrapper from '../common/SectionWrapper';
 const SloganSection = () => {
   return (
     <div className="bg-[#CC0000]">
-      <SectionWrapper className="py-0"> {/* Override if SectionWrapper adds padding */}
-        <div className="text-center py-6">
+      <SectionWrapper className="py-0">
+        <div className="text-center">
           <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tight text-[#f0f0f0]">
             “Together we rise, together we grow.”
           </h2>
