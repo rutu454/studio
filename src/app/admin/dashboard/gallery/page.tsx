@@ -170,9 +170,13 @@ export default function GalleryPage() {
             
             setItemDialogOpen(false);
             setEditingItem(null);
-        } catch (error) {
-            console.error(error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save gallery item.' });
+        } catch (error: any) {
+            console.error('Failed to save gallery item:', error);
+            let description = 'Failed to save gallery item. Please try again.';
+            if (error.code === 'storage/unauthorized' || error.message.includes('CORS')) {
+                description = 'Image upload failed. This is likely a CORS configuration issue on your Firebase Storage bucket. Please check your CORS settings.';
+            }
+            toast({ variant: 'destructive', title: 'Error', description });
         } finally {
             setIsSubmitting(false);
         }
