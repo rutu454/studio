@@ -7,7 +7,7 @@ import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteD
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 
 const formSchema = z.object({
@@ -42,6 +43,7 @@ export default function MobileBannerPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingBanner, setEditingBanner] = useState<MobileBanner | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -77,24 +79,36 @@ export default function MobileBannerPage() {
   }, [firestore, toast]);
   
   useEffect(() => {
-    if (editingBanner) {
-      form.reset({
-        ...editingBanner,
-        imageFile: undefined, // Clear file input on edit
-      });
-    } else {
-      form.reset({
-        imageUrl: '',
-        title: '',
-        position: banners ? banners.length + 1 : 1,
-        status: true,
-        imageFile: undefined,
-      });
+    if (dialogOpen) {
+        if (editingBanner) {
+            form.reset({
+                ...editingBanner,
+                imageFile: undefined,
+            });
+        } else {
+            form.reset({
+                imageUrl: '',
+                title: '',
+                position: banners ? banners.length + 1 : 1,
+                status: true,
+                imageFile: undefined,
+            });
+        }
     }
      if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
-  }, [editingBanner, form, banners]);
+  }, [dialogOpen, editingBanner, form, banners]);
+
+  const openCreateDialog = () => {
+    setEditingBanner(null);
+    setDialogOpen(true);
+  }
+
+  const openEditDialog = (banner: MobileBanner) => {
+    setEditingBanner(banner);
+    setDialogOpen(true);
+  }
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -131,6 +145,7 @@ export default function MobileBannerPage() {
         toast({ title: 'Banner Created', description: 'The new mobile banner has been saved.' });
       }
       
+      setDialogOpen(false);
       setEditingBanner(null);
 
     } catch (error) {
@@ -205,213 +220,214 @@ export default function MobileBannerPage() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold text-primary mb-6">Mobile Banners</h1>
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>{editingBanner ? 'Edit Banner' : 'Create New Banner'}</CardTitle>
-              <CardDescription>
-                {editingBanner ? 'Update the details for this banner.' : 'Add a new banner for the mobile site.'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="imageFile"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Upload Image</FormLabel>
-                        <FormControl>
-                           <Input type="file" ref={fileInputRef} onChange={(e) => field.onChange(e.target.files?.[0])} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Or Enter Image URL</FormLabel>
-                        <FormControl>
-                           <Input
-                                type="text"
-                                placeholder="https://example.com/image.png"
-                                {...field}
-                                value={field.value ?? ''}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-primary">Mobile Banners</h1>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Button onClick={openCreateDialog}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create New Banner
+            </Button>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>{editingBanner ? 'Edit Banner' : 'Create New Banner'}</DialogTitle>
+                    <DialogDescription>
+                    {editingBanner ? 'Update the details for this banner.' : 'Add a new banner for the mobile site.'}
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+                      <FormField
+                        control={form.control}
+                        name="imageFile"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Upload Image</FormLabel>
+                            <FormControl>
+                               <Input type="file" ref={fileInputRef} onChange={(e) => field.onChange(e.target.files?.[0])} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="imageUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Or Enter Image URL</FormLabel>
+                            <FormControl>
+                               <Input
+                                    type="text"
+                                    placeholder="https://example.com/image.png"
+                                    {...field}
+                                    value={field.value ?? ''}
+                                  />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Summer Sale" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="position"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Position</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                              <FormLabel>Status</FormLabel>
+                               <p className="text-sm text-muted-foreground">
+                                 Enable to display the banner.
+                               </p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
                               />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Summer Sale" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="position"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Position</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel>Status</FormLabel>
-                           <p className="text-sm text-muted-foreground">
-                             Enable to display the banner.
-                           </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex items-center gap-2">
-                    <Button type="submit" disabled={isSubmitting}>{editingBanner ? 'Update Banner' : 'Save Banner'}</Button>
-                    {editingBanner && (
-                        <Button variant="outline" onClick={() => setEditingBanner(null)}>Cancel</Button>
-                    )}
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="lg:col-span-2">
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle>Existing Banners</CardTitle>
-                    <CardDescription>A list of all banners currently in the system.</CardDescription>
-                </div>
-                {!isLoading && banners && banners.length === 0 && (
-                    <Button onClick={seedDummyBanners} variant="secondary">Seed Data</Button>
-                )}
-             </CardHeader>
-             <CardContent>
-              <div className="border rounded-lg">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Image</TableHead>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead><span className="sr-only">Actions</span></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-12 w-24 rounded-md" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-10" /></TableCell>
-                          <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : banners && banners.length > 0 ? (
-                      banners.map((banner) => (
-                        <TableRow key={banner.id}>
-                          <TableCell>
-                            {isValidUrl(banner.imageUrl) ? (
-                              <Image
-                                src={banner.imageUrl}
-                                alt={banner.title}
-                                width={100}
-                                height={50}
-                                className="rounded-md object-cover"
-                              />
-                            ) : (
-                              <div className="h-12 w-24 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                                No Image
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell className="font-medium">{banner.title}</TableCell>
-                          <TableCell>{banner.position}</TableCell>
-                          <TableCell>
-                            <Badge variant={banner.status ? 'default' : 'secondary'}>
-                              {banner.status ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <AlertDialog>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                            <span className="sr-only">Toggle menu</span>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => setEditingBanner(banner)}>Edit</DropdownMenuItem>
-                                        <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the banner.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(banner.id)}>Delete</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
-                          No banners found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-             </CardContent>
-           </Card>
-        </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                       <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit" disabled={isSubmitting}>{editingBanner ? 'Update Banner' : 'Save Banner'}</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
       </div>
+      
+       <Card>
+         <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>Existing Banners</CardTitle>
+                <CardDescription>A list of all banners currently in the system.</CardDescription>
+            </div>
+            {!isLoading && banners && banners.length === 0 && (
+                <Button onClick={seedDummyBanners} variant="secondary">Seed Data</Button>
+            )}
+         </CardHeader>
+         <CardContent>
+          <div className="border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Image</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-12 w-24 rounded-md" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-10" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : banners && banners.length > 0 ? (
+                  banners.map((banner) => (
+                    <TableRow key={banner.id}>
+                      <TableCell>
+                        {isValidUrl(banner.imageUrl) ? (
+                          <Image
+                            src={banner.imageUrl}
+                            alt={banner.title}
+                            width={100}
+                            height={50}
+                            className="rounded-md object-cover"
+                          />
+                        ) : (
+                          <div className="h-12 w-24 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                            No Image
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{banner.title}</TableCell>
+                      <TableCell>{banner.position}</TableCell>
+                      <TableCell>
+                        <Badge variant={banner.status ? 'default' : 'secondary'}>
+                          {banner.status ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => openEditDialog(banner)}>Edit</DropdownMenuItem>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the banner.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(banner.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No banners found. Click "Create New Banner" to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+         </CardContent>
+       </Card>
     </>
   );
 }
