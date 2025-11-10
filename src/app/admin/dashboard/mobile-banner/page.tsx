@@ -3,9 +3,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, addDoc, onSnapshot, query, orderBy, DocumentData } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, DocumentData } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { MoreHorizontal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +18,9 @@ import { useFirestore } from '@/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 const formSchema = z.object({
   imageUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')).optional(),
@@ -32,6 +36,7 @@ export default function MobileBannerPage() {
   const firestore = useFirestore();
   const [banners, setBanners] = useState<MobileBanner[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingBanner, setEditingBanner] = useState<MobileBanner | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,6 +70,19 @@ export default function MobileBannerPage() {
 
     return () => unsubscribe();
   }, [firestore, toast]);
+  
+  useEffect(() => {
+    if (editingBanner) {
+      form.reset(editingBanner);
+    } else {
+      form.reset({
+        imageUrl: '',
+        title: '',
+        position: banners ? banners.length + 1 : 1,
+        status: true,
+      });
+    }
+  }, [editingBanner, form, banners]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -78,19 +96,34 @@ export default function MobileBannerPage() {
     }
 
     try {
-      const bannersCollection = collection(firestore, 'mobileBanners');
-      await addDoc(bannersCollection, {
-        ...values,
-        createdAt: new Date(),
-      });
+      if (editingBanner) {
+        // Update existing banner
+        const bannerRef = doc(firestore, 'mobileBanners', editingBanner.id);
+        await updateDoc(bannerRef, {
+            ...values,
+        });
+        toast({
+          title: 'Banner Updated',
+          description: 'The banner has been updated successfully.',
+        });
 
-      toast({
-        title: 'Banner Created',
-        description: 'The new mobile banner has been saved successfully.',
-      });
-      form.reset();
+      } else {
+        // Create new banner
+        const bannersCollection = collection(firestore, 'mobileBanners');
+        await addDoc(bannersCollection, {
+          ...values,
+          createdAt: new Date(),
+        });
+        toast({
+          title: 'Banner Created',
+          description: 'The new mobile banner has been saved successfully.',
+        });
+      }
+      
+      setEditingBanner(null);
+
     } catch (error) {
-      console.error('Error creating banner: ', error);
+      console.error('Error saving banner: ', error);
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
@@ -98,6 +131,25 @@ export default function MobileBannerPage() {
       });
     }
   }
+
+  const handleDelete = async (bannerId: string) => {
+    if (!firestore) return;
+    try {
+        await deleteDoc(doc(firestore, 'mobileBanners', bannerId));
+        toast({
+            title: 'Banner Deleted',
+            description: 'The banner has been removed.',
+        });
+    } catch (error) {
+        console.error('Error deleting banner: ', error);
+        toast({
+            variant: 'destructive',
+            title: 'Delete Failed',
+            description: 'Could not delete the banner. Please try again.',
+        });
+    }
+  };
+
 
   const isValidUrl = (url: string) => {
     if (!url) return false;
@@ -116,8 +168,10 @@ export default function MobileBannerPage() {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>Create New Banner</CardTitle>
-              <CardDescription>Add a new banner to be displayed on the mobile version of the site.</CardDescription>
+              <CardTitle>{editingBanner ? 'Edit Banner' : 'Create New Banner'}</CardTitle>
+              <CardDescription>
+                {editingBanner ? 'Update the details for this banner.' : 'Add a new banner to be displayed on the mobile version of the site.'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -131,8 +185,6 @@ export default function MobileBannerPage() {
                         <FormControl>
                           <Input type="file" onChange={(e) => {
                               // This is a mock. In a real app, you'd upload the file and get a URL.
-                              // For now, we're not doing anything with the selected file.
-                              // The user still needs to provide a URL in the text input.
                           }} />
                         </FormControl>
                         <FormMessage />
@@ -144,6 +196,7 @@ export default function MobileBannerPage() {
                                 type="text"
                                 placeholder="https://example.com/image.png"
                                 {...field}
+                                value={field.value ?? ''}
                               />
                         </FormControl>
                       </FormItem>
@@ -195,7 +248,12 @@ export default function MobileBannerPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit">Save Banner</Button>
+                  <div className="flex items-center gap-2">
+                    <Button type="submit">{editingBanner ? 'Update Banner' : 'Save Banner'}</Button>
+                    {editingBanner && (
+                        <Button variant="outline" onClick={() => setEditingBanner(null)}>Cancel</Button>
+                    )}
+                  </div>
                 </form>
               </Form>
             </CardContent>
@@ -216,6 +274,7 @@ export default function MobileBannerPage() {
                       <TableHead>Title</TableHead>
                       <TableHead>Position</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -226,6 +285,7 @@ export default function MobileBannerPage() {
                           <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-10" /></TableCell>
                           <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                       ))
                     ) : banners && banners.length > 0 ? (
@@ -253,11 +313,42 @@ export default function MobileBannerPage() {
                               {banner.status ? 'Active' : 'Inactive'}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            <AlertDialog>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Toggle menu</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={() => setEditingBanner(banner)}>Edit</DropdownMenuItem>
+                                        <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the banner.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(banner.id)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
+                        <TableCell colSpan={5} className="h-24 text-center">
                           No banners found.
                         </TableCell>
                       </TableRow>
