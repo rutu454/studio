@@ -54,6 +54,7 @@ const TeamSection = () => {
           />
         </div>
 
+
         {/* Banner for small screens */}
         <div className="block sm:hidden w-full">
           <Image
