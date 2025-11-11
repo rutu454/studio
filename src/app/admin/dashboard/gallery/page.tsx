@@ -333,7 +333,7 @@ export default function GalleryPage() {
                                     )} />
                                     {itemForm.watch('type') === 'image' && (
                                         <FormField control={itemForm.control} name="imageFiles" render={({ field }) => (
-                                            <FormItem><FormLabel>Image File(s)</FormLabel><FormControl><Input type="file" accept="image/*" multiple onChange={e => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormLabel>Image File(s)</FormLabel><FormControl><Input type="file" accept="image/*" multiple {...itemForm.register('imageFiles')} /></FormControl><FormMessage /></FormItem>
                                         )} />
                                     )}
                                     {itemForm.watch('type') === 'video' && (
@@ -373,7 +373,7 @@ export default function GalleryPage() {
                                             <TableCell>
                                                 <div className="w-16 h-16 relative rounded-md overflow-hidden bg-muted">
                                                     {(item.thumbnailUrl) ? (
-                                                        <Image src={item.thumbnailUrl} alt={item.title} layout="fill" objectFit="cover" />
+                                                        <Image src={item.thumbnailUrl} alt={item.title} fill objectFit="cover" />
                                                     ) : (
                                                       <>
                                                         {item.type === 'video' && <Video className="w-8 h-8 text-muted-foreground m-auto" />}
@@ -423,5 +423,6 @@ export default function GalleryPage() {
             </Card>
         </div>
     );
+}
 
     
