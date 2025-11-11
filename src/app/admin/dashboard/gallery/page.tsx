@@ -135,7 +135,7 @@ export default function GalleryPage() {
         setIsSubmitting(true);
     
         try {
-            let mediaUrls = editingItem?.urls || [];
+            let mediaUrls: string[] = editingItem?.urls || [];
             let thumbnailUrl: string | undefined | null = editingItem?.thumbnailUrl;
     
             if (values.type === 'image' && values.imageFiles && values.imageFiles.length > 0) {
@@ -147,15 +147,13 @@ export default function GalleryPage() {
                 });
                 const newUrls = await Promise.all(uploadPromises);
                 mediaUrls = editingItem ? [...mediaUrls, ...newUrls] : newUrls;
-                if(mediaUrls.length > 0) {
+                if (!thumbnailUrl && mediaUrls.length > 0) {
                     thumbnailUrl = mediaUrls[0];
                 }
             } else if (values.type === 'video' && values.videoUrl) {
                 mediaUrls = [values.videoUrl];
                 const videoId = values.videoUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
                 thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
-            } else if (values.type === 'image' && !values.imageFiles && !editingItem) {
-                 thumbnailUrl = null;
             }
     
             const itemData: any = {
@@ -168,8 +166,6 @@ export default function GalleryPage() {
             
             if (thumbnailUrl) {
               itemData.thumbnailUrl = thumbnailUrl;
-            } else if (!itemData.thumbnailUrl) {
-                delete itemData.thumbnailUrl;
             }
     
             if (editingItem) {
@@ -181,7 +177,8 @@ export default function GalleryPage() {
                     setIsSubmitting(false);
                     return;
                 }
-                await addDoc(collection(firestore, 'galleryItems'), { ...itemData, createdAt: serverTimestamp() });
+                itemData.createdAt = serverTimestamp();
+                await addDoc(collection(firestore, 'galleryItems'), itemData);
                 toast({ title: 'Success', description: 'New gallery item added.' });
             }
             
@@ -375,11 +372,14 @@ export default function GalleryPage() {
                                         <TableRow key={item.id}>
                                             <TableCell>
                                                 <div className="w-16 h-16 relative rounded-md overflow-hidden bg-muted">
-                                                    {(item.thumbnailUrl) && (
+                                                    {(item.thumbnailUrl) ? (
                                                         <Image src={item.thumbnailUrl} alt={item.title} layout="fill" objectFit="cover" />
+                                                    ) : (
+                                                      <>
+                                                        {item.type === 'video' && <Video className="w-8 h-8 text-muted-foreground m-auto" />}
+                                                        {item.type === 'image' && <ImageIcon className="w-8 h-8 text-muted-foreground m-auto" />}
+                                                      </>
                                                     )}
-                                                    {item.type === 'video' && !item.thumbnailUrl && <Video className="w-8 h-8 text-muted-foreground m-auto" />}
-                                                    {item.type === 'image' && !item.thumbnailUrl && <ImageIcon className="w-8 h-8 text-muted-foreground m-auto" />}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="font-medium">{item.title}</TableCell>
@@ -423,4 +423,5 @@ export default function GalleryPage() {
             </Card>
         </div>
     );
-}
+
+    
