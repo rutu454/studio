@@ -124,7 +124,7 @@ const HeroSection = () => {
           <CarouselContent>
             {mobileImages.map((img) => (
               <CarouselItem key={img.id}>
-                <div className="relative w-full h-[60vh]  flex justify-center items-center">
+                <div className="relative w-full h-[60vh]  items-center">
   <Image
     src={img.src}
     alt={img.alt}

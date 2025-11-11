@@ -3,7 +3,7 @@ import SectionWrapper from '../common/SectionWrapper';
 const SloganSection = () => {
   return (
     <div className="bg-[#CC0000]">
-      <SectionWrapper>
+      <SectionWrapper className="py-0">
         <div className="text-center">
           <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tight text-[#f0f0f0]">
             “Together we rise, together we grow.”
