@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
+import AppShell from '@/components/common/AppShell';
 
 export const metadata: Metadata = {
   title: 'Prasthan Connect',
@@ -24,9 +23,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          <AppShell>
+            {children}
+          </AppShell>
           <Toaster />
         </FirebaseClientProvider>
       </body>

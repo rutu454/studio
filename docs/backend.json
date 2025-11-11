@@ -28,7 +28,142 @@
           "description": "The date and time of the submission."
         }
       },
-      "required": ["fullName", "email", "message", "submissionDate"]
+      "required": [
+        "fullName",
+        "email",
+        "message",
+        "submissionDate"
+      ]
+    },
+    "MobileBanner": {
+      "title": "Mobile Banner",
+      "type": "object",
+      "description": "A banner to be displayed on mobile devices.",
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the banner."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Whether the banner is active and should be displayed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the banner creation."
+        }
+      },
+      "required": [
+        "title",
+        "position",
+        "status",
+        "createdAt"
+      ]
+    },
+    "WebBanner": {
+      "title": "Web Banner",
+      "type": "object",
+      "description": "A banner to be displayed on desktop/web devices.",
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the banner."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Whether the banner is active and should be displayed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the banner creation."
+        }
+      },
+      "required": [
+        "title",
+        "position",
+        "status",
+        "createdAt"
+      ]
+    },
+    "GalleryCategory": {
+      "title": "Gallery Category",
+      "type": "object",
+      "description": "A category for gallery items.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the category."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the category creation."
+        }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "type": "object",
+      "description": "An item in the gallery, which can be an image or a video.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the gallery item."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the gallery item."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the item."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image", "video"],
+          "description": "The type of media."
+        },
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "The URLs of the images or a single video."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the thumbnail for the item."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the item creation."
+        }
+      },
+      "required": ["title", "category", "type", "urls", "createdAt"]
     }
   },
   "auth": {
@@ -40,6 +175,30 @@
         "$ref": "#/entities/ContactFormSubmission"
       },
       "description": "Stores all submissions from the contact form."
+    },
+    "/mobileBanners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/MobileBanner"
+      },
+      "description": "Stores all mobile banners for the website."
+    },
+    "/webBanners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/WebBanner"
+      },
+      "description": "Stores all web banners for the website."
+    },
+    "/galleryCategories/{categoryId}": {
+        "schema": {
+            "$ref": "#/entities/GalleryCategory"
+        },
+        "description": "Stores all gallery categories."
+    },
+    "/galleryItems/{itemId}": {
+        "schema": {
+            "$ref": "#/entities/GalleryItem"
+        },
+        "description": "Stores all gallery items (images and videos)."
     }
   }
 }

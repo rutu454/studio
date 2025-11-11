@@ -2,8 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useParams, notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import {
   Carousel,
@@ -14,107 +13,61 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity'];
-
-type GalleryImageItem = {
+type GalleryItem = {
   id: string;
-  description: string;
+  title: string;
+  description?: string;
   category: string;
-  type: 'image';
-  images: {
-    url: string;
-    hint: string;
-  }[];
+  type: 'image' | 'video';
+  urls: string[];
+  thumbnailUrl?: string;
 };
-
-const allGalleryImageItems = PlaceHolderImages.filter((p) =>
-  p.id.startsWith('gallery')
-).reduce((acc, current) => {
-  let item = acc.find((it) => it.description === current.description);
-  if (!item) {
-    const categoryIndex = acc.length % (galleryCategories.length);
-    item = {
-      id: current.id,
-      description: current.description,
-      category: galleryCategories[categoryIndex],
-      type: 'image',
-      images: [],
-    };
-    acc.push(item);
-  }
-  item.images.push({ url: current.imageUrl, hint: current.imageHint });
-  return acc;
-}, [] as GalleryImageItem[]);
-
-
-const videoItems = [
-    {
-      id: 'video-1',
-      type: 'video' as const,
-      description: 'Our Journey',
-      category: 'Events',
-      images: [{
-        url: PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
-        hint: 'video abstract',
-      }],
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-    {
-      id: 'video-2',
-      type: 'video' as const,
-      description: 'Community Outreach',
-      category: 'Charity',
-      images: [{url: 'https://picsum.photos/seed/vid2/600/400', hint: 'community work'}],
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-    {
-      id: 'video-3',
-      type: 'video' as const,
-      description: 'Diwali Gala',
-      category: 'Diwali',
-      images: [{url: 'https://picsum.photos/seed/vid3/600/400', hint: 'celebration festival'}],
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-    {
-      id: 'video-4',
-      type: 'video' as const,
-      description: 'Holi Highlights',
-      category: 'Holi',
-      images: [{url: 'https://picsum.photos/seed/vid4/600/400', hint: 'color festival'}],
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-  ];
-
-const allItems = [...allGalleryImageItems, ...videoItems];
-
 
 export default function GalleryDetailPage() {
   const params = useParams();
   const { id } = params;
+  const firestore = useFirestore();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
-  const item = allItems.find((itm) => itm.id === id);
+  const docRef = useMemoFirebase(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'galleryItems', id as string);
+  }, [firestore, id]);
+
+  const { data: item, isLoading } = useDoc<GalleryItem>(docRef);
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
+    if (!api) return;
 
-    setCurrent(api.selectedScrollSnap());
-
-    const onSelect = () => {
-      setCurrent(api.selectedScrollSnap());
-    };
-
+    setCurrent(api.selectedScrollSnap() + 1);
+    const onSelect = () => setCurrent(api.selectedScrollSnap() + 1);
     api.on('select', onSelect);
 
     return () => {
       api.off('select', onSelect);
     };
   }, [api]);
+
+  if (isLoading) {
+    return (
+      <div className="pt-24 bg-background">
+        <div className="max-w-4xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <Skeleton className="h-10 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-24 mb-6" />
+            <Skeleton className="aspect-video w-full rounded-lg mb-8" />
+            <Skeleton className="h-5 w-full mb-2" />
+            <Skeleton className="h-5 w-full mb-2" />
+            <Skeleton className="h-5 w-3/4" />
+        </div>
+      </div>
+    );
+  }
 
   if (!item) {
     notFound();
@@ -134,85 +87,79 @@ export default function GalleryDetailPage() {
             Gallery
           </Link>
           <ChevronRight className="h-4 w-4 mx-1" />
-          <span className="text-primary truncate">{item.description}</span>
+          <span className="text-primary truncate">{item.title}</span>
         </nav>
 
         <div className="flex justify-between items-start mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.description}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.title}</h1>
         </div>
         
         <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-6">{item.category}</p>
 
-        {item.type === 'image' ? (
-          item.images.length > 1 ? (
-            <div className="mb-8">
-              <Carousel 
-                  setApi={setApi}
-                  className="w-full rounded-lg overflow-hidden shadow-lg group"
-                  plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-                  opts={{ loop: true }}
-                >
-                  <CarouselContent>
-                      {item.images.map((image, index) => (
-                      <CarouselItem key={index}>
-                          <div className="relative aspect-[3/2]">
-                              <Image
-                                  src={image.url}
-                                  alt={`${item.description} ${index + 1}`}
-                                  fill
-                                  className="object-cover"
-                                  data-ai-hint={image.hint}
-                              />
-                          </div>
-                      </CarouselItem>
-                      ))}
-                  </CarouselContent>
-              </Carousel>
-              <div className="flex justify-center items-center gap-2 mt-4">
-                {item.images.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => scrollTo(i)}
-                    className={cn(
-                      'h-2 w-2 rounded-full transition-all',
-                      current === i ? 'w-4 bg-primary' : 'bg-primary/50'
-                    )}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
+        {item.type === 'image' && item.urls.length > 0 ? (
+          <div className="relative mb-8">
+            <Carousel
+              setApi={setApi}
+              className="w-full"
+              plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
+              opts={{ loop: true }}
+            >
+              <CarouselContent>
+                {item.urls.map((url, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
+                      <Image
+                        src={url}
+                        alt={`${item.title} - ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        data-ai-hint={item.title}
+                      />
+                    </div>
+                  </CarouselItem>
                 ))}
-              </div>
-            </div>
-          ) : (
-            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
-              <Image
-                src={item.images[0].url}
-                alt={item.description}
-                fill
-                className="object-cover"
-                data-ai-hint={item.images[0].hint}
-              />
-            </div>
-          )
-        ) : (
+              </CarouselContent>
+            </Carousel>
+            {item.urls.length > 1 && (
+                <div className="absolute -bottom-8 left-0 right-0 flex justify-center items-center gap-2">
+                    {item.urls.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => scrollTo(i)}
+                        className={cn(
+                        'h-2 w-2 rounded-full transition-all duration-300',
+                        'bg-muted-foreground/50',
+                        current === i + 1 ? 'w-4 bg-primary' : 'hover:bg-muted-foreground'
+                        )}
+                        aria-label={`Go to slide ${i + 1}`}
+                    />
+                    ))}
+                </div>
+            )}
+          </div>
+        ) : item.type === 'video' && item.urls.length > 0 ? (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
              <iframe
                 className="absolute top-0 left-0 w-full h-full"
-                src={(item as any).videoUrl}
+                src={item.urls[0].replace('watch?v=', 'embed/')}
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
           </div>
+        ) : (
+            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2] bg-muted flex items-center justify-center">
+                <p className="text-muted-foreground">No media available.</p>
+            </div>
         )}
         
-        <div className="prose prose-lg max-w-none text-foreground/80">
-            <p>
-                This is a placeholder description for the gallery item. You can replace this text with a detailed story about the event, the people in the photo, or the significance of the moment captured.
-            </p>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
+        <div className="prose prose-lg max-w-none text-foreground/80 mt-12">
+            {item.description ? (
+                <p>{item.description}</p>
+            ) : (
+                <p>No description provided for this item.</p>
+            )}
         </div>
 
       </div>

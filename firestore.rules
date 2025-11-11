@@ -7,5 +7,27 @@ service cloud.firestore {
       allow read, update, delete: if false;
       allow create: if true;
     }
+
+    // For now, allow anyone to read and write banners for admin functionality.
+    // TODO: Secure this to only allow authenticated admin users.
+    match /mobileBanners/{bannerId} {
+      allow read, write: if true;
+    }
+
+    // For now, allow anyone to read and write banners for admin functionality.
+    // TODO: Secure this to only allow authenticated admin users.
+    match /webBanners/{bannerId} {
+      allow read, write: if true;
+    }
+
+    // For now, allow anyone to read and write gallery content for admin functionality.
+    // TODO: Secure this to only allow authenticated admin users.
+    match /galleryCategories/{categoryId} {
+        allow read, write: if true;
+    }
+
+    match /galleryItems/{itemId} {
+        allow read, write: if true;
+    }
   }
 }

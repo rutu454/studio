@@ -1,0 +1,435 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+
+
+const formSchema = z.object({
+  imageUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')).optional(),
+  title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
+  position: z.coerce.number().int().positive({ message: 'Position must be a positive number.' }),
+  status: z.boolean().default(false),
+  imageFile: z.instanceof(File).optional(),
+});
+
+type WebBanner = z.infer<typeof formSchema> & { id: string; imageUrl: string };
+
+export default function WebBannerPage() {
+  const { toast } = useToast();
+  const firestore = useFirestore();
+  const [banners, setBanners] = useState<WebBanner[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<WebBanner | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      imageUrl: '',
+      title: '',
+      position: 1,
+      status: true,
+    },
+  });
+
+  useEffect(() => {
+    if (!firestore) return;
+
+    const bannersCollection = collection(firestore, 'webBanners');
+    const bannersQuery = query(bannersCollection, orderBy('position', 'asc'));
+
+    const unsubscribe = onSnapshot(bannersQuery, (snapshot) => {
+      const bannersData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as WebBanner));
+      setBanners(bannersData);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching banners:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to load banners.',
+        description: 'There was a problem fetching the banner list.',
+      });
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [firestore, toast]);
+  
+  useEffect(() => {
+    if (dialogOpen) {
+        if (editingBanner) {
+            form.reset({
+                ...editingBanner,
+                imageFile: undefined,
+            });
+        } else {
+            form.reset({
+                imageUrl: '',
+                title: '',
+                position: banners ? banners.length + 1 : 1,
+                status: true,
+                imageFile: undefined,
+            });
+        }
+    }
+     if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  }, [dialogOpen, editingBanner, form, banners]);
+
+  const openCreateDialog = () => {
+    setEditingBanner(null);
+    setDialogOpen(true);
+  }
+
+  const openEditDialog = (banner: WebBanner) => {
+    setEditingBanner(banner);
+    setDialogOpen(true);
+  }
+
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!firestore) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Firestore is not initialized.' });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    let finalImageUrl = editingBanner?.imageUrl || '';
+
+    try {
+       if (values.imageFile) {
+        const storage = getStorage();
+        const imageRef = ref(storage, `webBanners/${uuidv4()}-${values.imageFile.name}`);
+        const snapshot = await uploadBytes(imageRef, values.imageFile);
+        finalImageUrl = await getDownloadURL(snapshot.ref);
+      } else if (values.imageUrl) {
+        finalImageUrl = values.imageUrl;
+      }
+
+      const bannerData = {
+        title: values.title,
+        position: values.position,
+        status: values.status,
+        imageUrl: finalImageUrl,
+      };
+
+      if (editingBanner) {
+        const bannerRef = doc(firestore, 'webBanners', editingBanner.id);
+        await updateDoc(bannerRef, bannerData);
+        toast({ title: 'Banner Updated', description: 'The banner has been updated successfully.' });
+      } else {
+        const bannersCollection = collection(firestore, 'webBanners');
+        await addDoc(bannersCollection, { ...bannerData, createdAt: serverTimestamp() });
+        toast({ title: 'Banner Created', description: 'The new web banner has been saved.' });
+      }
+      
+      setDialogOpen(false);
+      setEditingBanner(null);
+
+    } catch (error) {
+      console.error('Error saving banner: ', error);
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: 'There was a problem saving the banner. Please try again.',
+      });
+    } finally {
+        setIsSubmitting(false);
+    }
+  }
+
+  const handleDelete = async (bannerId: string) => {
+    if (!firestore) return;
+    try {
+        await deleteDoc(doc(firestore, 'webBanners', bannerId));
+        toast({
+            title: 'Banner Deleted',
+            description: 'The banner has been removed.',
+        });
+    } catch (error) {
+        console.error('Error deleting banner: ', error);
+        toast({
+            variant: 'destructive',
+            title: 'Delete Failed',
+            description: 'Could not delete the banner. Please try again.',
+        });
+    }
+  };
+
+  const seedDummyBanners = async () => {
+    if (!firestore) return;
+    const batch = writeBatch(firestore);
+    const dummyBanners = [
+        { title: 'Grand Opening - Save 25%', position: 1, status: true, imageUrl: 'https://picsum.photos/seed/webbanner1/1920/1080' },
+        { title: 'New Season Arrivals', position: 2, status: true, imageUrl: 'https://picsum.photos/seed/webbanner2/1920/1080' },
+        { title: 'Holiday Special Offers', position: 3, status: false, imageUrl: 'https://picsum.photos/seed/webbanner3/1920/1080' },
+        { title: 'Customer Appreciation Week', position: 4, status: true, imageUrl: 'https://picsum.photos/seed/webbanner4/1920/1080' },
+    ];
+
+    try {
+        dummyBanners.forEach(banner => {
+            const bannerRef = doc(collection(firestore, 'webBanners'));
+            batch.set(bannerRef, { ...banner, createdAt: serverTimestamp() });
+        });
+        await batch.commit();
+        toast({
+            title: 'Dummy Data Seeded',
+            description: '4 dummy web banners have been created.',
+        });
+    } catch (error) {
+        console.error('Error seeding dummy banners: ', error);
+        toast({
+            variant: 'destructive',
+            title: 'Seeding Failed',
+            description: 'Could not create dummy banners.',
+        });
+    }
+  };
+  
+  const isValidUrl = (url: string | undefined | null): url is string => {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return url.startsWith('http://') || url.startsWith('https://');
+    } catch (e) {
+      return false;
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-primary">Web Banners</h1>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Button onClick={openCreateDialog}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create New Banner
+            </Button>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>{editingBanner ? 'Edit Banner' : 'Create New Banner'}</DialogTitle>
+                    <DialogDescription>
+                    {editingBanner ? 'Update the details for this banner.' : 'Add a new banner for the web site.'}
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+                      <FormField
+                        control={form.control}
+                        name="imageFile"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Upload Image</FormLabel>
+                            <FormControl>
+                               <Input type="file" ref={fileInputRef} onChange={(e) => field.onChange(e.target.files?.[0])} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="imageUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Or Enter Image URL</FormLabel>
+                            <FormControl>
+                               <Input
+                                    type="text"
+                                    placeholder="https://example.com/image.png"
+                                    {...field}
+                                    value={field.value ?? ''}
+                                  />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Summer Sale" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="position"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Position</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                              <FormLabel>Status</FormLabel>
+                               <p className="text-sm text-muted-foreground">
+                                 Enable to display the banner.
+                               </p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                       <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit" disabled={isSubmitting}>{editingBanner ? 'Update Banner' : 'Save Banner'}</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+      </div>
+      
+       <Card>
+         <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>Existing Banners</CardTitle>
+                <CardDescription>A list of all banners currently in the system.</CardDescription>
+            </div>
+            {!isLoading && banners && banners.length === 0 && (
+                <Button onClick={seedDummyBanners} variant="secondary">Seed Data</Button>
+            )}
+         </CardHeader>
+         <CardContent>
+          <div className="border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Image</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-12 w-24 rounded-md" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-10" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : banners && banners.length > 0 ? (
+                  banners.map((banner) => (
+                    <TableRow key={banner.id}>
+                      <TableCell>
+                        {isValidUrl(banner.imageUrl) ? (
+                          <Image
+                            src={banner.imageUrl}
+                            alt={banner.title}
+                            width={100}
+                            height={50}
+                            className="rounded-md object-cover"
+                          />
+                        ) : (
+                          <div className="h-12 w-24 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                            No Image
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{banner.title}</TableCell>
+                      <TableCell>{banner.position}</TableCell>
+                      <TableCell>
+                        <Badge variant={banner.status ? 'default' : 'secondary'}>
+                          {banner.status ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => openEditDialog(banner)}>Edit</DropdownMenuItem>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the banner.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(banner.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No banners found. Click "Create New Banner" to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+         </CardContent>
+       </Card>
+    </>
+  );
+}

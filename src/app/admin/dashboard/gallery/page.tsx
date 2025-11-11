@@ -1,0 +1,428 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { MoreHorizontal, PlusCircle, Trash2, Video, Image as ImageIcon } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+
+const categorySchema = z.object({
+  name: z.string().min(2, 'Category name must be at least 2 characters.'),
+});
+type GalleryCategory = { id: string; name: string };
+
+const galleryItemSchema = z.object({
+    title: z.string().min(2, 'Title is required.'),
+    description: z.string().optional(),
+    category: z.string().min(1, 'Category is required.'),
+    type: z.enum(['image', 'video'], { required_error: 'You must select a media type.' }),
+    videoUrl: z.string().optional(),
+    imageFiles: z.instanceof(FileList).optional(),
+});
+type GalleryItem = z.infer<typeof galleryItemSchema> & { id: string; urls: string[], thumbnailUrl?: string, type: 'image' | 'video' };
+
+export default function GalleryPage() {
+    const { toast } = useToast();
+    const firestore = useFirestore();
+
+    const [categories, setCategories] = useState<GalleryCategory[]>([]);
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+    const [itemDialogOpen, setItemDialogOpen] = useState(false);
+    
+    const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
+
+    const categoryForm = useForm<z.infer<typeof categorySchema>>({
+        resolver: zodResolver(categorySchema),
+        defaultValues: { name: '' },
+    });
+
+    const itemForm = useForm<z.infer<typeof galleryItemSchema>>({
+        resolver: zodResolver(galleryItemSchema),
+        defaultValues: {
+            title: '',
+            description: '',
+            category: '',
+            type: 'image',
+        },
+    });
+
+    // Fetch Categories
+    useEffect(() => {
+        if (!firestore) return;
+        const catQuery = query(collection(firestore, 'galleryCategories'), orderBy('name', 'asc'));
+        const unsubscribe = onSnapshot(catQuery, snapshot => {
+            setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryCategory)));
+        });
+        return () => unsubscribe();
+    }, [firestore]);
+
+    // Fetch Gallery Items
+    useEffect(() => {
+        if (!firestore) return;
+        setIsLoading(true);
+        const itemQuery = query(collection(firestore, 'galleryItems'), orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(itemQuery, snapshot => {
+            setGalleryItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryItem)));
+            setIsLoading(false);
+        }, error => {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch gallery items.' });
+            setIsLoading(false);
+        });
+        return () => unsubscribe();
+    }, [firestore, toast]);
+    
+    useEffect(() => {
+        if (itemDialogOpen) {
+            if (editingItem) {
+                itemForm.reset({
+                    ...editingItem,
+                    videoUrl: editingItem.type === 'video' ? editingItem.urls[0] : '',
+                    imageFiles: undefined,
+                });
+            } else {
+                itemForm.reset({
+                    title: '',
+                    description: '',
+                    category: '',
+                    type: 'image',
+                    videoUrl: '',
+                    imageFiles: undefined
+                });
+            }
+        }
+    }, [itemDialogOpen, editingItem, itemForm]);
+
+    const onCategorySubmit = async (values: z.infer<typeof categorySchema>) => {
+        if (!firestore) return;
+        try {
+            await addDoc(collection(firestore, 'galleryCategories'), { ...values, createdAt: serverTimestamp() });
+            toast({ title: 'Success', description: 'New category created.' });
+            setCategoryDialogOpen(false);
+            categoryForm.reset();
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not create category.' });
+        }
+    };
+    
+    const onItemSubmit = async (values: z.infer<typeof galleryItemSchema>) => {
+        if (!firestore) return;
+        setIsSubmitting(true);
+    
+        try {
+            let mediaUrls: string[] = editingItem?.urls || [];
+            let thumbnailUrl: string | undefined | null = editingItem?.thumbnailUrl;
+    
+            if (values.type === 'image' && values.imageFiles && values.imageFiles.length > 0) {
+                const storage = getStorage();
+                const uploadPromises = Array.from(values.imageFiles).map(async (file) => {
+                    const imageRef = ref(storage, `gallery/${uuidv4()}-${file.name}`);
+                    const snapshot = await uploadBytes(imageRef, file);
+                    return getDownloadURL(snapshot.ref);
+                });
+                const newUrls = await Promise.all(uploadPromises);
+                mediaUrls = editingItem ? [...mediaUrls, ...newUrls] : newUrls;
+                if (!thumbnailUrl && mediaUrls.length > 0) {
+                    thumbnailUrl = mediaUrls[0];
+                }
+            } else if (values.type === 'video' && values.videoUrl) {
+                mediaUrls = [values.videoUrl];
+                const videoId = values.videoUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+                thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+            }
+    
+            const itemData: any = {
+                title: values.title,
+                description: values.description,
+                category: values.category,
+                type: values.type,
+                urls: mediaUrls,
+            };
+            
+            if (thumbnailUrl) {
+              itemData.thumbnailUrl = thumbnailUrl;
+            }
+    
+            if (editingItem) {
+                await updateDoc(doc(firestore, 'galleryItems', editingItem.id), itemData);
+                toast({ title: 'Success', description: 'Gallery item updated.' });
+            } else {
+                if(mediaUrls.length === 0){
+                    toast({ variant: 'destructive', title: 'Error', description: 'Please upload at least one image or provide a video URL.' });
+                    setIsSubmitting(false);
+                    return;
+                }
+                itemData.createdAt = serverTimestamp();
+                await addDoc(collection(firestore, 'galleryItems'), itemData);
+                toast({ title: 'Success', description: 'New gallery item added.' });
+            }
+            
+            setItemDialogOpen(false);
+            setEditingItem(null);
+        } catch (error: any) {
+            console.error('Failed to save gallery item:', error);
+            let description = 'Failed to save gallery item. Please try again.';
+            if (error.code === 'storage/unauthorized' || (error.message && error.message.includes('CORS'))) {
+                description = 'Image upload failed. This is likely a CORS configuration issue on your Firebase Storage bucket. Please check your CORS settings.';
+            } else if (error.message && error.message.includes('invalid data')) {
+                description = 'Failed to save to database. Some fields may be missing or have invalid values.';
+            }
+            toast({ variant: 'destructive', title: 'Error', description });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    const handleDeleteCategory = async (categoryId: string) => {
+        if (!firestore) return;
+        try {
+            await deleteDoc(doc(firestore, 'galleryCategories', categoryId));
+            toast({ title: 'Success', description: 'Category deleted.' });
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete category.' });
+        }
+    };
+    
+    const handleDeleteItem = async (itemId: string) => {
+        if (!firestore) return;
+        try {
+            await deleteDoc(doc(firestore, 'galleryItems', itemId));
+            toast({ title: 'Success', description: 'Gallery item deleted.' });
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete item.' });
+        }
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-primary">Gallery Management</h1>
+            </div>
+
+            <Card>
+                <CardHeader className='flex-row items-center justify-between'>
+                    <div>
+                        <CardTitle>Categories</CardTitle>
+                        <CardDescription>Manage your gallery categories.</CardDescription>
+                    </div>
+                    <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button><PlusCircle className="mr-2 h-4 w-4" />Add Category</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Create New Category</DialogTitle>
+                            </DialogHeader>
+                            <Form {...categoryForm}>
+                                <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
+                                    <FormField control={categoryForm.control} name="name" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Category Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="e.g., Events, Charity" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <DialogFooter>
+                                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                        <Button type="submit">Create</Button>
+                                    </DialogFooter>
+                                </form>
+                            </Form>
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                        {categories.map(cat => (
+                             <AlertDialog key={cat.id}>
+                                <Badge variant="outline" className="flex items-center gap-2 pr-1 group">
+                                    <span>{cat.name}</span>
+                                    <AlertDialogTrigger asChild>
+                                        <button className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Trash2 className="h-3 w-3" />
+                                        </button>
+                                    </AlertDialogTrigger>
+                                </Badge>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will permanently delete the "{cat.name}" category. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteCategory(cat.id)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        ))}
+                        {categories.length === 0 && <p className="text-sm text-muted-foreground">No categories created yet.</p>}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Gallery Items</CardTitle>
+                        <CardDescription>Manage your gallery images and videos.</CardDescription>
+                    </div>
+                    <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button onClick={() => setEditingItem(null)}><PlusCircle className="mr-2 h-4 w-4" /> Add New Item</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle>{editingItem ? 'Edit' : 'Add New'} Gallery Item</DialogTitle>
+                            </DialogHeader>
+                            <Form {...itemForm}>
+                                <form onSubmit={itemForm.handleSubmit(onItemSubmit)} className="space-y-4">
+                                    <FormField control={itemForm.control} name="title" render={({ field }) => (
+                                        <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Diwali Celebration 2023" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField control={itemForm.control} name="description" render={({ field }) => (
+                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A detailed description of the gallery item." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={itemForm.control} name="category" render={({ field }) => (
+                                        <FormItem><FormLabel>Category</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    {categories.map(cat => <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        <FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={itemForm.control} name="type" render={({ field }) => (
+                                        <FormItem><FormLabel>Media Type</FormLabel>
+                                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                                <FormItem><FormControl><RadioGroupItem value="image" id="image" /></FormControl><FormLabel htmlFor="image" className="ml-2">Image</FormLabel></FormItem>
+                                                <FormItem><FormControl><RadioGroupItem value="video" id="video" /></FormControl><FormLabel htmlFor="video" className="ml-2">Video</FormLabel></FormItem>
+                                            </RadioGroup>
+                                        <FormMessage /></FormItem>
+                                    )} />
+                                    {itemForm.watch('type') === 'image' && (
+                                        <FormField control={itemForm.control} name="imageFiles" render={({ field }) => (
+                                            <FormItem><FormLabel>Image File(s)</FormLabel><FormControl><Input type="file" accept="image/*" multiple {...itemForm.register('imageFiles')} /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                    )}
+                                    {itemForm.watch('type') === 'video' && (
+                                        <FormField control={itemForm.control} name="videoUrl" render={({ field }) => (
+                                            <FormItem><FormLabel>YouTube Video URL</FormLabel><FormControl><Input placeholder="https://www.youtube.com/watch?v=..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                    )}
+                                    <DialogFooter>
+                                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Item'}</Button>
+                                    </DialogFooter>
+                                </form>
+                            </Form>
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                    <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Thumbnail</TableHead>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead><span className="sr-only">Actions</span></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    Array.from({ length: 3 }).map((_, i) => (
+                                        <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-12 w-full" /></TableCell></TableRow>
+                                    ))
+                                ) : galleryItems.length > 0 ? (
+                                    galleryItems.map((item) => (
+                                        <TableRow key={item.id}>
+                                            <TableCell>
+                                                <div className="w-16 h-16 relative rounded-md overflow-hidden bg-muted">
+                                                    {(item.thumbnailUrl) ? (
+                                                        <Image src={item.thumbnailUrl} alt={item.title} fill objectFit="cover" />
+                                                    ) : (
+                                                      <>
+                                                        {item.type === 'video' && <Video className="w-8 h-8 text-muted-foreground m-auto" />}
+                                                        {item.type === 'image' && <ImageIcon className="w-8 h-8 text-muted-foreground m-auto" />}
+                                                      </>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-medium">{item.title}</TableCell>
+                                            <TableCell><Badge variant="secondary">{item.category}</Badge></TableCell>
+                                            <TableCell><Badge variant={item.type === 'image' ? 'outline' : 'default'}>{item.type}</Badge></TableCell>
+                                            <TableCell>
+                                                <AlertDialog>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Toggle menu</span></Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem onClick={() => { setEditingItem(item); setItemDialogOpen(true); }}>Edit</DropdownMenuItem>
+                                                            <AlertDialogTrigger asChild><DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem></AlertDialogTrigger>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>This will permanently delete the gallery item. This action cannot be undone.</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDeleteItem(item.id)}>Delete</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="h-24 text-center">No gallery items yet.</TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+    

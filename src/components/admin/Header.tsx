@@ -1,0 +1,37 @@
+'use client';
+
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Menu } from 'lucide-react';
+import Sidebar from './Sidebar';
+
+export default function Header({
+  setSidebarOpen,
+}: {
+  setSidebarOpen: (open: boolean) => void;
+}) {
+
+  return (
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+       <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="outline">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="sm:max-w-xs p-0">
+               <SheetHeader className='p-4 border-b'>
+                 <SheetTitle className='sr-only'>Admin Menu</SheetTitle>
+               </SheetHeader>
+               <Sidebar sidebarOpen={true} setSidebarOpen={() => {}} isMobile={true} />
+            </SheetContent>
+          </Sheet>
+        </div>
+      <div className="flex-1">
+        <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+      </div>
+    </header>
+  );
+}
