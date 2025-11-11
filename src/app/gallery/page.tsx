@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionWrapper from '@/components/common/SectionWrapper';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Youtube } from 'lucide-react';
+import { Youtube, Image as ImageIcon } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -16,83 +15,24 @@ import {
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import { cn } from '@/lib/utils';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const galleryCategories = ['All', 'Diwali', 'Holi', 'Events', 'Charity'];
-
-type GalleryImageItem = {
+type GalleryItem = {
   id: string;
-  description: string;
+  title: string;
+  description?: string;
   category: string;
-  type: 'image';
-  images: {
-    url: string;
-    hint: string;
-  }[];
+  type: 'image' | 'video';
+  urls: string[];
+  thumbnailUrl?: string;
+  createdAt: any;
 };
 
-// Group images by description to create gallery items
-const allGalleryImageItems = PlaceHolderImages.filter((p) =>
-  p.id.startsWith('gallery')
-).reduce((acc, current) => {
-  let item = acc.find((it) => it.description === current.description);
-  if (!item) {
-    const categoryIndex = acc.length % (galleryCategories.length - 1);
-    item = {
-      id: current.id, // Use the first image's ID as the group ID
-      description: current.description,
-      category: galleryCategories[categoryIndex + 1],
-      type: 'image',
-      images: [],
-    };
-    acc.push(item);
-  }
-  item.images.push({ url: current.imageUrl, hint: current.imageHint });
-  return acc;
-}, [] as GalleryImageItem[]);
+type GalleryCategory = { id: string; name: string };
 
-
-// Add dummy video items
-const videoItems = [
-  {
-    id: 'video-1',
-    type: 'video' as const,
-    description: 'Our Journey',
-    category: 'Events',
-    images: [{
-      url: PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
-      hint: 'video abstract',
-    }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-2',
-    type: 'video' as const,
-    description: 'Community Outreach',
-    category: 'Charity',
-    images: [{ url: 'https://picsum.photos/seed/vid2/600/400', hint: 'community work' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-3',
-    type: 'video' as const,
-    description: 'Diwali Gala',
-    category: 'Diwali',
-    images: [{ url: 'https://picsum.photos/seed/vid3/600/400', hint: 'celebration festival' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-4',
-    type: 'video' as const,
-    description: 'Holi Highlights',
-    category: 'Holi',
-    images: [{ url: 'https://picsum.photos/seed/vid4/600/400', hint: 'color festival' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-];
-
-const allItems = [...allGalleryImageItems, ...videoItems].sort((a, b) => a.id.localeCompare(b.id));
-
-const GalleryCarousel = ({ item }: { item: GalleryImageItem }) => {
+const GalleryCarousel = ({ item }: { item: GalleryItem }) => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
@@ -123,35 +63,37 @@ const GalleryCarousel = ({ item }: { item: GalleryImageItem }) => {
           opts={{ loop: true }}
       >
           <CarouselContent>
-          {item.images.map((image, index) => (
+          {item.urls.map((url, index) => (
               <CarouselItem key={index}>
                   <Link href={`/gallery/${item.id}`} className="block relative w-full aspect-[4/3] cursor-pointer">
                       <Image
-                      src={image.url}
-                      alt={item.description}
+                      src={url}
+                      alt={item.title}
                       fill
                       className="object-cover"
-                      data-ai-hint={image.hint}
+                      data-ai-hint={item.title}
                       />
                   </Link>
               </CarouselItem>
           ))}
           </CarouselContent>
       </Carousel>
-      <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-1">
-        {item.images.map((_, i) => (
-            <button
-                key={i}
-                onClick={() => scrollTo(i)}
-                className={cn(
-                    'h-1.5 w-1.5 rounded-full transition-all duration-300',
-                    'bg-white/50 backdrop-blur-sm group-hover:bg-white/80',
-                    current === i ? 'w-3 bg-white' : 'hover:bg-white'
-                )}
-                aria-label={`Go to slide ${i + 1}`}
-            />
-        ))}
-        </div>
+      {item.urls.length > 1 && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-1">
+          {item.urls.map((_, i) => (
+              <button
+                  key={i}
+                  onClick={() => scrollTo(i)}
+                  className={cn(
+                      'h-1.5 w-1.5 rounded-full transition-all duration-300',
+                      'bg-white/50 backdrop-blur-sm group-hover:bg-white/80',
+                      current === i ? 'w-3 bg-white' : 'hover:bg-white'
+                  )}
+                  aria-label={`Go to slide ${i + 1}`}
+              />
+          ))}
+          </div>
+      )}
     </div>
   );
 }
@@ -159,10 +101,28 @@ const GalleryCarousel = ({ item }: { item: GalleryImageItem }) => {
 
 export default function GalleryPage() {
   const [filter, setFilter] = useState('All');
+  const firestore = useFirestore();
+
+  const categoriesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'galleryCategories'), orderBy('name', 'asc'));
+  }, [firestore]);
+  
+  const itemsQuery = useMemoFirebase(() => {
+    if(!firestore) return null;
+    return query(collection(firestore, 'galleryItems'), orderBy('createdAt', 'desc'));
+  }, [firestore]);
+
+  const { data: categories, isLoading: isLoadingCategories } = useCollection<GalleryCategory>(categoriesQuery);
+  const { data: allItems, isLoading: isLoadingItems } = useCollection<GalleryItem>(itemsQuery);
+
+  const galleryCategories = ['All', ...(categories?.map(c => c.name) || [])];
 
   const filteredItems = filter === 'All'
     ? allItems
-    : allItems.filter(item => item.category === filter);
+    : allItems?.filter(item => item.category === filter);
+
+  const isLoading = isLoadingCategories || isLoadingItems;
 
   return (
     <div className="pt-14 md:pt-0">
@@ -178,7 +138,10 @@ export default function GalleryPage() {
         </div>
 
         <div className="flex justify-center flex-wrap gap-2 mb-6">
-          {galleryCategories.map(category => (
+          {isLoadingCategories ? (
+            <Skeleton className="h-10 w-48" />
+          ) : (
+            galleryCategories.map(category => (
             <Button
               key={category}
               variant={filter === category ? 'default' : 'outline'}
@@ -186,11 +149,24 @@ export default function GalleryPage() {
             >
               {category}
             </Button>
-          ))}
+          )))}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item) => (
+          {isLoadingItems ? (
+            Array.from({ length: 8 }).map((_, i) => (
+                <Card key={i}>
+                    <CardContent className="p-0">
+                        <Skeleton className="w-full aspect-[4/3]" />
+                        <div className="p-4 space-y-2">
+                           <Skeleton className="h-4 w-3/4" />
+                           <Skeleton className="h-3 w-1/4" />
+                        </div>
+                    </CardContent>
+                </Card>
+            ))
+          ) : filteredItems && filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
             <Card
               key={item.id}
               className="overflow-hidden group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col"
@@ -199,37 +175,47 @@ export default function GalleryPage() {
                 <div className="relative w-full aspect-[4/3]">
                   {item.type === 'video' ? (
                      <Link href={`/gallery/${item.id}`} className="flex flex-col h-full">
-                        <Image
-                            src={item.images[0].url}
-                            alt={item.description}
-                            fill
-                            className="object-cover"
-                            data-ai-hint={item.images[0].hint}
-                        />
+                        {item.thumbnailUrl ? (
+                            <Image
+                                src={item.thumbnailUrl}
+                                alt={item.title}
+                                fill
+                                className="object-cover"
+                                data-ai-hint={item.title}
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                                <Youtube size={64} className="text-muted-foreground" />
+                            </div>
+                        )}
                         <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center">
                             <div className="relative z-10 text-white group-hover:text-primary transition-colors">
                                 <Youtube size={64} />
                             </div>
                         </div>
                      </Link>
-                  ) : item.images.length > 1 ? (
-                    <GalleryCarousel item={item as GalleryImageItem} />
-                  ) : (
+                  ) : item.urls && item.urls.length > 1 ? (
+                    <GalleryCarousel item={item} />
+                  ) : item.urls && item.urls.length === 1 ? (
                     <Link href={`/gallery/${item.id}`} className="block relative w-full h-full cursor-pointer">
                         <Image
-                            src={item.images[0].url}
-                            alt={item.description}
+                            src={item.urls[0]}
+                            alt={item.title}
                             fill
                             className="object-cover"
-                            data-ai-hint={item.images[0].hint}
+                            data-ai-hint={item.title}
                         />
                     </Link>
+                  ) : (
+                     <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <ImageIcon size={64} className="text-muted-foreground" />
+                    </div>
                   )}
                 </div>
                 <Link href={`/gallery/${item.id}`}>
                     <div className="p-4 mt-auto bg-card">
                         <p className="text-md font-semibold text-foreground truncate">
-                        {item.description}
+                        {item.title}
                         </p>
                         <p className="text-xs text-muted-foreground">
                         {item.category}
@@ -238,7 +224,12 @@ export default function GalleryPage() {
                 </Link>
               </CardContent>
             </Card>
-          ))}
+            ))
+          ) : (
+             <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No items found for this category.</p>
+             </div>
+          )}
         </div>
       </SectionWrapper>
     </div>

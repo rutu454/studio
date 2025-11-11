@@ -36,10 +36,10 @@ const galleryItemSchema = z.object({
     description: z.string().optional(),
     category: z.string().min(1, 'Category is required.'),
     type: z.enum(['image', 'video'], { required_error: 'You must select a media type.' }),
-    url: z.string().optional(),
-    imageFile: z.instanceof(File).optional(),
+    videoUrl: z.string().optional(),
+    imageFiles: z.instanceof(FileList).optional(),
 });
-type GalleryItem = z.infer<typeof galleryItemSchema> & { id: string; url: string, thumbnailUrl?: string, type: 'image' | 'video' };
+type GalleryItem = z.infer<typeof galleryItemSchema> & { id: string; urls: string[], thumbnailUrl?: string, type: 'image' | 'video' };
 
 export default function GalleryPage() {
     const { toast } = useToast();
@@ -101,7 +101,8 @@ export default function GalleryPage() {
             if (editingItem) {
                 itemForm.reset({
                     ...editingItem,
-                    imageFile: undefined,
+                    videoUrl: editingItem.type === 'video' ? editingItem.urls[0] : '',
+                    imageFiles: undefined,
                 });
             } else {
                 itemForm.reset({
@@ -109,8 +110,8 @@ export default function GalleryPage() {
                     description: '',
                     category: '',
                     type: 'image',
-                    url: '',
-                    imageFile: undefined
+                    videoUrl: '',
+                    imageFiles: undefined
                 });
             }
         }
@@ -132,45 +133,54 @@ export default function GalleryPage() {
     const onItemSubmit = async (values: z.infer<typeof galleryItemSchema>) => {
         if (!firestore) return;
         setIsSubmitting(true);
-
+    
         try {
-            let mediaUrl = editingItem?.url || '';
+            let mediaUrls = editingItem?.urls || [];
             let thumbnailUrl: string | undefined | null = editingItem?.thumbnailUrl;
-
-            if (values.type === 'image' && values.imageFile) {
+    
+            if (values.type === 'image' && values.imageFiles && values.imageFiles.length > 0) {
                 const storage = getStorage();
-                const imageRef = ref(storage, `gallery/${uuidv4()}-${values.imageFile.name}`);
-                const snapshot = await uploadBytes(imageRef, values.imageFile);
-                mediaUrl = await getDownloadURL(snapshot.ref);
-                thumbnailUrl = mediaUrl;
-            } else if (values.type === 'video' && values.url) {
-                mediaUrl = values.url;
-                const videoId = values.url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
-                if (videoId) {
-                    thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                } else {
-                    thumbnailUrl = null;
+                const uploadPromises = Array.from(values.imageFiles).map(async (file) => {
+                    const imageRef = ref(storage, `gallery/${uuidv4()}-${file.name}`);
+                    const snapshot = await uploadBytes(imageRef, file);
+                    return getDownloadURL(snapshot.ref);
+                });
+                const newUrls = await Promise.all(uploadPromises);
+                mediaUrls = editingItem ? [...mediaUrls, ...newUrls] : newUrls;
+                if(mediaUrls.length > 0) {
+                    thumbnailUrl = mediaUrls[0];
                 }
-            } else if (values.type === 'image' && !values.imageFile && !editingItem) {
+            } else if (values.type === 'video' && values.videoUrl) {
+                mediaUrls = [values.videoUrl];
+                const videoId = values.videoUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+                thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+            } else if (values.type === 'image' && !values.imageFiles && !editingItem) {
                  thumbnailUrl = null;
             }
-
+    
             const itemData: any = {
                 title: values.title,
                 description: values.description,
                 category: values.category,
                 type: values.type,
-                url: mediaUrl,
+                urls: mediaUrls,
             };
             
             if (thumbnailUrl) {
               itemData.thumbnailUrl = thumbnailUrl;
+            } else if (!itemData.thumbnailUrl) {
+                delete itemData.thumbnailUrl;
             }
-
+    
             if (editingItem) {
                 await updateDoc(doc(firestore, 'galleryItems', editingItem.id), itemData);
                 toast({ title: 'Success', description: 'Gallery item updated.' });
             } else {
+                if(mediaUrls.length === 0){
+                    toast({ variant: 'destructive', title: 'Error', description: 'Please upload at least one image or provide a video URL.' });
+                    setIsSubmitting(false);
+                    return;
+                }
                 await addDoc(collection(firestore, 'galleryItems'), { ...itemData, createdAt: serverTimestamp() });
                 toast({ title: 'Success', description: 'New gallery item added.' });
             }
@@ -325,12 +335,12 @@ export default function GalleryPage() {
                                         <FormMessage /></FormItem>
                                     )} />
                                     {itemForm.watch('type') === 'image' && (
-                                        <FormField control={itemForm.control} name="imageFile" render={({ field }) => (
-                                            <FormItem><FormLabel>Image File</FormLabel><FormControl><Input type="file" accept="image/*" onChange={e => field.onChange(e.target.files?.[0])} /></FormControl><FormMessage /></FormItem>
+                                        <FormField control={itemForm.control} name="imageFiles" render={({ field }) => (
+                                            <FormItem><FormLabel>Image File(s)</FormLabel><FormControl><Input type="file" accept="image/*" multiple onChange={e => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>
                                         )} />
                                     )}
                                     {itemForm.watch('type') === 'video' && (
-                                        <FormField control={itemForm.control} name="url" render={({ field }) => (
+                                        <FormField control={itemForm.control} name="videoUrl" render={({ field }) => (
                                             <FormItem><FormLabel>YouTube Video URL</FormLabel><FormControl><Input placeholder="https://www.youtube.com/watch?v=..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                                         )} />
                                     )}
@@ -365,11 +375,11 @@ export default function GalleryPage() {
                                         <TableRow key={item.id}>
                                             <TableCell>
                                                 <div className="w-16 h-16 relative rounded-md overflow-hidden bg-muted">
-                                                    {(item.type === 'image' || item.thumbnailUrl) && (
-                                                        <Image src={item.thumbnailUrl || item.url} alt={item.title} layout="fill" objectFit="cover" />
+                                                    {(item.thumbnailUrl) && (
+                                                        <Image src={item.thumbnailUrl} alt={item.title} layout="fill" objectFit="cover" />
                                                     )}
                                                     {item.type === 'video' && !item.thumbnailUrl && <Video className="w-8 h-8 text-muted-foreground m-auto" />}
-                                                    {item.type === 'image' && !item.url && <ImageIcon className="w-8 h-8 text-muted-foreground m-auto" />}
+                                                    {item.type === 'image' && !item.thumbnailUrl && <ImageIcon className="w-8 h-8 text-muted-foreground m-auto" />}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="font-medium">{item.title}</TableCell>

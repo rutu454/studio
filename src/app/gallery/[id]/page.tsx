@@ -13,8 +13,8 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type GalleryItem = {
@@ -23,7 +23,7 @@ type GalleryItem = {
   description?: string;
   category: string;
   type: 'image' | 'video';
-  url: string;
+  urls: string[];
   thumbnailUrl?: string;
 };
 
@@ -44,8 +44,8 @@ export default function GalleryDetailPage() {
   useEffect(() => {
     if (!api) return;
 
-    setCurrent(api.selectedScrollSnap());
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
+    setCurrent(api.selectedScrollSnap() + 1);
+    const onSelect = () => setCurrent(api.selectedScrollSnap() + 1);
     api.on('select', onSelect);
 
     return () => {
@@ -73,10 +73,6 @@ export default function GalleryDetailPage() {
     notFound();
   }
 
-  // A single item can have multiple images if it's a carousel. For now, we assume one URL.
-  // This logic can be expanded if an item can have multiple URLs.
-  const images = [{ url: item.url, hint: item.title }];
-
   const scrollTo = (index: number) => {
     api?.scrollTo(index);
   };
@@ -100,30 +96,65 @@ export default function GalleryDetailPage() {
         
         <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-6">{item.category}</p>
 
-        {item.type === 'image' ? (
-          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
-            <Image
-              src={item.url}
-              alt={item.title}
-              fill
-              className="object-cover"
-              data-ai-hint={item.title}
-            />
+        {item.type === 'image' && item.urls.length > 0 ? (
+          <div className="relative mb-8">
+            <Carousel
+              setApi={setApi}
+              className="w-full"
+              plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
+              opts={{ loop: true }}
+            >
+              <CarouselContent>
+                {item.urls.map((url, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
+                      <Image
+                        src={url}
+                        alt={`${item.title} - ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        data-ai-hint={item.title}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+            {item.urls.length > 1 && (
+                <div className="absolute -bottom-8 left-0 right-0 flex justify-center items-center gap-2">
+                    {item.urls.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => scrollTo(i)}
+                        className={cn(
+                        'h-2 w-2 rounded-full transition-all duration-300',
+                        'bg-muted-foreground/50',
+                        current === i + 1 ? 'w-4 bg-primary' : 'hover:bg-muted-foreground'
+                        )}
+                        aria-label={`Go to slide ${i + 1}`}
+                    />
+                    ))}
+                </div>
+            )}
           </div>
-        ) : (
+        ) : item.type === 'video' && item.urls.length > 0 ? (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
              <iframe
                 className="absolute top-0 left-0 w-full h-full"
-                src={item.url.replace('watch?v=', 'embed/')}
+                src={item.urls[0].replace('watch?v=', 'embed/')}
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
           </div>
+        ) : (
+            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2] bg-muted flex items-center justify-center">
+                <p className="text-muted-foreground">No media available.</p>
+            </div>
         )}
         
-        <div className="prose prose-lg max-w-none text-foreground/80">
+        <div className="prose prose-lg max-w-none text-foreground/80 mt-12">
             {item.description ? (
                 <p>{item.description}</p>
             ) : (

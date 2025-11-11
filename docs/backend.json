@@ -144,15 +144,18 @@
           "enum": ["image", "video"],
           "description": "The type of media."
         },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "The URL of the image or video."
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "The URLs of the images or a single video."
         },
         "thumbnailUrl": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the video thumbnail (if applicable)."
+          "description": "The URL of the thumbnail for the item."
         },
         "createdAt": {
           "type": "string",
@@ -160,7 +163,7 @@
           "description": "The date and time of the item creation."
         }
       },
-      "required": ["title", "category", "type", "url", "createdAt"]
+      "required": ["title", "category", "type", "urls", "createdAt"]
     }
   },
   "auth": {
