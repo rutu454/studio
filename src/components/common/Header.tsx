@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import Logo from './Logo';
 import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '../ui/sheet';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -23,18 +23,31 @@ const Header = () => {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('/#')) {
       e.preventDefault();
-      const targetId = href.substring(2);
+      // If we are already on the homepage, just scroll
       if (pathname === '/') {
+        const targetId = href.substring(2);
         const element = document.getElementById(targetId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
+        element?.scrollIntoView({ behavior: 'smooth' });
       } else {
-        router.push('/' + href.substring(1));
+        // Otherwise, navigate to the homepage with the hash
+        router.push(href);
       }
     }
   };
 
+  // This effect handles scrolling when navigating from another page to a hash link on the homepage
+  useEffect(() => {
+    if (window.location.hash) {
+      const targetId = window.location.hash.substring(1);
+      const element = document.getElementById(targetId);
+      if (element) {
+        // Use a timeout to ensure the element is available after the page transition
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [pathname]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-sm">
