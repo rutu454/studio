@@ -4,10 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionWrapper from '@/components/common/SectionWrapper';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Youtube } from 'lucide-react';
 
 // ✅ Import local images
 import img1 from '@/assets/1.png';
@@ -15,7 +13,7 @@ import img8 from '@/assets/8.png';
 import img9 from '@/assets/9.png';
 import img7 from '@/assets/7.png';
 
-const galleryCategories = ['All', 'Diwali', 'Sarad Utsav', 'Events', 'Charity', 'Holi'];
+const galleryCategories = ['All', 'Diwali', 'Sarad Utsav', 'Events'];
 
 type GalleryImageItem = {
   id: string;
@@ -60,68 +58,9 @@ const staticLocalImages: GalleryImageItem[] = [
   },
 ];
 
-// ✅ Existing gallery images from placeholder JSON
-const allGalleryImageItems: GalleryImageItem[] = PlaceHolderImages.filter((p) =>
-  p.id.startsWith('gallery')
-).map((p, index) => {
-  const categoryIndex = index % (galleryCategories.length - 1);
-  return {
-    id: p.id,
-    description: p.imageHint || `Gallery Image ${index + 1}`,
-    category: galleryCategories[categoryIndex + 1],
-    type: 'image',
-    images: [
-      {
-        url: p.imageUrl,
-        hint: p.imageHint || 'gallery photo',
-      },
-    ],
-  };
-});
 
-// ✅ Dummy video items
-const videoItems = [
-  {
-    id: 'video-1',
-    type: 'video' as const,
-    description: 'Our Journey',
-    category: 'Events',
-    images: [
-      {
-        url: PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
-        hint: 'video abstract',
-      },
-    ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-2',
-    type: 'video' as const,
-    description: 'Community Outreach',
-    category: 'Charity',
-    images: [{ url: 'https://picsum.photos/seed/vid2/600/400', hint: 'community work' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-3',
-    type: 'video' as const,
-    description: 'Diwali Gala',
-    category: 'Diwali',
-    images: [{ url: 'https://picsum.photos/seed/vid3/600/400', hint: 'celebration festival' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-4',
-    type: 'video' as const,
-    description: 'Holi Highlights',
-    category: 'Holi',
-    images: [{ url: 'https://picsum.photos/seed/vid4/600/400', hint: 'color festival' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-];
-
-// ✅ Combine all items (local images + JSON images + videos)
-const allItems = [...staticLocalImages, ...allGalleryImageItems, ...videoItems].sort((a, b) =>
+// ✅ Combine all items (local images only)
+const allItems = [...staticLocalImages].sort((a, b) =>
   a.id.localeCompare(b.id)
 );
 
@@ -165,31 +104,17 @@ export default function GalleryPage() {
             >
               <CardContent className="p-0 flex-grow flex flex-col">
                 <div className="relative w-full aspect-[4/3]">
-                  {item.type === 'video' ? (
-                    <Link href={`/gallery/${item.id}`} className="flex flex-col h-full">
-                      <Image
-                        src={item.images[0].url}
-                        alt={item.description}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center">
-                        <Youtube size={64} className="text-white group-hover:text-primary transition-colors" />
-                      </div>
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/gallery/${item.id}`}
-                      className="block relative w-full h-full cursor-pointer"
-                    >
-                      <Image
-                        src={item.images[0].url}
-                        alt={item.description}
-                        fill
-                        className="object-cover"
-                      />
-                    </Link>
-                  )}
+                  <Link
+                    href={`/gallery/${item.id}`}
+                    className="block relative w-full h-full cursor-pointer"
+                  >
+                    <Image
+                      src={item.images[0].url}
+                      alt={item.description}
+                      fill
+                      className="object-cover"
+                    />
+                  </Link>
                 </div>
                 <Link href={`/gallery/${item.id}`}>
                   <div className="p-4 mt-auto bg-card">

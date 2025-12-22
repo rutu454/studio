@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useParams, notFound } from 'next/navigation';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
@@ -12,8 +11,6 @@ import img1 from '@/assets/1.png';
 import img8 from '@/assets/8.png';
 import img9 from '@/assets/9.png';
 import img7 from '@/assets/7.png';
-
-const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity', 'Sarad Utsav'];
 
 type GalleryImageItem = {
   id: string;
@@ -31,7 +28,7 @@ const staticLocalImages: GalleryImageItem[] = [
   {
     id: 'local-1',
     description: 'દિવાળી ઉજવણી - દિવ્યાંગ અને મેન્ટલી ડિસેબલ સાથે પ્રસ્થાન ગ્રુપની અનોખી ઉજવણી',
-    category: 'Events',
+    category: 'Diwali',
     type: 'image',
     images: [{ url: img1.src, hint: 'local image 1' }],
   },
@@ -45,84 +42,25 @@ const staticLocalImages: GalleryImageItem[] = [
   {
     id: 'local-3',
     description: 'દેશ અને સમાજ માટે પ્રસ્થાન ગ્રુપનું કલ્યાણકારી કાર્ય - દ્રષ્ટાંત અને પ્રતિબદ્ધતા',
-    category: 'Charity',
+    category: 'Events',
     type: 'image',
     images: [{ url: img9.src, hint: 'local image 3' }],
   },
   {
     id: 'local-4',
     description: 'સાપ્તાહિક બેઠક અને નવી વિચારસરણી-સતત મंथન અને અમલ માટેનું માધ્યમ',
-    category: 'Charity',
+    category: 'Events',
     type: 'image',
     images: [{ url: img7.src, hint: 'local image 4' }],
   },
 ];
 
-const allGalleryImageItems: GalleryImageItem[] = PlaceHolderImages.filter((p) =>
-  p.id.startsWith('gallery')
-).map((p, index) => {
-  const categoryIndex = index % galleryCategories.length;
-  return {
-    id: p.id,
-    description: p.imageHint || `Gallery Image ${index + 1}`,
-    category: galleryCategories[categoryIndex],
-    type: 'image',
-    images: [
-      {
-        url: p.imageUrl,
-        hint: p.imageHint || 'gallery photo',
-      },
-    ],
-  };
-});
-
-const videoItems = [
-  {
-    id: 'video-1',
-    type: 'video' as const,
-    description: 'Our Journey',
-    category: 'Events',
-    images: [
-      {
-        url: PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
-        hint: 'video abstract',
-      },
-    ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-2',
-    type: 'video' as const,
-    description: 'Community Outreach',
-    category: 'Charity',
-    images: [{ url: 'https://picsum.photos/seed/vid2/600/400', hint: 'community work' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-3',
-    type: 'video' as const,
-    description: 'Diwali Gala',
-    category: 'Diwali',
-    images: [{ url: 'https://picsum.photos/seed/vid3/600/400', hint: 'celebration festival' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-  {
-    id: 'video-4',
-    type: 'video' as const,
-    description: 'Holi Highlights',
-    category: 'Holi',
-    images: [{ url: 'https://picsum.photos/seed/vid4/600/400', hint: 'color festival' }],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  },
-];
-
-// ✅ Combine all: local + placeholders + videos
-const allItems = [...staticLocalImages, ...allGalleryImageItems, ...videoItems];
+// ✅ Only use local static images
+const allItems = [...staticLocalImages];
 
 export default function GalleryDetailPage() {
   const params = useParams();
   const { id } = params;
-  const [current] = useState(0);
 
   const item = allItems.find((itm) => itm.id === id);
 
@@ -149,7 +87,7 @@ export default function GalleryDetailPage() {
           </h1>
         </div>
 
-        {item.type === 'image' ? (
+        {item.type === 'image' && (
           <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
             <Image
               src={item.images[0].url}
@@ -158,17 +96,6 @@ export default function GalleryDetailPage() {
               className="object-cover"
               data-ai-hint={item.images[0].hint}
             />
-          </div>
-        ) : (
-          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
-            <iframe
-              className="absolute top-0 left-0 w-full h-full"
-              src={(item as any).videoUrl}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
           </div>
         )}
 
