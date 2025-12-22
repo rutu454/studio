@@ -2,166 +2,242 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useParams, notFound } from 'next/navigation';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState } from 'react';
 
-type GalleryItem = {
+// ✅ Import same local images
+import img1 from '@/assets/1.png';
+import img8 from '@/assets/8.png';
+import img9 from '@/assets/9.png';
+import img7 from '@/assets/7.png';
+
+const galleryCategories = ['Diwali', 'Holi', 'Events', 'Charity', 'Sarad Utsav'];
+
+type GalleryImageItem = {
   id: string;
-  title: string;
-  description?: string;
+  description: string;
   category: string;
-  type: 'image' | 'video';
-  urls: string[];
-  thumbnailUrl?: string;
+  type: 'image';
+  images: {
+    url: string;
+    hint: string;
+  }[];
 };
+
+// ✅ Local static images (same as in main gallery)
+const staticLocalImages: GalleryImageItem[] = [
+  {
+    id: 'local-1',
+    description: 'દિવાળી ઉજવણી - દિવ્યાંગ અને મેન્ટલી ડિસેબલ સાથે પ્રસ્થાન ગ્રુપની અનોખી ઉજવણી',
+    category: 'Events',
+    type: 'image',
+    images: [{ url: img1.src, hint: 'local image 1' }],
+  },
+  {
+    id: 'local-2',
+    description: 'પ્રસ્થાન ગ્રુપ દ્વારા આયોજિત “સરદોત્સવ ૨૦૨૫” - એકતા, સંસ્કૃતિ અને ઉત્સવનો મેળો',
+    category: 'Sarad Utsav',
+    type: 'image',
+    images: [{ url: img8.src, hint: 'local image 2' }],
+  },
+  {
+    id: 'local-3',
+    description: 'દેશ અને સમાજ માટે પ્રસ્થાન ગ્રુપનું કલ્યાણકારી કાર્ય - દ્રષ્ટાંત અને પ્રતિબદ્ધતા',
+    category: 'Charity',
+    type: 'image',
+    images: [{ url: img9.src, hint: 'local image 3' }],
+  },
+  {
+    id: 'local-4',
+    description: 'સાપ્તાહિક બેઠક અને નવી વિચારસરણી-સતત મंथન અને અમલ માટેનું માધ્યમ',
+    category: 'Charity',
+    type: 'image',
+    images: [{ url: img7.src, hint: 'local image 4' }],
+  },
+];
+
+const allGalleryImageItems: GalleryImageItem[] = PlaceHolderImages.filter((p) =>
+  p.id.startsWith('gallery')
+).map((p, index) => {
+  const categoryIndex = index % galleryCategories.length;
+  return {
+    id: p.id,
+    description: p.imageHint || `Gallery Image ${index + 1}`,
+    category: galleryCategories[categoryIndex],
+    type: 'image',
+    images: [
+      {
+        url: p.imageUrl,
+        hint: p.imageHint || 'gallery photo',
+      },
+    ],
+  };
+});
+
+const videoItems = [
+  {
+    id: 'video-1',
+    type: 'video' as const,
+    description: 'Our Journey',
+    category: 'Events',
+    images: [
+      {
+        url: PlaceHolderImages.find((p) => p.id === 'video-thumbnail')?.imageUrl || '',
+        hint: 'video abstract',
+      },
+    ],
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+  },
+  {
+    id: 'video-2',
+    type: 'video' as const,
+    description: 'Community Outreach',
+    category: 'Charity',
+    images: [{ url: 'https://picsum.photos/seed/vid2/600/400', hint: 'community work' }],
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+  },
+  {
+    id: 'video-3',
+    type: 'video' as const,
+    description: 'Diwali Gala',
+    category: 'Diwali',
+    images: [{ url: 'https://picsum.photos/seed/vid3/600/400', hint: 'celebration festival' }],
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+  },
+  {
+    id: 'video-4',
+    type: 'video' as const,
+    description: 'Holi Highlights',
+    category: 'Holi',
+    images: [{ url: 'https://picsum.photos/seed/vid4/600/400', hint: 'color festival' }],
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+  },
+];
+
+// ✅ Combine all: local + placeholders + videos
+const allItems = [...staticLocalImages, ...allGalleryImageItems, ...videoItems];
 
 export default function GalleryDetailPage() {
   const params = useParams();
   const { id } = params;
-  const firestore = useFirestore();
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
+  const [current] = useState(0);
 
-  const docRef = useMemoFirebase(() => {
-    if (!firestore || !id) return null;
-    return doc(firestore, 'galleryItems', id as string);
-  }, [firestore, id]);
+  const item = allItems.find((itm) => itm.id === id);
 
-  const { data: item, isLoading } = useDoc<GalleryItem>(docRef);
-
-  useEffect(() => {
-    if (!api) return;
-
-    setCurrent(api.selectedScrollSnap() + 1);
-    const onSelect = () => setCurrent(api.selectedScrollSnap() + 1);
-    api.on('select', onSelect);
-
-    return () => {
-      api.off('select', onSelect);
-    };
-  }, [api]);
-
-  if (isLoading) {
-    return (
-      <div className="pt-24 bg-background">
-        <div className="max-w-4xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
-            <Skeleton className="h-6 w-48 mb-4" />
-            <Skeleton className="h-10 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-24 mb-6" />
-            <Skeleton className="aspect-video w-full rounded-lg mb-8" />
-            <Skeleton className="h-5 w-full mb-2" />
-            <Skeleton className="h-5 w-full mb-2" />
-            <Skeleton className="h-5 w-3/4" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!item) {
-    notFound();
-  }
-
-  const scrollTo = (index: number) => {
-    api?.scrollTo(index);
-  };
-
+  if (!item) notFound();
 
   return (
     <div className="pt-24 bg-background">
       <div className="max-w-4xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center text-sm font-medium text-muted-foreground mb-4">
-          <Link href="/gallery" className="flex items-center hover:text-primary transition-colors">
+          <Link
+            href="/gallery"
+            className="flex items-center hover:text-primary transition-colors"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Gallery
           </Link>
           <ChevronRight className="h-4 w-4 mx-1" />
-          <span className="text-primary truncate">{item.title}</span>
+          <span className="text-primary truncate">{item.description}</span>
         </nav>
 
         <div className="flex justify-between items-start mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">{item.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">
+            {item.description}
+          </h1>
         </div>
-        
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-6">{item.category}</p>
 
-        {item.type === 'image' && item.urls.length > 0 ? (
-          <div className="relative mb-8">
-            <Carousel
-              setApi={setApi}
-              className="w-full"
-              plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
-              opts={{ loop: true }}
-            >
-              <CarouselContent>
-                {item.urls.map((url, index) => (
-                  <CarouselItem key={index}>
-                    <div className="relative aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
-                      <Image
-                        src={url}
-                        alt={`${item.title} - ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        data-ai-hint={item.title}
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-            {item.urls.length > 1 && (
-                <div className="absolute -bottom-8 left-0 right-0 flex justify-center items-center gap-2">
-                    {item.urls.map((_, i) => (
-                    <button
-                        key={i}
-                        onClick={() => scrollTo(i)}
-                        className={cn(
-                        'h-2 w-2 rounded-full transition-all duration-300',
-                        'bg-muted-foreground/50',
-                        current === i + 1 ? 'w-4 bg-primary' : 'hover:bg-muted-foreground'
-                        )}
-                        aria-label={`Go to slide ${i + 1}`}
-                    />
-                    ))}
-                </div>
-            )}
-          </div>
-        ) : item.type === 'video' && item.urls.length > 0 ? (
-          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
-             <iframe
-                className="absolute top-0 left-0 w-full h-full"
-                src={item.urls[0].replace('watch?v=', 'embed/')}
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+        {item.type === 'image' ? (
+          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
+            <Image
+              src={item.images[0].url}
+              alt={item.description}
+              fill
+              className="object-cover"
+              data-ai-hint={item.images[0].hint}
+            />
           </div>
         ) : (
-            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2] bg-muted flex items-center justify-center">
-                <p className="text-muted-foreground">No media available.</p>
-            </div>
+          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-video">
+            <iframe
+              className="absolute top-0 left-0 w-full h-full"
+              src={(item as any).videoUrl}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
         )}
-        
-        <div className="prose prose-lg max-w-none text-foreground/80 mt-12">
-            {item.description ? (
-                <p>{item.description}</p>
-            ) : (
-                <p>No description provided for this item.</p>
-            )}
-        </div>
 
+        {/* ✅ Your Gujarati dynamic content stays unchanged */}
+        <div className="prose prose-lg max-w-none text-foreground/80">
+        {item.category === 'Diwali' && (
+          <>
+        <p>
+        દિવાળીની ઉજવણીમાં પ્રકાશ અને ખુશી તો આવતી જ હોય છે — પણ જ્યારે તે ખુશી જુદાં જ સ્થળોએ પહોંચાડવામાં આવે અને કેટલાંક લોકો માટે આશા અને સ્મિતનું કારણ બને ત્યાંથી તે ઉજવણી પવિત્ર અને અર્થપૂર્ણ બની જાય છે. પ્રસ્થાન ગ્રુપે આ વર્ષની દિવાળી એવી જ સમૃદ્ધિ અને લાગણીથી ભરી, જેમાં મુખ્યત્વે દિવ્યાંગ અને મેન્ટલી ડિસેબલ બાળકોને મુખ્ય સ્થાન આપવામાં આવ્યું. આનંદભાઈ ભટ્ટના હૈયાથી થતા પ્રેરણાદાયી નેતૃત્વ હેઠળ એ કાર્યક્રમને માત્ર એક પાર્ટી નહીં પરંતુ સમૃદ્ધ માનવતાનું ઉજ્જવલ પ્રદર્શન બનાવવામાં આવ્યું.
+</p>
+          <p>
+          પ્રથમ ઝળહળાટ: સભ્યોએ બાળકો માટે રંગબેરંગી દીવાઓ, કપડા અને મીઠાઇના પેકેટ તૈયાર કર્યા. દરેક પેકેટમાં નાનું સંદેશો અને હાથે બનાવેલ કાર્ડ નાખ્યો, જેના પર ‘તમે અમાગા હીરો છો’ જેવા શબ્દો લખેલા હતા. આ થકી બાળકોને માત્ર સામગ્રી જ નહિ, પણ આત્મવિશ્વાસ અને દિલથી આવકાર્ય લાગણી પણ મળી. ઘરેણાં જેવા નાનાં ભેટો અને રમતો માટે的小小 ગેમ સ્ટોલ પણ ગોઠવવામાં આવ્યા — જ્યાં બાળકો હસીને અને રમીને દિવાળીની સાચી મજા માણતા દેખાયા.
+          </p>
+          <p>
+          અનેક સભ્યો દ્વારા સંગીત, નાટક અને નાનાં નાટ્યપ્રદર્શનોએ બાળકોના હ્રદયને સ્પર્શ્યું. કાર્યક્રમ દરમિયાન પ્રસન્નતા અને ભાવનાત્મક પળ બંને જોવા મળ્યા — કેટલાક ગણાના નાનાં બાળકો અને તેમના માતાઓના આંખોમાં ખુશીના અંસુ પણ દેખાયા. આ બધા પળો մարդկતાના મર્મને દેખાડતા હતા: જ્યારે સમાજનો હૃદય સબને જોડાય તો જ સાચી ઉજવણી બની શકે છે.
+          </p>
+          <p>
+          સંસ્થાની ટીમે અનિવાર્ય સેવાઓ પણ આપેલી: કેક, સ્વચ્છતા વ્યવસ્થા, અને જરૂરિયાતમંદ પરિવાર માટે રોટલી/રસોઈ વ્યવસ્થા રાખીને તમામની સહાય કરવામાં આવી. કાર્યક્રમનો અંતે આનંદભાઈએ સંઘટિત પ્રવચન આપ્યું — જેણે કહ્યું, “દિવાળીનો ભાવ તો પ્રકાશની છે, પણ એ પ્રકાશ ચાર દીવાલો સુધી મર્યાદિત ન રહે; એ પ્રકાશ દરેક હૃદય સુધી પહોંચે.” આ સમારોહ એ યાદી બનાવ્યો કે સમાનતા, સન્માન અને પ્રેમથી આપણું સમાજ વધુ હસતુ, લાગણીશીલ અને સહાયક બની શકે છે.
+          </p>
+          </>
+  )}
+
+{item.category === 'Sarad Utsav' && (
+    <>
+<p>પ્રસ્થાન ગ્રુપનું સ્વભાવ — સમુદાયના સંતુલન અને સાંસ્કૃતિક જીવંતતાનો પ્રદર્શન — આ વર્ષે “સરદોત્સવ ૨૦૨૫” દ્વારા કેટલીક નવી ઊંચાઇ પર પહોંચ્યું. શરૂઆતથી અંત સુધી આ મેળામાં એવી ઉર્જા અને ઉત્સાહ જોવા મળ્યો કે જ્યાં શહેરવાસીઓ અને ગામના લોકો એક મંચ પર આવી સાથોસાથ હસ્યા, ઊમટ્યા અને એકબીજા સાથે જોડાયા.</p>
+
+<p>પ્રથમ દિવસે જ વિવિધ સંગીત કાર્યક્રમો શરૂ થયા — લોકગીતો, નૃત્ય અને નવી પેઢી દ્વારા તૈયાર કરાયેલા એન્કાઉંટર્સ. કાર્યક્રમોમાં બાળકોથી લઈને વૃદ્ધ સુધીના બધા વર્ગોએ ભાગ લીધો. નવયુવાનોએ જેનાથી ઈન્માટેવ અને દ્રમેટિક પ્લે રજૂ કર્યા, જે સમાજની વર્તમાન સમસ્યાઓ અને ધરોહર સ્નેહ પર પ્રકાશ પાડતા હતા. વિદ્યાર્થીઓએ શાળા/કોલેજ પ્રોજેક્ટ્સ પણ પ્રદર્શિત કર્યા — જેમાં તેમના સક્રિય અને રાષ્ટ્રીય વિચારને વધુ આધાર મળ્યો.</p>
+
+<p>આ વર્ષે સ્પોટલાઇટ મળ્યો સામાજિક સંદેશવાળી અત્યારાની વિવિધ પ્રવૃત્તિઓને: સ્વચ્છતા અભિયાન, પર્યાવરણ માટેની પ્રવૃત્તિઓ અને આરોગ્ય શિબિર. પ્રસ્થાન ગ્રુપે નાનાં વોલન્ટિયર્સ અને નિર્ણાયક સભ્યો સાથે મળી જગ્યાએ જ ફ્રી હેલ્થ ચેકઅપ ક્યાર્યો — જેમાં દ્રષ્ટિ ચકાસણીથી લઈને સામાન્ય સારવાર સુધીની સેવા આપવામાં આવી. બાળકો માટે ખાસ કોર્નર — કલાકૃતિ, ચિત્રકલા અને હસ્તકલા સ્ટોલ — એ બાળકોને તેમની કળા રજૂ કરવાની પાટીઓ આપી.</p>
+
+<p>મેળાની હાઇટલાઇટ: કમ્યુનિટી કુકિંગ કોન્ટેસ્ટ — જ્યાં અલગ-અલગ વિસ્તારોના પરિવારો પોતાની પરંપરાગત રેસિપિ લઈને આવ્યો અને જનને સ્વાદનો ઉપચાર આપ્યો. local cuisine ના સ્વાદ અને વાર્તાઓના માધ્યમથી સમુદાયની બહુવિધતા ઉજાગર થઇ. રાત્રે લાઇટિંગ અને લોકસંગ્રહ સાથે મુખ્ય મંચ પર આયોજિત સ્મરણસભાએ લોકોના હૈયામાં એક નવી અનુભૂતિ ભરી.</p>
+
+<p>આ આખા કાર્યક્રમનું સંચાલન અને આયોજન પ્રસ્થાન ગ્રુપના સુગઠિત પ્રયાસ અને સભ્યોના મનોભાવના કારણે શક્ય બન્યું. સરદોત્સવ માત્ર એક મેળો નહીં — એ સંસ્કૃતિનો ઉજાસ, યુવાનો માટે વૈકલ્પિક પ્લેટફોર્મ અને પરિવાર માટે એક સદા યાદગાર અર્પણ ગુજરાતી સમુદાય માટે. આ પ્રકારના આયોજનોથી લોકો એકબીજાની પાસે નજદીક આવે છે અને એકતા વધુ મજબૂત બને છે.</p>
+    
+
+    </>
+  )}
+  {item.category === 'Events' && (
+    <>
+      <p>
+      પ્રસ્થાન ગ્રુપ એ માત્ર સામુદાયિક સંસ્થા નથી — એ એક એવી પ્રેરણાદાયી ચળવળ છે જે પોતાના દરેક પગલામાં સમાજસેવાનું લક્ષ્યાંક રાખે છે. વર્ષો દરમિયાન સંસ્થાએ વિવિધ કલ્યાણકારી પ્રોજેક્ટોને જન્મ આપ્યો — જેમાં શિક્ષણ પ્રોત્સાહન, આરોગ્ય કેન્દ્રો, સ્વચ્છતા અભિયાન અને ખોરાક વિતરણ જેવા કાર્યક્રમો નોંધપાત્ર છે. આ બધામાંનો મુખ્ય આધાર એ છે કે સભ્યોની નૈતિક પ્રતિબદ્ધતા અને સમયની બલિદાન કૃતી.
+      </p>
+      <p>
+      શિક્ષણ ક્ષેત્રે પ્રસ્થાન ગ્રુપે સ્કૂલિંગ માટે ગ્રાંટ અને સ્ટડિશિપ્સની વ્યવસ્થા કરી છે. ઘણા એવા નાનાં-નાનાં વિદ્યાર્થી, જેઓ મેળવ્યા વિના આગળ વધતા હતા, આજે અભ્યાસમાં આગળ વધી રહ્યા છે અને પોતાની એક અલગ ઓળખ બનાવી રહ્યા છે. ગ્રુપ દ્વારા આયોજિત સેમિનારો અને વર્કશોપ્સમાં વ્યવસાયિક તાલીમ, કમ્પ્યુટર શિક્ષણ અને આત્મનિર્ભર બનવાની તક આપવામાં આવે છે. આ રીતે ગ્રુપ સસ્તી અને સઘન શૈક્ષણિક તક પ્રદાન કરે છે જે લાંબા ગાળાની ગેરંટી પ્રદાન કરે છે.
+      </p>
+      <p>આરોગ્ય અને સ્વચ્છતા ક્ષેત્રો પર પણ સંસ્થાનું ખાસ ધ્યાન છે. રિમોટ વિસ્તારમાં આરોગ્ય કેમ્પ અને નિત્યજરૂરી સારવાર માટે મેડિકલ કેમ્પ્સનું આયોજન કરીને, અનેક પરિવારોને સમયસર સારવાર મળી છે. સ્વચ્છતા વિષયક પ્રોજેક્ટ્સમાં ગટર સફાઈ, ઝાડારોપણ અને પબ્લિક હોળ્ડિંગ માટેની સફાઈ અભિયાનો પણ સામેલ છે — જેથી સ્થાનિક પર્યાવરણ સુધરવા અને સામાન્ય સ્વાસ્થ્યમાં સુધારો લાવી શકાય.</p>
+      <p>સામાજિક સહાયની બાજુમાં ગુરુત્વાકર્ષণની વિશેષતાએ ગ્રુપને ખાસ બનાવ્યું: આપત્તિ કાળમાં ત્વરિત સહાય, આર્થિક પ્રતિબંધી લોકોને સહાય અને વરસાદ/પ્રાકૃતિક આપત્તિ પછી પુનઃસાર ઉપરાંતની કામગીરી સહિ. પ્રસ્થાન ગ્રુપનું મંતવ્ય છે કે ચારેકોએ હાથ મિલાવીને સમાજને વધુ સુરક્ષિત અને સન્માનીત બનાવવું જોઈએ. સંસ્થા સ્થાનિક વેપારીઓ, દાનદાતાઓ અને સરકારી સંસ્થાઓ સાથે સાથ જોડીને પ્રોજેક્ટસને વધુ અસરકારક રીતે અમલમાં લાવે છે.</p>
+   <p>આ કાર્ય માત્ર એક પક્ષનું કામ નથી — એ સમુદાય ની ગાળખિયાત કામદારી છે. પ્રસ્થા ને ગણતરી માટે ન માત્ર પૈસા પણ સમય અને વ્યક્તિગત ધ્યાન જરૂર છે — જે પ્રસ્થાન ગ્રુપના સભ્યો દિલથી આપે છે. આ પ્રેરણાદાયી કાર્યોથી સમાજમાં શક્તિ, નિર્ભરતા અને આત્મવિશ્વાસનું બીજ વાવવામાં આવે છે.</p>
+    </>
+  )}
+
+  
+{item.category === 'Charity' && (
+    <>
+      <p>
+      પ્રસ્થાન ગ્રુપની એક અતિપ્રિય પરંપરા છે — deren સભ્યો સાથેની સાપ્તાહિક બેઠક. આ બેઠક માત્ર કોઈ રૂટીન મીલન નથી, પરંતુ એક એવી જગ્યા છે જ્યાં વિચારવ્યવહાર થાય, આયોજનોની યોજના બનાવવામાં આવે અને વ્યાવહારિક નિર્ણયો લેવામાં આવે. દરેક બેઠકમાં સંસ્થાના વિવિધ અંગો પાસેથી રિપોર્ટ, સૂચન અને નવા વિચારો રજૂ થાય છે — અને આ વિચારોને પ્રયોગાત્મક રીતે અજમાવવામાં મોટો ઇત્તફાક થાય છે.
+      </p>
+      <p>
+      બેઠકનું માળખું વ્યાવસાયિક છે પણ હૈયાથી ભરેલું પણ: પ્રથમ સેશનમાં ગયા અઠવાડિયાના પ્રવૃત્તિઓનું મૂલ્યાંકન થાય, પછી નવા આયોજન માટે ટેસ્ટ અને ચર્ચા. ખાસ મહેમાનો અને પ્રશસ્તિ પ્રાપ્ત વ્યક્તિઓને આમંત્રણ આપવામાં આવે — જેઓ પોતાના અનુભવો અને સફળતાના પદ્ધતિઓ વહેંચે છે. આવા ગેસ્ટ્સ સાથેની મુલાકાતો સભ્યોને પ્રેરણા આપતી હોય છે અને તેમને નવી દિશા અને ઇનોવેટિવ વિચારો અપનાવવા માટે પ્રોત્સાહિત કરે છે.
+      </p>
+      <p>
+      પ્રસ્થાન ગ્રુપે આ બેઠકમાં સતત નવી રીતો અજમાવી રહી છે: ભાષણો સત્ર, વર્કશોપ્સ, કેઝ-સ્ટડી અને બ્લૂપ્રિન્ટ સદ્ગુણોમાં ફેરફાર લાવવા માટે નોન-ફોર્મલ ‘બ્રેઇનસ્ટોર્મિંગ’ સેશનો પણ આયોજિત થાય છે. તેમાં દરેક સભ્ય પોતાના વિચારો નિર્ભયતાપૂર્વક રજૂ કરે છે — અને સર્વસે ધ્યાનથી અંદાજવી શકાય તેવા નાના પ્રોજેક્ટસને પ્રાથમિકતા મળે છે. આ વપરાશી ગતિએ સંસ્થા નાનું પરિક્ષણ કરીને સફળ સ્વરૂપે મોટા પાયે અમલમાં લાવે છે.
+      </p>
+      <p>
+      આ સવારની બેઠકમાં વધુ એક ખાસ બાબત છે — સામાજિક ઈન્ટરએક્શન અને નેટવર્કિંગ. સભ્યો પોતાનો અનુભવ વહેંચે છે, પોતાની નિપુણતા દર્શાવે છે અને નવી કોમી દિશા માટે સહયોગની માંગ કરે છે. પરિણામે, પાઠો, સિદ્ધાંતો અને પ્રેક્ટિકલ નીતિઓ વચ્ચે સારો તફાવત ન રહેતા ભાગીદાર બની જાય છે. આ પ્રસ્થાન ગ્રુપને સતત નવી ઉર્જા અને સર્જનાત્મકતા મળતી રહે છે અને તે જ સંસ્થાને સમય પ્રમાણે આગળ ધપાવે છે.
+      </p>
+    </>
+  )}
+        </div>
       </div>
     </div>
   );

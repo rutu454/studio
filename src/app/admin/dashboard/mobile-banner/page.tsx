@@ -123,7 +123,7 @@ export default function MobileBannerPage() {
     try {
        if (values.imageFile) {
         const storage = getStorage();
-        const imageRef = ref(storage, `mobileBanners/${uuidv4()}-${values.imageFile.name}`);
+        const imageRef = ref(storage, `webBanners/${uuidv4()}-${values.imageFile.name}`);
         const snapshot = await uploadBytes(imageRef, values.imageFile);
         finalImageUrl = await getDownloadURL(snapshot.ref);
       } else if (values.imageUrl) {

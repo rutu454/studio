@@ -84,30 +84,9 @@
       "imageUrl": "https://images.unsplash.com/photo-1528605105345-5344ea20e269?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cHVibGljJTIwc3BlYWtpbmd8ZW58MHx8fHwxNzYxODA2NzgyfDA&ixlib-rb-4.1.0&q=80&w=1080",
       "imageHint": "public speaking"
     },
-    {
-      "id": "gallery8",
-      "description": "Volunteers at work",
-      "imageUrl": "https://images.unsplash.com/photo-1760001552685-fa470d9cd473?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx2b2x1bnRlZXJzJTIwY29tbXVuaXR5fGVufDB8fHx8MTc2MTgzMjk4Mnww&ixlib-rb-4.1.0&q=80&w=1080",
-      "imageHint": "volunteers community"
-    },
-    {
-      "id": "team1",
-      "description": "Team member 1",
-      "imageUrl": "https://images.unsplash.com/photo-1595211877493-41a4e5f236b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE4NDUyNTh8MA&ixlib-rb-4.1.0&q=80&w=1080",
-      "imageHint": "professional portrait"
-    },
-    {
-      "id": "team2",
-      "description": "Team member 2",
-      "imageUrl": "https://images.unsplash.com/photo-1701096374092-bb70915fdc5c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NjE4OTA0NzF8MA&ixlib-rb-4.1.0&q=80&w=1080",
-      "imageHint": "professional headshot"
-    },
-    {
-      "id": "team3",
-      "description": "Team member 3",
-      "imageUrl": "https://images.unsplash.com/photo-1542596594-649edbc13630?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzbWlsaW5nJTIwcGVyc29ufGVufDB8fHx8MTc2MTgzODk0MHww&ixlib-rb-4.1.0&q=80&w=1080",
-      "imageHint": "smiling person"
-    },
+
+
+  
     {
       "id": "team4",
       "description": "Team member 4",
