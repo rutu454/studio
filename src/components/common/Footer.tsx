@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Instagram, Facebook } from 'lucide-react';
 import Logo from './Logo';
 import Image from 'next/image';
-import logo from '../../assets/footer.png';
+import logo from '../../assets/footer.webp';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -55,14 +55,15 @@ const Footer = () => {
             <Link href="/gallery" className="hover:text-white">Gallery</Link>
             <Link href="/#team" className="hover:text-white">Member</Link>
             <Link href="/#contact" className="hover:text-white">Contact</Link>
+            <Link href="#" className="hover:text-white">Privacy Policy</Link>
           </div>
           <div>
-            <Link href="#" className="hover:text-white">Privacy Policy</Link>
+            
           </div>
         </div>
 
-        <div className="text-center text-xs mt-8 text-gray-300">
-            <p>Designed with ❤️ by Sparkdigishine.</p>
+        <div className="text-center text-sm mt-8 text-white">
+            <p>Designed and Developed By Sparkdigishine.</p>
         </div>
 
       </div>
