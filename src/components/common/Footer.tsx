@@ -62,9 +62,20 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="text-center text-sm mt-8 text-white">
-            <p>Designed and Developed By Sparkdigishine.</p>
-        </div>
+        <div className="text-center text-sm mt-8 text-gray-300">
+  <p>
+    Designed and Developed By{" "}
+    <a
+      href="https://sparkdigishine.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline hover:text-white transition-colors duration-300"
+    >
+      Sparkdigishine
+    </a>.
+  </p>
+</div>
+
 
       </div>
     </footer>
