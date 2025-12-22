@@ -134,7 +134,7 @@ export default function GalleryPage() {
       : allItems.filter((item) => item.category === filter);
 
   return (
-    <div className="pt-14 md:pt-0">
+    <div className="pt-24 md:pt-28">
       <SectionWrapper className="pt-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
