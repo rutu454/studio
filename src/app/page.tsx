@@ -19,8 +19,9 @@ export default function Home() {
       <VideoSection />
       <BehindSection />
       <GallerySection />
-      <TeamSection />
       <SloganSection />
+      <TeamSection />
+     
       <GroupPhotoSection />
       <ContactSection />
     </>
