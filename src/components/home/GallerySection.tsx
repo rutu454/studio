@@ -1,19 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import SectionWrapper from '../common/SectionWrapper';
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselApi,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { cn } from '@/lib/utils';
+
+// ✅ Import local images
+import img1 from '@/assets/1.png';
+import img8 from '@/assets/8.png';
+import img9 from '@/assets/9.png';
+import img7 from '@/assets/7.png';
 
 type GalleryItem = {
   id: string;
@@ -25,104 +27,36 @@ type GalleryItem = {
   }[];
 };
 
-const categories = ['All', 'Diwali', 'Holi', 'Events', 'Charity'];
-
-// Group images by description to create gallery items
-const galleryItemsData = PlaceHolderImages.filter((p) =>
-  p.id.startsWith('gallery')
-).reduce((acc, current) => {
-  let item = acc.find((it) => it.description === current.description);
-  if (!item) {
-    item = {
-      id: current.id,
-      description: current.description,
-      // Assign category cyclically, but make sure description groups have the same category
-      category:
-        categories[
-          (acc.length % (categories.length - 1)) + 1
-        ],
-      images: [],
-    };
-    acc.push(item);
-  }
-  item.images.push({ url: current.imageUrl, hint: current.imageHint });
-  return acc;
-}, [] as GalleryItem[]);
-
-const GalleryCarousel = ({ item }: { item: GalleryItem }) => {
-    const [api, setApi] = useState<CarouselApi>();
-    const [current, setCurrent] = useState(0);
-  
-    useEffect(() => {
-      if (!api) return;
-  
-      setCurrent(api.selectedScrollSnap());
-      const onSelect = () => {
-        setCurrent(api.selectedScrollSnap());
-      };
-      api.on('select', onSelect);
-  
-      return () => {
-        api.off('select', onSelect);
-      };
-    }, [api]);
-  
-    const scrollTo = (index: number) => {
-      api?.scrollTo(index);
-    };
-
-    return (
-        <div className="relative group aspect-square">
-            <Carousel
-                setApi={setApi}
-                className="w-full h-full"
-                plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-                opts={{ loop: true }}
-            >
-                <CarouselContent>
-                {item.images.map((image, index) => (
-                    <CarouselItem key={index}>
-                        <Link href={`/gallery/${item.id}`} className="block relative w-full aspect-square rounded-lg overflow-hidden cursor-pointer">
-                            <Image
-                                src={image.url}
-                                alt={item.description}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-110"
-                                data-ai-hint={image.hint}
-                            />
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-                        </Link>
-                    </CarouselItem>
-                ))}
-                </CarouselContent>
-            </Carousel>
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
-            {item.images.map((_, i) => (
-                <button
-                    key={i}
-                    onClick={() => scrollTo(i)}
-                    className={cn(
-                        'h-2 w-2 rounded-full transition-all duration-300',
-                        'bg-white/50 backdrop-blur-sm group-hover:bg-white/80',
-                        current === i ? 'w-4 bg-white' : 'hover:bg-white'
-                    )}
-                    aria-label={`Go to slide ${i + 1}`}
-                />
-            ))}
-            </div>
-      </div>
-    )
-}
+// ✅ Use the same static local images
+const galleryItemsData: GalleryItem[] = [
+  {
+    id: 'local-1',
+    description: 'દિવાળી ઉજવણી',
+    category: 'Diwali',
+    images: [{ url: img1.src, hint: 'local image 1' }],
+  },
+  {
+    id: 'local-2',
+    description: '“સરદોત્સવ ૨૦૨૫”',
+    category: 'Sarad Utsav',
+    images: [{ url: img8.src, hint: 'local image 2' }],
+  },
+  {
+    id: 'local-3',
+    description: 'કલ્યાણકારી કાર્ય',
+    category: 'Events',
+    images: [{ url: img9.src, hint: 'local image 3' }],
+  },
+  {
+    id: 'local-4',
+    description: 'સાપ્તાહિક બેઠક',
+    category: 'Events',
+    images: [{ url: img7.src, hint: 'local image 4' }],
+  },
+];
 
 
 const GallerySection = () => {
-  const [filter, setFilter] = useState('All');
-
-  const filteredItems =
-    filter === 'All'
-      ? galleryItemsData.slice(0, 4) // Limit to 4 items for the homepage
-      : galleryItemsData.filter((item) => item.category === filter);
-
   return (
     <SectionWrapper>
       <div className="text-center mb-12">
@@ -132,23 +66,8 @@ const GallerySection = () => {
         </p>
       </div>
 
-      <div className="flex justify-center flex-wrap gap-2 mb-8">
-        {categories.map((category) => (
-          <Button
-            key={category}
-            variant={filter === category ? 'default' : 'outline'}
-            onClick={() => setFilter(category)}
-          >
-            {category}
-          </Button>
-        ))}
-      </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {filteredItems.map((item) =>
-          item.images.length > 1 ? (
-            <GalleryCarousel key={item.id} item={item} />
-          ) : (
+        {galleryItemsData.map((item) => (
             <Link
               href={`/gallery/${item.id}`}
               key={item.id}
@@ -162,9 +81,11 @@ const GallerySection = () => {
                 data-ai-hint={item.images[0].hint}
               />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                <h3 className="text-white font-bold truncate">{item.description}</h3>
+              </div>
             </Link>
-          )
-        )}
+        ))}
       </div>
 
       <div className="text-center mt-12">

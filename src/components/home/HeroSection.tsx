@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import b1 from '../../assets/prasthan group banner (3).png';
-import b2 from '../../assets/prasthan group banner (4).png';
-import b3 from '../../assets/prasthan group banner (6).png';
+import b1 from '../../assets/prasthan group banner.webp';
+import b2 from '../../assets/prasthan group banner (1).webp';
+import b3 from '../../assets/prasthan group banner (3).webp';
 import b4 from '../../assets/prasthan group responsive banner (2).png';
 import b5 from '../../assets/prasthan group responsive banner (1).png';
 import b6 from '../../assets/prasthan group responsive banner.png';
