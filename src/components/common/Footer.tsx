@@ -55,14 +55,15 @@ const Footer = () => {
             <Link href="/gallery" className="hover:text-white">Gallery</Link>
             <Link href="/#team" className="hover:text-white">Member</Link>
             <Link href="/#contact" className="hover:text-white">Contact</Link>
+            <Link href="#" className="hover:text-white">Privacy Policy</Link>
           </div>
           <div>
-            <Link href="#" className="hover:text-white">Privacy Policy</Link>
+            
           </div>
         </div>
 
-        <div className="text-center text-xs mt-8 text-gray-300">
-            <p>Designed with ❤️ by Sparkdigishine.</p>
+        <div className="text-center text-sm mt-8 text-white">
+            <p>Designed and Developed By Sparkdigishine.</p>
         </div>
 
       </div>
