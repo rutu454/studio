@@ -4,16 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Logo from './Logo';
 import { Menu } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-  SheetHeader,
-  SheetTitle,
-} from '../ui/sheet';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '../ui/sheet';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -24,46 +15,20 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
-  ) => {
-    if (href.startsWith('/#')) {
-      e.preventDefault();
-      const targetId = href.substring(2);
-      
-      if (pathname === '/') {
-        // Already on the homepage, just scroll
-        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        // On a different page, navigate to homepage and let the layout effect handle scrolling
-        router.push(`/#${targetId}`);
-      }
-    }
-  };
-  
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-sm">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-20">
           <Logo className="text-primary" />
-
+          
           <nav className="hidden md:flex md:space-x-8 items-center">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className="text-sm font-medium transition-colors text-foreground/80 hover:text-primary"
-              >
-                {link.label}
+              <Link key={link.href} href={link.href} className="text-sm font-medium transition-colors text-foreground/80 hover:text-primary">
+                  {link.label}
               </Link>
             ))}
           </nav>
-
+          
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -73,18 +38,14 @@ const Header = () => {
               </SheetTrigger>
               <SheetContent side="right" className="p-0">
                 <SheetHeader className="p-4 border-b">
-                  <Logo />
-                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                   <Logo />
+                   <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col h-full">
                   <nav className="flex flex-col space-y-4 p-4">
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
-                        <Link
-                          href={link.href}
-                          onClick={(e) => handleNavClick(e, link.href)}
-                          className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                        >
+                        <Link href={link.href} className="text-lg font-medium text-foreground hover:text-primary transition-colors">
                           {link.label}
                         </Link>
                       </SheetClose>
