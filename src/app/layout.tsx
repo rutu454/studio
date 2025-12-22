@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 import AppShell from '@/components/common/AppShell';
+import SmoothScrollHandler from '@/components/common/SmoothScrollHandler';
 
 export const metadata: Metadata = {
   title: 'Prasthan Connect',
@@ -23,6 +24,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
+          <SmoothScrollHandler />
           <AppShell>
             {children}
           </AppShell>

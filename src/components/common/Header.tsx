@@ -39,38 +39,12 @@ const Header = () => {
         // Already on the homepage, just scroll
         document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
       } else {
-        // On a different page, navigate to homepage with hash
+        // On a different page, navigate to homepage and let the layout effect handle scrolling
         router.push(`/#${targetId}`);
       }
     }
   };
   
-  useEffect(() => {
-    // This effect handles scrolling when the page loads with a hash in the URL.
-    // This is crucial for when we navigate from another page to a section on the homepage.
-    const handleHashChange = () => {
-      if (window.location.hash) {
-        const id = window.location.hash.substring(1);
-        setTimeout(() => {
-          const element = document.getElementById(id);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100); // A small delay ensures the element is rendered.
-      }
-    };
-    
-    // Handle initial load
-    handleHashChange();
-    
-    // Next.js router doesn't trigger a full page reload, so we can't just rely on
-    // standard hash change events. We listen for path changes and re-evaluate.
-    if (pathname === '/' && window.location.hash) {
-        handleHashChange();
-    }
-
-  }, [pathname]);
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background shadow-sm">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
