@@ -4,8 +4,8 @@ import Image from 'next/image';
 import SectionWrapper from '../common/SectionWrapper';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import b from '../../assets/prasthan group banner (8).png';
-import b1 from '../../assets/prasthan group responsive banner (6).png';
+import b from '../../assets/prasthan group banner (4).webp';
+import b1 from '../../assets/prasthan group responsive banner (3).webp';
 
 const TeamSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -30,8 +30,8 @@ const TeamSection = () => {
 
   return (
     <SectionWrapper
-      id="team"
-      className="bg-[#CC0000] sm:py-4" // reduced padding (was py-0 sm:py-0)
+     id="team"
+      className="bg-[#CC0000] sm:py-4 md:py-10" // reduced padding (was py-0 sm:py-0)
     >
       <div
         ref={sectionRef}

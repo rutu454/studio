@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Instagram, Facebook } from 'lucide-react';
 import Logo from './Logo';
 import Image from 'next/image';
-import logo from '../../assets/footer.png';
+import logo from '../../assets/footer.webp';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>

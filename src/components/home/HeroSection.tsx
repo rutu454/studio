@@ -4,9 +4,9 @@ import Image from 'next/image';
 import b1 from '../../assets/prasthan group banner.webp';
 import b2 from '../../assets/prasthan group banner (1).webp';
 import b3 from '../../assets/prasthan group banner (3).webp';
-import b4 from '../../assets/prasthan group responsive banner (2).png';
-import b5 from '../../assets/prasthan group responsive banner (1).png';
-import b6 from '../../assets/prasthan group responsive banner.png';
+import b4 from '../../assets/prasthan group responsive banner (1).webp';
+import b5 from '../../assets/prasthan group responsive banner (2).webp';
+import b6 from '../../assets/prasthan group responsive banner.webp';
 
 import {
   Carousel,
@@ -36,7 +36,7 @@ const HeroSection = () => {
     { id: 6, src: b6, alt: 'Mobile Banner 3' },
   ];
   useEffect(() => {
-    if (!api) return undefined; // ✅ Explicitly return undefined
+    if (!api) return undefined; 
   
     setCurrent(api.selectedScrollSnap());
     const onSelect = () => setCurrent(api.selectedScrollSnap());

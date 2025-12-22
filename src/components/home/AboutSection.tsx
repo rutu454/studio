@@ -14,57 +14,65 @@ const AboutSection = () => {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Set visibility based on whether the element is in the viewport
-          setIsVisible(entry.isIntersecting);
-        });
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
       },
-      { threshold: 0.1 }
+      { threshold: 0.2 }
     );
 
-    const currentRef = sectionRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
 
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <SectionWrapper ref={sectionRef}>
+    <SectionWrapper id="about "ref={sectionRef} className='container mx:auto md:px-14 '>
       <div className="grid md:grid-cols-2 gap-12 items-center">
+        {/* TEXT CONTENT */}
         <div
           className={cn(
-            'space-y-6 transition-all duration-700 ease-in-out',
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            'space-y-6 transition-all duration-700 ease-out',
+            isVisible
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-10'
           )}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-primary">About Us</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-primary">
+            About Us
+          </h2>
+
           <p className="text-lg text-foreground/80 leading-relaxed">
-            Along with social service and various scientific experiences, Prasthan Group works in different creative fields. Through its social and problem-solving initiatives, the group helps people in need and spreads awareness. The main aim of Prasthan Group is to bring together youth interested in social service and creative activities, giving them a common platform to work for social betterment.
+            Along with social service and various scientific experiences,
+            Prasthan Group works in different creative fields. Through its
+            social and problem-solving initiatives, the group helps people
+            in need and spreads awareness. The main aim of Prasthan Group
+            is to bring together youth interested in social service and
+            creative activities, giving them a common platform to work
+            for social betterment.
           </p>
+
           <Button asChild>
             <Link href="/about">Read More</Link>
           </Button>
         </div>
+
+        {/* IMAGE */}
         <div
           className={cn(
-            'relative h-80 w-full rounded-lg overflow-hidden shadow-xl transition-all duration-700 ease-in-out',
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            'relative h-80 w-full rounded-xl overflow-hidden shadow-xl transition-all duration-700 ease-out delay-200',
+            isVisible
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-10'
           )}
-          style={{ transitionDelay: '200ms' }}
         >
           <Image
             src={aboutImage}
             alt="Prasthan Group members holding Indian flags"
             fill
             className="object-cover"
-            data-ai-hint="group photo outdoors"
+            priority
           />
         </div>
       </div>
