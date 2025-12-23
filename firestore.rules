@@ -3,43 +3,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check for admin role
+    // Helper function to check if the user is an admin.
+    // It checks for the existence of the user's UID in the admin_user collection.
     function isAdmin() {
       return exists(/databases/$(database)/documents/admin_user/$(request.auth.uid));
     }
 
-    // Rules for admin user profiles
+    // Rules for the admin_user collection.
+    // Only the user themselves can manage their own document.
     match /admin_user/{adminId} {
-      // Admins can read their own profile, and other admins can see it
-      allow read: if request.auth.uid == adminId || isAdmin();
-      // Only the user can create their own profile document
-      allow create: if request.auth.uid == adminId;
-      // Admins can't delete other admin documents
-      allow update, delete: if request.auth.uid == adminId;
+      allow read, write: if request.auth.uid == adminId;
     }
 
-    // Rules for Contact Form Submissions
+    // Rules for the contact form submissions.
     match /contactFormSubmissions/{submissionId} {
-      // Anyone can create a new submission
+      // Anyone can create a submission (i.e., submit the form).
       allow create: if true;
-      // Only admins can read submissions
+      // Only admins can read the submissions.
       allow read: if isAdmin();
-      // Nobody can update or delete submissions through the client
+      // No one can update or delete submissions from the client side.
       allow update, delete: if false;
     }
 
-    // Rules for both web and mobile banners
+    // Rules for web banners.
     match /webBanners/{bannerId} {
-      // Public can read banners. The client-side query must filter for active ones.
+      // Anyone (public users included) can read banner information.
+      // The client-side query is responsible for filtering for active banners.
       allow get, list: if true;
-      // Admins have full write access
+      // Only admins can create, update, or delete banners.
       allow write: if isAdmin();
     }
     
+    // Rules for mobile banners.
     match /mobileBanners/{bannerId} {
-      // Public can read banners. The client-side query must filter for active ones.
+      // Anyone (public users included) can read banner information.
+      // The client-side query is responsible for filtering for active banners.
       allow get, list: if true;
-      // Admins have full write access
+      // Only admins can create, update, or delete banners.
       allow write: if isAdmin();
     }
   }
