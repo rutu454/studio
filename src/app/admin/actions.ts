@@ -51,8 +51,8 @@ export async function registerAdmin(email: string, password: string): Promise<{ 
             password,
         });
 
-        // 2. Save user data to Firestore
-        await firestore.collection('admins').doc(userRecord.uid).set({
+        // 2. Save user data to Firestore in 'admin_user' collection
+        await firestore.collection('admin_user').doc(userRecord.uid).set({
             uid: userRecord.uid,
             email: userRecord.email,
             role: 'admin',

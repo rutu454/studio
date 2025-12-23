@@ -72,7 +72,7 @@
       },
       "description": "Stores all submissions from the contact form."
     },
-    "/admins/{adminId}": {
+    "/admin_user/{adminId}": {
       "schema": {
         "$ref": "#/entities/AdminUser"
       },
