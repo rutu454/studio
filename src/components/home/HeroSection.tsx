@@ -143,7 +143,7 @@ const HeroSection = () => {
         </Carousel>
 
         {/* Mobile Navigation Dots */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-2">
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-2">
           {mobileImages.map((_, i) => (
             <button
               key={i}
