@@ -20,21 +20,23 @@ service cloud.firestore {
     }
 
     match /webBanners/{bannerId} {
-      // Public can list active, non-deleted banners.
-      allow list: if request.auth == null && resource.data.status == true && resource.data.isDeleted == false;
-      allow get: if resource.data.status == true && resource.data.isDeleted == false;
+      // Public users can get/list active, non-deleted banners.
+      allow get, list: if request.auth == null 
+                      && resource.data.status == true 
+                      && resource.data.isDeleted == false;
       
-      // Admins can perform any action.
-      allow read, write, delete: if isAdmin();
+      // Admins have full read/write access.
+      allow read, write: if isAdmin();
     }
 
     match /mobileBanners/{bannerId} {
-      // Public can list active, non-deleted banners.
-      allow list: if request.auth == null && resource.data.status == true && resource.data.isDeleted == false;
-      allow get: if resource.data.status == true && resource.data.isDeleted == false;
+       // Public users can get/list active, non-deleted banners.
+      allow get, list: if request.auth == null 
+                      && resource.data.status == true 
+                      && resource.data.isDeleted == false;
       
-      // Admins can perform any action.
-      allow read, write, delete: if isAdmin();
+      // Admins have full read/write access.
+      allow read, write: if isAdmin();
     }
   }
 }
