@@ -7,8 +7,8 @@ import HeroCarousel, { type Banner } from './HeroCarousel';
 async function getBanners(collectionName: 'webBanners' | 'mobileBanners'): Promise<Banner[]> {
   try {
     // Ensure the admin app is initialized before using any admin services.
-    await initializeAdminApp();
-    const db = getAdminFirestore();
+    const adminApp = await initializeAdminApp();
+    const db = getAdminFirestore(adminApp);
     
     const bannersRef = db.collection(collectionName);
     const snapshot = await bannersRef.orderBy('position').get();
