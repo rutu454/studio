@@ -80,28 +80,25 @@ export default function ContactSubmissionsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Message</TableHead>
+                <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   </TableRow>
                 ))
               ) : submissions && submissions.length > 0 ? (
                 submissions.map((submission) => (
                   <TableRow key={submission.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      {formatDate(submission.submissionDate)}
-                    </TableCell>
                     <TableCell className="font-medium">{submission.fullName}</TableCell>
                     <TableCell>
                       <a href={`mailto:${submission.email}`} className="text-primary hover:underline">
@@ -110,6 +107,9 @@ export default function ContactSubmissionsPage() {
                     </TableCell>
                     <TableCell className="max-w-[300px] truncate">
                       {submission.message}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {formatDate(submission.submissionDate)}
                     </TableCell>
                   </TableRow>
                 ))
