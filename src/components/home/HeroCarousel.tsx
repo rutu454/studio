@@ -64,13 +64,13 @@ const HeroCarousel = ({
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
               <div className="relative w-full h-full">
-                <Image
+                {banner.imageUrl && (<img
                   src={banner.imageUrl}
                   alt={banner.title}
-                  fill
-                  priority
+                  // fill
+                  // priority
                   className="object-cover"
-                />
+                />)}
               </div>
             </CarouselItem>
           ))}

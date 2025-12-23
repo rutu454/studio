@@ -81,13 +81,20 @@ const BannerTable = ({
                 filteredBanners.map((banner) => (
                   <TableRow key={banner.id} className={cn(banner.isDeleted && 'bg-muted/50')}>
                     <TableCell>
-                      <img 
+                      {/* <img 
                         src={banner.imageUrl}
                         alt={banner.title}
                         // width={128}
                         // height={64}
                         className="rounded-md object-cover"
-                      />
+                      /> */}
+                      {banner.imageUrl && (<img
+                  src={banner.imageUrl}
+                  alt={banner.title}
+                  // fill
+                  // priority
+                  className="object-cover"
+                />)}
                     </TableCell>
                     <TableCell className="font-medium">{banner.title}</TableCell>
                     <TableCell>
