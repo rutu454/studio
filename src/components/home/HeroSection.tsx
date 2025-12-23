@@ -11,7 +11,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Banner {
@@ -97,35 +97,47 @@ const HeroCarousel = ({
 
 
 const HeroSection = () => {
-  const firestore = useFirestore();
+    const [webBanners, setWebBanners] = useState<Banner[]>([]);
+    const [mobileBanners, setMobileBanners] = useState<Banner[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const firestore = useFirestore();
 
-  const webBannersQuery = useMemoFirebase(
-    () =>
-      firestore
-        ? query(
-            collection(firestore, 'webBanners'), 
-            where('status', '==', true),
-            where('isDeleted', '==', false),
-            orderBy('position')
-          )
-        : null,
-    [firestore]
-  );
-  const mobileBannersQuery = useMemoFirebase(
-    () =>
-      firestore
-        ? query(
-            collection(firestore, 'mobileBanners'), 
-            where('status', '==', true),
-            where('isDeleted', '==', false),
-            orderBy('position')
-          )
-        : null,
-    [firestore]
-  );
+    useEffect(() => {
+        const fetchBanners = async () => {
+            if (!firestore) return;
+            setIsLoading(true);
+            try {
+                // Fetch Web Banners
+                const webBannersQuery = query(
+                    collection(firestore, 'webBanners'),
+                    where('status', '==', true),
+                    where('isDeleted', '==', false),
+                    orderBy('position')
+                );
+                const webBannersSnapshot = await getDocs(webBannersQuery);
+                const webBannersData = webBannersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+                setWebBanners(webBannersData);
 
-  const { data: webBanners, isLoading: webLoading } = useCollection<Banner>(webBannersQuery);
-  const { data: mobileBanners, isLoading: mobileLoading } = useCollection<Banner>(mobileBannersQuery);
+                // Fetch Mobile Banners
+                const mobileBannersQuery = query(
+                    collection(firestore, 'mobileBanners'),
+                    where('status', '==', true),
+                    where('isDeleted', '==', false),
+                    orderBy('position')
+                );
+                const mobileBannersSnapshot = await getDocs(mobileBannersQuery);
+                const mobileBannersData = mobileBannersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+                setMobileBanners(mobileBannersData);
+
+            } catch (error) {
+                console.error("Error fetching banners:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchBanners();
+    }, [firestore]);
 
 
   return (
@@ -134,7 +146,7 @@ const HeroSection = () => {
       <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block pt-20">
         <HeroCarousel
             banners={webBanners}
-            isLoading={webLoading}
+            isLoading={isLoading}
         />
       </section>
 
@@ -142,7 +154,7 @@ const HeroSection = () => {
       <section className="relative w-full h-[60vh] block md:hidden pt-20">
          <HeroCarousel
             banners={mobileBanners}
-            isLoading={mobileLoading}
+            isLoading={isLoading}
         />
       </section>
     </>

@@ -27,8 +27,7 @@ service cloud.firestore {
 
     // Rules for web banners.
     match /webBanners/{bannerId} {
-      // Anyone (public users included) can read banner information.
-      // The client-side query is responsible for filtering for active banners.
+      // Public users can read banner information.
       allow get, list: if true;
       // Only admins can create, update, or delete banners.
       allow write: if isAdmin();
@@ -36,8 +35,7 @@ service cloud.firestore {
     
     // Rules for mobile banners.
     match /mobileBanners/{bannerId} {
-      // Anyone (public users included) can read banner information.
-      // The client-side query is responsible for filtering for active banners.
+      // Public users can read banner information.
       allow get, list: if true;
       // Only admins can create, update, or delete banners.
       allow write: if isAdmin();
