@@ -13,11 +13,14 @@ import Link from 'next/link';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleLogin = async () => {
-    const error = await login(email, password);
+    setIsLoading(true);
+    const { error } = await login(email, password);
+    setIsLoading(false);
 
     if (error) {
       toast({
@@ -26,6 +29,12 @@ export default function LoginPage() {
         description: error,
       });
     } else {
+      // On successful login, redirect to the dashboard.
+      // A full implementation would involve setting a session cookie.
+      toast({
+        title: 'Login Successful',
+        description: 'Redirecting to dashboard...',
+      });
       router.push('/admin/dashboard');
     }
   };
@@ -46,6 +55,7 @@ export default function LoginPage() {
                 placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -55,10 +65,11 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Button onClick={handleLogin} className="w-full">
-              Login
+            <Button onClick={handleLogin} className="w-full" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
             </Button>
             <div className="text-center text-sm">
               Don't have an account?{' '}

@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { registerAdmin } from '../actions';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -26,16 +28,23 @@ export default function RegisterPage() {
       return;
     }
     
-    // NOTE: This is a placeholder.
-    // In a real app, you would call a server action here to create a new user.
-    console.log('Registering with:', email, password);
+    setIsLoading(true);
+    const { error } = await registerAdmin(email, password);
+    setIsLoading(false);
 
-    toast({
-      title: 'Registration Successful',
-      description: 'You can now log in.',
-    });
-
-    router.push('/admin');
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: error,
+      });
+    } else {
+      toast({
+        title: 'Registration Successful',
+        description: 'You can now log in.',
+      });
+      router.push('/admin');
+    }
   };
 
   return (
@@ -54,6 +63,7 @@ export default function RegisterPage() {
                 placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -63,6 +73,7 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
              <div className="space-y-2">
@@ -72,10 +83,11 @@ export default function RegisterPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Button onClick={handleRegister} className="w-full">
-              Register
+            <Button onClick={handleRegister} className="w-full" disabled={isLoading}>
+              {isLoading ? 'Registering...' : 'Register'}
             </Button>
             <div className="text-center text-sm">
               Already have an account?{' '}

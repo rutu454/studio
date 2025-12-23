@@ -34,10 +34,36 @@
         "message",
         "submissionDate"
       ]
+    },
+    "AdminUser": {
+      "title": "Admin User",
+      "type": "object",
+      "description": "An administrator user for the website.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Auth."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The admin's email address."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user, e.g., 'admin'."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the user was created."
+        }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
     }
   },
   "auth": {
-    "providers": []
+    "providers": ["email"]
   },
   "firestore": {
     "/contactFormSubmissions/{submissionId}": {
@@ -45,6 +71,12 @@
         "$ref": "#/entities/ContactFormSubmission"
       },
       "description": "Stores all submissions from the contact form."
+    },
+    "/admins/{adminId}": {
+      "schema": {
+        "$ref": "#/entities/AdminUser"
+      },
+      "description": "Stores information about administrator users."
     }
   }
 }
