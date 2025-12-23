@@ -20,8 +20,10 @@ service cloud.firestore {
 
     // Rules for banners
     match /banners/{bannerId} {
-      // Admins can perform all actions
-      allow read, create, update, delete: if request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
+      // Anyone can read banners for the homepage
+      allow read: if true;
+      // Only admins can create, update, or delete them
+      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
