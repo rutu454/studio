@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,9 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, doc, setDoc, Timestamp } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,7 +30,8 @@ const formSchema = z.object({
   title: z.string().min(2, 'Title is required'),
   position: z.coerce.number().min(0, 'Position must be a positive number'),
   status: z.boolean().default(true),
-  image: z.any().refine(val => val, 'Image is required.'),
+  // The image is now a Base64 string
+  image: z.string().refine(val => val.startsWith('data:image/'), 'Image is required.'),
 });
 
 export type BannerFormValues = z.infer<typeof formSchema>;
@@ -52,9 +52,9 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  // This will now hold the base64 string
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-
+  
   const form = useForm<BannerFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -68,26 +68,15 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      form.setValue('image', file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const base64String = reader.result as string;
+        setImagePreview(base64String);
+        form.setValue('image', base64String, { shouldValidate: true });
       };
       reader.readAsDataURL(file);
     }
   };
-
-  async function uploadImage(file: File): Promise<string> {
-    const storage = getStorage();
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExtension}`;
-    const storageRef = ref(storage, `banners/${fileName}`);
-
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  }
 
   async function onSubmit(values: BannerFormValues) {
     if (!firestore) {
@@ -98,23 +87,12 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
     setIsLoading(true);
 
     try {
-        let imageUrl = initialData?.imageUrl;
-
-        if(imageFile){
-            imageUrl = await uploadImage(imageFile);
-        }
-
-        if(!imageUrl){
-            form.setError('image', {type: 'manual', message: 'Image is required.'});
-            setIsLoading(false);
-            return;
-        }
-
         const bannerData = {
             title: values.title,
             position: values.position,
             status: values.status,
-            imageUrl: imageUrl, 
+            // The image value from the form is now the base64 string
+            imageUrl: values.image, 
         };
 
         if (initialData?.id) {

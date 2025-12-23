@@ -51,7 +51,8 @@ const BannerTable = ({
     showDeleted: boolean,
 }) => {
     const filteredBanners = useMemo(() => {
-        return banners?.filter(b => b.isDeleted === showDeleted) || [];
+        // return banners?.filter(b => b.isDeleted === showDeleted) || [];
+        return banners || [];
     }, [banners, showDeleted]);
 
     return (
@@ -80,11 +81,11 @@ const BannerTable = ({
                 filteredBanners.map((banner) => (
                   <TableRow key={banner.id} className={cn(banner.isDeleted && 'bg-muted/50')}>
                     <TableCell>
-                      <Image 
+                      <img 
                         src={banner.imageUrl}
                         alt={banner.title}
-                        width={128}
-                        height={64}
+                        // width={128}
+                        // height={64}
                         className="rounded-md object-cover"
                       />
                     </TableCell>
@@ -139,6 +140,8 @@ export default function BannersPage() {
   const { data: mobileBanners, isLoading: mobileBannersLoading } = useCollection<Banner>(mobileBannersQuery);
 
   const isLoading = isUserLoading || webBannersLoading || mobileBannersLoading;
+
+  console.log(mobileBanners)
 
   return (
     <div className="space-y-6">
