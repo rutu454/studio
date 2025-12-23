@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import AppShell from '@/components/common/AppShell';
 import SectionWrapper from '@/components/common/SectionWrapper';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -73,64 +74,66 @@ export default function GalleryPage() {
       : allItems.filter((item) => item.category === filter);
 
   return (
-    <div className="pt-24 md:pt-28">
-      <SectionWrapper id="contact" className="pt-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Moments that Inspire
-          </h1>
-          <p className="text-lg text-foreground/80 max-w-2xl mx-auto">
-            A collection of moments from our events, celebrations, and community work.
-          </p>
-        </div>
+    <AppShell>
+      <div className="pt-24 md:pt-28">
+        <SectionWrapper id="contact" className="pt-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
+              Moments that Inspire
+            </h1>
+            <p className="text-lg text-foreground/80 max-w-2xl mx-auto">
+              A collection of moments from our events, celebrations, and community work.
+            </p>
+          </div>
 
-        <div className="flex justify-center flex-wrap gap-2 mb-6">
-          {galleryCategories.map((category) => (
-            <Button
-              key={category}
-              variant={filter === category ? 'default' : 'outline'}
-              onClick={() => setFilter(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
+          <div className="flex justify-center flex-wrap gap-2 mb-6">
+            {galleryCategories.map((category) => (
+              <Button
+                key={category}
+                variant={filter === category ? 'default' : 'outline'}
+                onClick={() => setFilter(category)}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className="overflow-hidden group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col"
-            >
-              <CardContent className="p-0 flex-grow flex flex-col">
-                <div className="relative w-full aspect-[4/3]">
-                  <Link
-                    href={`/gallery/${item.id}`}
-                    className="block relative w-full h-full cursor-pointer"
-                  >
-                    <Image
-                      src={item.images[0].url}
-                      alt={item.description}
-                      fill
-                      className="object-cover"
-                    />
-                  </Link>
-                </div>
-                <Link href={`/gallery/${item.id}`}>
-                  <div className="p-4 mt-auto bg-card">
-                    <p className="text-md font-semibold text-foreground truncate">
-                      {item.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.category}
-                    </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredItems.map((item) => (
+              <Card
+                key={item.id}
+                className="overflow-hidden group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col"
+              >
+                <CardContent className="p-0 flex-grow flex flex-col">
+                  <div className="relative w-full aspect-[4/3]">
+                    <Link
+                      href={`/gallery/${item.id}`}
+                      className="block relative w-full h-full cursor-pointer"
+                    >
+                      <Image
+                        src={item.images[0].url}
+                        alt={item.description}
+                        fill
+                        className="object-cover"
+                      />
+                    </Link>
                   </div>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </SectionWrapper>
-    </div>
+                  <Link href={`/gallery/${item.id}`}>
+                    <div className="p-4 mt-auto bg-card">
+                      <p className="text-md font-semibold text-foreground truncate">
+                        {item.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.category}
+                      </p>
+                    </div>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </SectionWrapper>
+      </div>
+    </AppShell>
   );
 }
