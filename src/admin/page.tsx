@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { login } from './actions';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -15,18 +16,19 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    // This is a simple, non-secure login check.
-    if (email === 'admin@prasthan.com' && password === 'admin') {
-      // In a real app, you'd handle session/auth state here.
-      // For this prototype, we'll just navigate.
-      router.push('/admin/dashboard');
-    } else {
+  const handleLogin = async () => {
+    const error = await login(email, password);
+
+    if (error) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Please check your email and password.',
+        description: error,
       });
+    } else {
+      // In a real app, you'd handle session/auth state here.
+      // For this prototype, we'll just navigate.
+      router.push('/admin/dashboard');
     }
   };
 
