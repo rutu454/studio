@@ -21,6 +21,74 @@ interface Banner {
   altText: string;
 }
 
+const HeroCarousel = ({
+  banners,
+  isLoading,
+  setApi,
+  current,
+}: {
+  banners: Banner[] | null;
+  isLoading: boolean;
+  setApi: (api: CarouselApi) => void;
+  current: number;
+}) => {
+  if (isLoading) {
+    return <Skeleton className="w-full h-full" />;
+  }
+
+  if (!banners || banners.length === 0) {
+    return null; // Don't render anything if there are no banners
+  }
+
+  const scrollTo = (index: number, api: CarouselApi | undefined) => api?.scrollTo(index);
+
+  return (
+    <>
+      <Carousel
+        setApi={setApi}
+        className="w-full h-full"
+        plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
+        opts={{ loop: true }}
+      >
+        <CarouselContent>
+          {banners.map((img) => (
+            <CarouselItem key={img.id}>
+              <div className="relative w-full h-full">
+                <Image
+                  src={img.imageUrl}
+                  alt={img.altText}
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-2">
+        {banners.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => {
+                let localApi: CarouselApi | undefined;
+                setApi(api => { localApi = api; return api; });
+                scrollTo(i, localApi);
+            }}
+            className={cn(
+              'h-2 w-2 rounded-full transition-all duration-300',
+              'bg-white/50 backdrop-blur-sm',
+              current === i ? 'w-4 bg-white' : 'hover:bg-white/80'
+            )}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
+
 const HeroSection = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [mobileApi, setMobileApi] = useState<CarouselApi>();
@@ -44,134 +112,46 @@ const HeroSection = () => {
     [firestore]
   );
 
-  const { data: webBanners, isLoading: webLoading } =
-    useCollection<Banner>(webBannersQuery);
-  const { data: mobileBanners, isLoading: mobileLoading } =
-    useCollection<Banner>(mobileBannersQuery);
+  const { data: webBanners, isLoading: webLoading } = useCollection<Banner>(webBannersQuery);
+  const { data: mobileBanners, isLoading: mobileLoading } = useCollection<Banner>(mobileBannersQuery);
 
   useEffect(() => {
-    if (!api) return undefined;
-
+    if (!api) return;
     setCurrent(api.selectedScrollSnap());
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on('select', onSelect);
-
-    return () => {
-      api.off('select', onSelect);
-    };
+    return () => { api.off('select', onSelect) };
   }, [api]);
 
   useEffect(() => {
-    if (!mobileApi) return undefined; 
-
+    if (!mobileApi) return;
     setCurrentMobile(mobileApi.selectedScrollSnap());
     const onSelect = () => setCurrentMobile(mobileApi.selectedScrollSnap());
     mobileApi.on('select', onSelect);
-
-    return () => {
-      mobileApi.off('select', onSelect);
-    };
+    return () => { mobileApi.off('select', onSelect) };
   }, [mobileApi]);
 
-  const scrollTo = (index: number) => api?.scrollTo(index);
-  const scrollToMobile = (index: number) => mobileApi?.scrollTo(index);
 
   return (
     <>
       {/* Desktop + Medium Screens */}
       <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block pt-20">
-        {webLoading || !webBanners ? (
-           <Skeleton className="w-full h-full" />
-        ) : (
-          webBanners.length > 0 && (
-            <>
-              <Carousel
-                setApi={setApi}
-                className="w-full h-full"
-                plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-                opts={{ loop: true }}
-              >
-                <CarouselContent>
-                  {webBanners.map((img) => (
-                    <CarouselItem key={img.id}>
-                      <div className="relative w-full h-full">
-                        <Image
-                          src={img.imageUrl}
-                          alt={img.altText}
-                          fill
-                          priority
-                          className="object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-              <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-2">
-                {webBanners.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => scrollTo(i)}
-                    className={cn(
-                      'h-2 w-2 rounded-full transition-all duration-300',
-                      'bg-white/50 backdrop-blur-sm',
-                      current === i ? 'w-4 bg-white' : 'hover:bg-white/80'
-                    )}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-            </>
-          )
-        )}
+        <HeroCarousel
+            banners={webBanners}
+            isLoading={webLoading}
+            setApi={setApi}
+            current={current}
+        />
       </section>
 
       {/* Mobile Screens */}
       <section className="relative w-full h-[60vh] block md:hidden pt-20">
-        {mobileLoading || !mobileBanners ? (
-          <Skeleton className="w-full h-full" />
-        ) : (
-          mobileBanners.length > 0 && (
-            <>
-              <Carousel
-                setApi={setMobileApi}
-                className="w-full h-full"
-                plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-                opts={{ loop: true }}
-              >
-                <CarouselContent>
-                  {mobileBanners.map((img) => (
-                    <CarouselItem key={img.id}>
-                      <div className="relative w-full h-full">
-                        <Image
-                          src={img.imageUrl}
-                          alt={img.altText}
-                          fill
-                          priority
-                          className="object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-2">
-                {mobileBanners.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => scrollToMobile(i)}
-                    className={cn(
-                      'h-2 w-2 rounded-full transition-all duration-300',
-                      'bg-white/50 backdrop-blur-sm',
-                      currentMobile === i ? 'w-4 bg-white' : 'hover:bg-white/80'
-                    )}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-            </>
-          )
-        )}
+         <HeroCarousel
+            banners={mobileBanners}
+            isLoading={mobileLoading}
+            setApi={setMobileApi}
+            current={currentMobile}
+        />
       </section>
     </>
   );
