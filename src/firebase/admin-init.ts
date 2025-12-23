@@ -20,7 +20,8 @@ const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
  */
 export async function initializeAdminApp(): Promise<App> {
   // If the admin app is already initialized, return it.
-  const alreadyInitialized = getApps().find(app => app.name === 'firebase-admin');
+  const appName = 'firebase-admin';
+  const alreadyInitialized = getApps().find(app => app.name === appName);
   if (alreadyInitialized) {
     return alreadyInitialized;
   }
@@ -30,7 +31,7 @@ export async function initializeAdminApp(): Promise<App> {
   // to allow for automatic credential discovery in managed environments.
   const adminApp = initializeApp(
     serviceAccount ? { credential: cert(serviceAccount) } : undefined,
-    'firebase-admin' // Use a unique name for the admin app instance
+    appName 
   );
 
   return adminApp;
