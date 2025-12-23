@@ -7,9 +7,11 @@ import { doc, Timestamp } from 'firebase/firestore';
 import BannerForm, { BannerFormValues } from '../../../_components/BannerForm';
 import { Skeleton } from '@/components/ui/skeleton';
 
-interface BannerData extends BannerFormValues {
+interface BannerData {
   id: string;
-  imageUrl: string;
+  altText: string;
+  type: 'web' | 'mobile';
+  imageUrl: string; // This will be a base64 string
   createdAt: Timestamp;
 }
 
@@ -43,7 +45,7 @@ export default function EditBannerPage() {
       altText: banner.altText,
       type: banner.type,
       imageUrl: banner.imageUrl,
-      image: undefined
+      image: banner.imageUrl // Pass base64 string to the form
   }
 
   return (

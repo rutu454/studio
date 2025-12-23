@@ -7,8 +7,6 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
 import { collection, addDoc, doc, setDoc, Timestamp } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -60,27 +58,21 @@ export default function BannerForm({ initialData }: BannerFormProps) {
     defaultValues: {
       altText: initialData?.altText || '',
       type: initialData?.type || undefined,
-      image: undefined,
+      image: initialData?.imageUrl || undefined,
     },
   });
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      form.setValue('image', file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const base64String = reader.result as string;
+        form.setValue('image', base64String);
+        setImagePreview(base64String);
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const storage = getStorage();
-    const storageRef = ref(storage, `banners/${uuidv4()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
   };
 
   async function onSubmit(values: BannerFormValues) {
@@ -89,7 +81,7 @@ export default function BannerForm({ initialData }: BannerFormProps) {
       return;
     }
     
-    if (!initialData && !values.image) {
+    if (!values.image) {
         form.setError("image", { type: "manual", message: "Image is required." });
         return;
     }
@@ -97,30 +89,16 @@ export default function BannerForm({ initialData }: BannerFormProps) {
     setIsLoading(true);
 
     try {
-      let imageUrl = initialData?.imageUrl;
-      if (values.image instanceof File) {
-        imageUrl = await uploadImage(values.image);
-      }
-
-      if (!imageUrl) {
-        throw new Error('Image URL could not be determined.');
-      }
-      
       const bannerData = {
         altText: values.altText,
         type: values.type,
-        imageUrl: imageUrl,
-        createdAt: initialData?.id ? undefined : Timestamp.now(), // Only set on create
+        imageUrl: values.image, // This is now the Base64 string
       };
 
       if (initialData?.id) {
         // Update existing document
         const docRef = doc(firestore, 'banners', initialData.id);
-        await setDoc(docRef, {
-           altText: values.altText,
-           type: values.type,
-           imageUrl: imageUrl,
-        }, { merge: true });
+        await setDoc(docRef, bannerData, { merge: true });
         toast({ title: 'Success', description: 'Banner updated successfully.' });
       } else {
         // Create new document
