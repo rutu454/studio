@@ -18,13 +18,13 @@ async function getBanners(collectionName: 'webBanners' | 'mobileBanners'): Promi
     
     const banners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
 
-    // Filter in code instead of in the query.
+    // Filter in code to avoid complex queries that require indexes.
     return banners.filter(banner => banner.status === true && banner.isDeleted === false);
   } catch (error: any) {
-    console.error(`Error fetching ${collectionName}:`, error);
+    console.error(`Error fetching ${collectionName}:`, error.message || 'An unknown error occurred.');
     // Don't re-throw the error, just return an empty array to avoid crashing the page.
     if (error.code === 'failed-precondition' && error.message.includes('requires an index')) {
-        console.error("Firestore index missing. Please create it in the Firebase console.");
+        console.error("Firestore index missing. Please create it in the Firebase console if you wish to optimize this query.");
     }
     return [];
   }
