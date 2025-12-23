@@ -26,12 +26,10 @@ export async function initializeAdminApp(): Promise<App> {
   }
 
   // Initialize the Firebase Admin SDK.
-  // If serviceAccount is undefined, the SDK will attempt to discover credentials
-  // automatically from the environment, which is the case in App Hosting.
+  // If serviceAccount is defined, use it. Otherwise, initialize without arguments
+  // to allow for automatic credential discovery in managed environments.
   const adminApp = initializeApp(
-    {
-      credential: serviceAccount ? cert(serviceAccount) : undefined,
-    },
+    serviceAccount ? { credential: cert(serviceAccount) } : undefined,
     'firebase-admin' // Use a unique name for the admin app instance
   );
 
