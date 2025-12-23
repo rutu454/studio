@@ -35,7 +35,7 @@ export default function RegisterPage() {
       description: 'You can now log in.',
     });
 
-    router.push('/admin/login');
+    router.push('/admin');
   };
 
   return (
