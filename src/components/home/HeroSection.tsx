@@ -100,7 +100,7 @@ const HeroSection = () => {
                           alt={img.altText}
                           fill
                           priority
-                          className="object-contain"
+                          className="object-cover"
                         />
                       </div>
                     </CarouselItem>
@@ -148,7 +148,7 @@ const HeroSection = () => {
                           alt={img.altText}
                           fill
                           priority
-                          className="object-contain"
+                          className="object-cover"
                         />
                       </div>
                     </CarouselItem>
