@@ -1,9 +1,16 @@
+import AdminSidebar from '@/components/admin/AdminSidebar';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // This layout applies to all routes under /admin and does not include the main AppShell (Header/Footer)
-  return <>{children}</>;
+  return (
+    <div className="flex h-screen bg-muted/40">
+      <AdminSidebar />
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+        {children}
+      </main>
+    </div>
+  );
 }
