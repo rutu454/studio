@@ -107,7 +107,7 @@ export default function BannersPage() {
                     <TableCell className="font-medium">{banner.altText}</TableCell>
                     <TableCell>{banner.type}</TableCell>
                     <TableCell className="text-right">
-                       <BannerActions bannerId={banner.id} />
+                       <BannerActions bannerId={banner.id} imageUrl={banner.imageUrl} />
                     </TableCell>
                   </TableRow>
                 ))

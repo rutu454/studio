@@ -4,14 +4,14 @@ import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, Timestamp } from 'firebase/firestore';
-import BannerForm, { BannerFormValues } from '../../_components/BannerForm';
+import BannerForm from '../../_components/BannerForm';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface BannerData {
   id: string;
   altText: string;
   type: 'web' | 'mobile';
-  imageUrl: string; // This is a base64 string
+  imageUrl: string; 
   createdAt: Timestamp;
 }
 
@@ -40,11 +40,11 @@ export default function EditBannerPage() {
     return <div>Banner not found.</div>;
   }
 
-  const initialData: BannerFormValues & { id: string } = {
+  const initialData = {
       id: banner.id,
       altText: banner.altText,
       type: banner.type,
-      image: banner.imageUrl // Pass base64 string to the form
+      imageUrl: banner.imageUrl 
   }
 
   return (

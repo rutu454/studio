@@ -73,7 +73,8 @@
         },
         "imageUrl": {
           "type": "string",
-          "description": "The Base64 encoded data URI of the banner image."
+          "format": "uri",
+          "description": "The URL of the banner image in Firebase Storage."
         },
         "altText": {
           "type": "string",

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -28,9 +29,10 @@ import {
 
 interface BannerActionsProps {
     bannerId: string;
+    imageUrl: string;
 }
 
-export default function BannerActions({ bannerId }: BannerActionsProps) {
+export default function BannerActions({ bannerId, imageUrl }: BannerActionsProps) {
     const router = useRouter();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -46,10 +48,29 @@ export default function BannerActions({ bannerId }: BannerActionsProps) {
         }
 
         try {
+            // Delete the image from Firebase Storage first
+            if (imageUrl) {
+                const storage = getStorage();
+                const imageRef = ref(storage, imageUrl);
+                await deleteObject(imageRef);
+            }
+
+            // Then delete the document from Firestore
             await deleteDoc(doc(firestore, 'banners', bannerId));
+            
             toast({ title: 'Success', description: 'Banner deleted successfully.' });
+            router.refresh();
+
         } catch (error: any) {
-             toast({ variant: 'destructive', title: 'Error deleting banner', description: error.message });
+            // If deleting from storage fails, we still try to delete from Firestore
+            // but log the storage error.
+            if(error.code === 'storage/object-not-found'){
+                console.warn("Image not found in storage, but proceeding to delete Firestore document.");
+                await deleteDoc(doc(firestore, 'banners', bannerId));
+                toast({ title: 'Success', description: 'Banner deleted. Image was not found in storage.' });
+            } else {
+                toast({ variant: 'destructive', title: 'Error deleting banner', description: error.message });
+            }
         } finally {
             setIsDeleting(false);
             setIsDeleteDialogOpen(false);

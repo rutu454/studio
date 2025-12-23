@@ -37,10 +37,12 @@ const HeroCarousel = ({
   }
 
   if (!banners || banners.length === 0) {
-    return null; // Don't render anything if there are no banners
+    return (
+        <div className="w-full h-full bg-muted flex items-center justify-center">
+            <p className="text-muted-foreground">No banners available.</p>
+        </div>
+    );
   }
-
-  const scrollTo = (index: number, api: CarouselApi | undefined) => api?.scrollTo(index);
 
   return (
     <>
@@ -51,12 +53,12 @@ const HeroCarousel = ({
         opts={{ loop: true }}
       >
         <CarouselContent>
-          {banners.map((img) => (
-            <CarouselItem key={img.id}>
+          {banners.map((banner) => (
+            <CarouselItem key={banner.id}>
               <div className="relative w-full h-full">
                 <Image
-                  src={img.imageUrl}
-                  alt={img.altText}
+                  src={banner.imageUrl}
+                  alt={banner.altText}
                   fill
                   priority
                   className="object-cover"
@@ -70,11 +72,7 @@ const HeroCarousel = ({
         {banners.map((_, i) => (
           <button
             key={i}
-            onClick={() => {
-                let localApi: CarouselApi | undefined;
-                setApi(api => { localApi = api; return api; });
-                scrollTo(i, localApi);
-            }}
+            onClick={() => api?.scrollTo(i)}
             className={cn(
               'h-2 w-2 rounded-full transition-all duration-300',
               'bg-white/50 backdrop-blur-sm',
