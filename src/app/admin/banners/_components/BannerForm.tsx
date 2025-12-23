@@ -30,8 +30,10 @@ const formSchema = z.object({
   title: z.string().min(2, 'Title is required'),
   position: z.coerce.number().min(0, 'Position must be a positive number'),
   status: z.boolean().default(true),
-  // The image is now a Base64 string
-  image: z.string().refine(val => val.startsWith('data:image/'), 'Image is required.'),
+  // The image is now optional during validation
+  image: z.string().refine(val => val.startsWith('data:image/'), {
+    message: 'Image must be a valid data URI.',
+  }).optional(),
 });
 
 export type BannerFormValues = z.infer<typeof formSchema>;
@@ -52,7 +54,6 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  // This will now hold the base64 string
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null);
   
   const form = useForm<BannerFormValues>({
@@ -61,6 +62,7 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
       title: initialData?.title || '',
       position: initialData?.position || 0,
       status: initialData?.status ?? true,
+      // We set the form value to the existing image URL
       image: initialData?.imageUrl || undefined,
     },
   });
@@ -83,6 +85,12 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
       toast({ variant: 'destructive', title: 'Error', description: 'Firestore is not initialized.' });
       return;
     }
+    
+    // For new banners, an image is always required.
+    if (!initialData && !values.image) {
+        form.setError('image', { type: 'manual', message: 'Image is required for a new banner.' });
+        return;
+    }
 
     setIsLoading(true);
 
@@ -91,8 +99,8 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
             title: values.title,
             position: values.position,
             status: values.status,
-            // The image value from the form is now the base64 string
-            imageUrl: values.image, 
+            // If a new image was uploaded, use it. Otherwise, keep the original one.
+            imageUrl: values.image || initialData?.imageUrl, 
         };
 
         if (initialData?.id) {
