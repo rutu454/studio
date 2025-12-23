@@ -21,36 +21,33 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
-  altText: z.string().min(2, 'Alt text is required'),
-  type: z.enum(['web', 'mobile'], { required_error: 'Banner type is required' }),
+  title: z.string().min(2, 'Title is required'),
+  position: z.coerce.number().min(0, 'Position must be a positive number'),
+  status: z.boolean().default(true),
   image: z.any().refine(val => val, 'Image is required.'),
 });
 
 export type BannerFormValues = z.infer<typeof formSchema>;
 
 interface BannerFormProps {
+  bannerType: 'webBanners' | 'mobileBanners';
   initialData?: {
       id: string;
-      altText: string;
-      type: 'web' | 'mobile';
+      title: string;
+      position: number;
+      status: boolean;
       imageUrl: string;
   };
 }
 
-export default function BannerForm({ initialData }: BannerFormProps) {
+export default function BannerForm({ initialData, bannerType }: BannerFormProps) {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -61,8 +58,9 @@ export default function BannerForm({ initialData }: BannerFormProps) {
   const form = useForm<BannerFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      altText: initialData?.altText || '',
-      type: initialData?.type || undefined,
+      title: initialData?.title || '',
+      position: initialData?.position || 0,
+      status: initialData?.status ?? true,
       image: initialData?.imageUrl || undefined,
     },
   });
@@ -102,7 +100,6 @@ export default function BannerForm({ initialData }: BannerFormProps) {
     try {
         let imageUrl = initialData?.imageUrl;
 
-        // If there's a new image file, upload it
         if(imageFile){
             imageUrl = await uploadImage(imageFile);
         }
@@ -114,18 +111,20 @@ export default function BannerForm({ initialData }: BannerFormProps) {
         }
 
         const bannerData = {
-            altText: values.altText,
-            type: values.type,
+            title: values.title,
+            position: values.position,
+            status: values.status,
             imageUrl: imageUrl, 
         };
 
         if (initialData?.id) {
-            const docRef = doc(firestore, 'banners', initialData.id);
+            const docRef = doc(firestore, bannerType, initialData.id);
             await setDoc(docRef, bannerData, { merge: true });
             toast({ title: 'Success', description: 'Banner updated successfully.' });
         } else {
-            await addDoc(collection(firestore, 'banners'), {
+            await addDoc(collection(firestore, bannerType), {
                 ...bannerData,
+                isDeleted: false,
                 createdAt: Timestamp.now(),
             });
             toast({ title: 'Success', description: 'Banner created successfully.' });
@@ -149,48 +148,59 @@ export default function BannerForm({ initialData }: BannerFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? 'Edit Banner' : 'Create New Banner'}</CardTitle>
+        <CardTitle>{initialData ? 'Edit Banner' : `Create New ${bannerType === 'webBanners' ? 'Web' : 'Mobile'} Banner`}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="altText"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Alt Text</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Describe the banner image" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormDescription>
-                    This is for SEO and accessibility.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Banner Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a banner type" />
-                      </SelectTrigger>
+                      <Input placeholder="e.g. Summer Sale" {...field} disabled={isLoading} />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="web">Web Banner</SelectItem>
-                      <SelectItem value="mobile">Mobile Banner</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Web banners are for desktop, mobile banners are for smaller screens.
-                  </FormDescription>
-                  <FormMessage />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="position"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Position</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} disabled={isLoading} />
+                    </FormControl>
+                    <FormDescription>Controls the display order (lower numbers first).</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Status</FormLabel>
+                    <FormDescription>
+                      Inactive banners will not be shown on the website.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

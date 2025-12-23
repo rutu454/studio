@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { getStorage, ref, deleteObject } from 'firebase/storage';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Trash, Edit } from 'lucide-react';
+import { MoreHorizontal, Trash, Edit, Undo } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,51 +28,40 @@ import {
 
 interface BannerActionsProps {
     bannerId: string;
-    imageUrl: string;
+    isDeleted: boolean;
+    bannerType: 'webBanners' | 'mobileBanners';
 }
 
-export default function BannerActions({ bannerId, imageUrl }: BannerActionsProps) {
+export default function BannerActions({ bannerId, isDeleted, bannerType }: BannerActionsProps) {
     const router = useRouter();
     const firestore = useFirestore();
     const { toast } = useToast();
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const [isPending, setIsPending] = useState(false);
+    
+    const operation = isDeleted ? 'restore' : 'delete';
+    const OperationIcon = isDeleted ? Undo : Trash;
 
-    const handleDelete = async () => {
-        setIsDeleting(true);
+    const handleAction = async () => {
+        setIsPending(true);
         if (!firestore) {
              toast({ variant: 'destructive', title: 'Error', description: 'Firestore not available' });
-             setIsDeleting(false);
+             setIsPending(false);
              return;
         }
 
         try {
-            // Delete the image from Firebase Storage first
-            if (imageUrl) {
-                const storage = getStorage();
-                const imageRef = ref(storage, imageUrl);
-                await deleteObject(imageRef);
-            }
-
-            // Then delete the document from Firestore
-            await deleteDoc(doc(firestore, 'banners', bannerId));
+            const bannerRef = doc(firestore, bannerType, bannerId);
+            await updateDoc(bannerRef, { isDeleted: !isDeleted });
             
-            toast({ title: 'Success', description: 'Banner deleted successfully.' });
+            toast({ title: 'Success', description: `Banner ${operation}d successfully.` });
             router.refresh();
 
         } catch (error: any) {
-            // If deleting from storage fails, we still try to delete from Firestore
-            // but log the storage error.
-            if(error.code === 'storage/object-not-found'){
-                console.warn("Image not found in storage, but proceeding to delete Firestore document.");
-                await deleteDoc(doc(firestore, 'banners', bannerId));
-                toast({ title: 'Success', description: 'Banner deleted. Image was not found in storage.' });
-            } else {
-                toast({ variant: 'destructive', title: 'Error deleting banner', description: error.message });
-            }
+            toast({ variant: 'destructive', title: `Error ${operation}ing banner`, description: error.message });
         } finally {
-            setIsDeleting(false);
-            setIsDeleteDialogOpen(false);
+            setIsPending(false);
+            setIsAlertOpen(false);
         }
     }
 
@@ -89,30 +77,31 @@ export default function BannerActions({ bannerId, imageUrl }: BannerActionsProps
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push(`/admin/banners/edit/${bannerId}`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive">
-          <Trash className="mr-2 h-4 w-4" />
-          Delete
+        {!isDeleted && (
+            <DropdownMenuItem onClick={() => router.push(`/admin/banners/edit/${bannerType}/${bannerId}`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+            </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={() => setIsAlertOpen(true)} className={cn(isDeleted ? '' : 'text-destructive')}>
+          <OperationIcon className="mr-2 h-4 w-4" />
+          {isDeleted ? 'Restore' : 'Delete'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
 
-    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the banner
-                and remove its image from storage.
+                This action will {operation} the banner. {isDeleted ? 'It will become available to be shown on the website again if active.' : 'It will be hidden from the website.'}
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                {isDeleting ? "Deleting..." : "Continue"}
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAction} disabled={isPending}>
+                {isPending ? 'Processing...' : 'Continue'}
             </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

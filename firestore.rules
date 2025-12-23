@@ -2,29 +2,38 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // Allow admins to read submissions, and anyone to create them.
     match /contactFormSubmissions/{submissionId} {
-      allow read: if request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
+      allow read: if isAdmin();
       allow create: if true;
       allow update, delete: if false;
     }
 
     // Rules for admin users
     match /admin_user/{adminId} {
-      // Anyone can create an account during registration
       allow create: if true;
-
-      // Only the authenticated owner of the document or another admin can read/update it.
-      allow read, update, delete: if request.auth != null && (request.auth.uid == adminId || get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin');
+      allow read, update, delete: if request.auth != null && (request.auth.uid == adminId || isAdmin());
     }
 
-    // Rules for banners
-    match /banners/{bannerId} {
-      // Anyone can read (get, list) banners for the homepage
-      allow get, list: if true;
-      
-      // Only admins can create, update, or delete them
-      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
+    // Rules for web banners
+    match /webBanners/{bannerId} {
+      // Public can read active banners
+      allow get, list: if resource.data.status == true && resource.data.isDeleted == false;
+      // Admins can do anything
+      allow read, write, delete: if isAdmin();
+    }
+
+    // Rules for mobile banners
+    match /mobileBanners/{bannerId} {
+      // Public can read active banners
+      allow get, list: if resource.data.status == true && resource.data.isDeleted == false;
+      // Admins can do anything
+      allow read, write, delete: if isAdmin();
     }
   }
 }

@@ -12,7 +12,7 @@ import { useAuth } from '@/firebase';
 
 const navLinks = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+  { href: '/admin/banners', label: 'Web Banners', icon: ImageIcon },
   { href: '/admin/contact-submissions', label: 'Contact Submissions', icon: FileText },
 ];
 

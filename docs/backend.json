@@ -28,12 +28,7 @@
           "description": "The date and time of the submission."
         }
       },
-      "required": [
-        "fullName",
-        "email",
-        "message",
-        "submissionDate"
-      ]
+      "required": ["fullName", "email", "message", "submissionDate"]
     },
     "AdminUser": {
       "title": "Admin User",
@@ -61,24 +56,31 @@
       },
       "required": ["uid", "email", "role", "createdAt"]
     },
-    "Banner": {
-      "title": "Banner",
+    "WebBanner": {
+      "title": "Web Banner",
       "type": "object",
-      "description": "A banner image for the website hero section.",
+      "description": "A desktop banner for the website hero section.",
       "properties": {
-        "type": {
+        "title": {
           "type": "string",
-          "description": "The type of banner, either 'web' or 'mobile'.",
-          "enum": ["web", "mobile"]
+          "description": "The title of the banner."
         },
         "imageUrl": {
           "type": "string",
           "format": "uri",
           "description": "The URL of the banner image in Firebase Storage."
         },
-        "altText": {
-          "type": "string",
-          "description": "Alternative text for the banner image."
+        "status": {
+          "type": "boolean",
+          "description": "Indicates if the banner is active or inactive."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Flag for soft deletion."
         },
         "createdAt": {
           "type": "string",
@@ -86,7 +88,41 @@
           "description": "The date and time the banner was created."
         }
       },
-      "required": ["type", "imageUrl", "altText", "createdAt"]
+      "required": ["title", "imageUrl", "status", "position", "isDeleted", "createdAt"]
+    },
+    "MobileBanner": {
+      "title": "Mobile Banner",
+      "type": "object",
+      "description": "A mobile banner for the website hero section.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the banner."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image in Firebase Storage."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Indicates if the banner is active or inactive."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Flag for soft deletion."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the banner was created."
+        }
+      },
+      "required": ["title", "imageUrl", "status", "position", "isDeleted", "createdAt"]
     }
   },
   "auth": {
@@ -105,11 +141,17 @@
       },
       "description": "Stores information about administrator users."
     },
-    "/banners/{bannerId}": {
+    "/webBanners/{bannerId}": {
       "schema": {
-        "$ref": "#/entities/Banner"
+        "$ref": "#/entities/WebBanner"
       },
-      "description": "Stores information about homepage banners."
+      "description": "Stores desktop banners for the homepage."
+    },
+    "/mobileBanners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/MobileBanner"
+      },
+      "description": "Stores mobile banners for the homepage."
     }
   }
 }
