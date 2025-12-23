@@ -1,7 +1,29 @@
 [
   {
-    "origin": ["http://localhost:9002"],
-    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "origin": [
+      "http://localhost:3000",
+      "http://localhost:4200",
+      "http://localhost:5173",
+      "http://localhost",
+      "http://localhost:9002",
+      "https://super-squirrel-7cfbe.web.app",
+      "https://super-squirrel-7cfbe.firebaseapp.com",
+      "https://6000-firebase-studio-1763101400645.cluster-ejd22kqny5htuv5dfowoyipt52.cloudworkstations.dev"
+    ],
+    "method": [
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE",
+      "OPTIONS",
+      "HEAD"
+    ],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "x-goog-resumable",
+      "x-goog-meta-*"
+    ],
     "maxAgeSeconds": 3600
   }
 ]
