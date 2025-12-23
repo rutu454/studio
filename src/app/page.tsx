@@ -1,5 +1,5 @@
 import AppShell from '@/components/common/AppShell';
-import HeroSectionServerWrapper from '@/components/home/HeroSection';
+import HeroSection from '@/components/home/HeroSection';
 import AboutSection from '@/components/home/AboutSection';
 import CounterSection from '@/components/home/CounterSection';
 import VideoSection from '@/components/home/VideoSection';
@@ -13,7 +13,7 @@ import ContactSection from '@/components/home/ContactSection';
 export default function Home() {
   return (
     <AppShell>
-      <HeroSectionServerWrapper />
+      <HeroSection />
       <AboutSection />
       <CounterSection />
       <div className="py-10" />
