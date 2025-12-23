@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth, useFirestore } from '@/firebase';
 import Link from 'next/link';
-import { registerAdmin } from '../actions';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -17,6 +19,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const firestore = useFirestore();
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -27,23 +31,43 @@ export default function RegisterPage() {
       });
       return;
     }
-    
-    setIsLoading(true);
-    const { error } = await registerAdmin(email, password);
-    setIsLoading(false);
 
-    if (error) {
+    if (!auth || !firestore) {
       toast({
         variant: 'destructive',
-        title: 'Registration Failed',
-        description: error,
+        title: 'Error',
+        description: 'Firebase is not initialized correctly.',
       });
-    } else {
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      // 1. Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. Save user data to Firestore in 'admin_user' collection
+      await setDoc(doc(firestore, 'admin_user', user.uid), {
+        uid: user.uid,
+        email: user.email,
+        role: 'admin',
+        createdAt: new Date().toISOString(),
+      });
+
       toast({
         title: 'Registration Successful',
         description: 'You can now log in.',
       });
       router.push('/admin');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: error.message || 'An unexpected error occurred during registration.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 

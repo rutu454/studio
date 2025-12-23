@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { login } from './actions';
+import { useAuth } from '@/firebase';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -16,26 +17,33 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
 
   const handleLogin = async () => {
+    if (!auth) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Firebase auth is not initialized.',
+        });
+        return;
+    }
     setIsLoading(true);
-    const { error } = await login(email, password);
-    setIsLoading(false);
-
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error,
-      });
-    } else {
-      // On successful login, redirect to the dashboard.
-      // A full implementation would involve setting a session cookie.
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Login Successful',
         description: 'Redirecting to dashboard...',
       });
       router.push('/admin/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
