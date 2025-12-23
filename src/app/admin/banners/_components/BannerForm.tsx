@@ -34,16 +34,13 @@ import Image from 'next/image';
 const formSchema = z.object({
   altText: z.string().min(2, 'Alt text is required'),
   type: z.enum(['web', 'mobile'], { required_error: 'Banner type is required' }),
-  image: z.any()
-}).refine(data => data.image, {
-    message: "Image is required",
-    path: ["image"],
+  image: z.string({ required_error: 'Image is required.' })
 });
 
 export type BannerFormValues = z.infer<typeof formSchema>;
 
 interface BannerFormProps {
-  initialData?: BannerFormValues & { id: string; imageUrl?: string; };
+  initialData?: BannerFormValues & { id: string; };
 }
 
 export default function BannerForm({ initialData }: BannerFormProps) {
@@ -51,14 +48,14 @@ export default function BannerForm({ initialData }: BannerFormProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image || null);
 
   const form = useForm<BannerFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       altText: initialData?.altText || '',
       type: initialData?.type || undefined,
-      image: initialData?.imageUrl || undefined,
+      image: initialData?.image || undefined,
     },
   });
 
@@ -92,7 +89,7 @@ export default function BannerForm({ initialData }: BannerFormProps) {
       const bannerData = {
         altText: values.altText,
         type: values.type,
-        imageUrl: values.image, // This is now the Base64 string
+        imageUrl: values.image, // This is the Base64 string
       };
 
       if (initialData?.id) {
