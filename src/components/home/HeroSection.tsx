@@ -80,7 +80,7 @@ const HeroSection = () => {
     <>
       {/* Desktop + Medium Screens */}
       <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block pt-20">
-        {webLoading ? (
+        {webLoading || !webBanners ? (
            <Skeleton className="w-full h-full" />
         ) : (
           webBanners && webBanners.length > 0 && (
@@ -128,7 +128,7 @@ const HeroSection = () => {
 
       {/* Mobile Screens */}
       <section className="relative w-full h-[60vh] block md:hidden pt-20">
-        {mobileLoading ? (
+        {mobileLoading || !mobileBanners ? (
           <Skeleton className="w-full h-full" />
         ) : (
           mobileBanners && mobileBanners.length > 0 && (
