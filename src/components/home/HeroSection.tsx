@@ -1,39 +1,42 @@
-'use client';
 
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
-import HeroCarousel, { type Banner } from './HeroCarousel';
+'use server';
+import { initializeAdminApp, getAdminFirestore } from '@/firebase/admin-init';
+import HeroCarousel from '@/components/home/HeroCarousel';
 
-// This is the new Client Component
-export default function HeroSection() {
-  const firestore = useFirestore();
+async function getBanners(collectionName: 'webBanners' | 'mobileBanners'): Promise<any[]> {
+    try {
+        const adminApp = initializeAdminApp();
+        const firestore = getAdminFirestore(adminApp);
+        
+        const bannersSnapshot = await firestore.collection(collectionName).orderBy('position').get();
 
-  const webBannersQuery = useMemoFirebase(
-    () => (firestore 
-      ? query(
-          collection(firestore, 'webBanners'), 
-          where('status', '==', true),
-          where('isDeleted', '==', false),
-          orderBy('position')
-        )
-      : null),
-    [firestore]
-  );
-  
-  const mobileBannersQuery = useMemoFirebase(
-    () => (firestore 
-      ? query(
-          collection(firestore, 'mobileBanners'),
-          where('status', '==', true),
-          where('isDeleted', '==', false),
-          orderBy('position')
-        )
-      : null),
-    [firestore]
-  );
+        if (bannersSnapshot.empty) {
+            return [];
+        }
 
-  const { data: webBanners, isLoading: webBannersLoading } = useCollection<Banner>(webBannersQuery);
-  const { data: mobileBanners, isLoading: mobileBannersLoading } = useCollection<Banner>(mobileBannersQuery);
+        const banners = bannersSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        
+        // Filter in code to avoid complex queries needing indexes
+        return banners.filter(banner => banner.status === true && banner.isDeleted === false);
+
+    } catch (error: any) {
+        console.error(`Error fetching ${collectionName}:`, error.message || 'An unknown error occurred.');
+        // Don't re-throw the error, just return an empty array to avoid crashing the page.
+        if (error.code === 'failed-precondition' && error.message.includes('requires an index')) {
+            console.error("Firestore index missing. Please create it in the Firebase console if you wish to optimize this query.");
+        }
+        return [];
+    }
+}
+
+
+// This is a Server Component that fetches data and passes it to a Client Component.
+export default async function HeroSectionServerWrapper() {
+  const webBanners = await getBanners('webBanners');
+  const mobileBanners = await getBanners('mobileBanners');
 
   return (
     <>
@@ -41,7 +44,7 @@ export default function HeroSection() {
       <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block pt-20">
         <HeroCarousel
             banners={webBanners}
-            isLoading={webBannersLoading}
+            isLoading={false}
         />
       </section>
 
@@ -49,7 +52,7 @@ export default function HeroSection() {
       <section className="relative w-full h-[60vh] block md:hidden pt-20">
          <HeroCarousel
             banners={mobileBanners}
-            isLoading={mobileBannersLoading}
+            isLoading={false}
         />
       </section>
     </>
