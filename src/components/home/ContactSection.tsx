@@ -52,11 +52,20 @@ export default function ContactSection() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Firestore is not initialized.',
+      });
+      return;
+    }
+    
     try {
       const submissionsCollection = collection(firestore, 'contactFormSubmissions');
       await addDoc(submissionsCollection, {
         ...values,
-        submissionDate: new Date(),
+        submissionDate: new Date().toISOString(),
       });
 
       toast({
