@@ -8,7 +8,7 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
@@ -83,7 +83,7 @@ const HeroSection = () => {
         {webLoading || !webBanners ? (
            <Skeleton className="w-full h-full" />
         ) : (
-          webBanners && webBanners.length > 0 && (
+          webBanners.length > 0 && (
             <>
               <Carousel
                 setApi={setApi}
@@ -131,7 +131,7 @@ const HeroSection = () => {
         {mobileLoading || !mobileBanners ? (
           <Skeleton className="w-full h-full" />
         ) : (
-          mobileBanners && mobileBanners.length > 0 && (
+          mobileBanners.length > 0 && (
             <>
               <Carousel
                 setApi={setMobileApi}
