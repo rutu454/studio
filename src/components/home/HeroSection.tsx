@@ -6,6 +6,7 @@ import HeroCarousel, { type Banner } from './HeroCarousel';
 // This function now runs on the server.
 async function getBanners(collectionName: 'webBanners' | 'mobileBanners'): Promise<Banner[]> {
   try {
+    // Ensure the admin app is initialized before using any admin services.
     await initializeAdminApp();
     const db = getAdminFirestore();
     
