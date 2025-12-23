@@ -1,152 +1,47 @@
-'use client';
 
-import Image from 'next/image';
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
+import { initializeAdminApp } from '@/firebase/admin-init';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import HeroCarousel, { type Banner } from './HeroCarousel';
 
-interface Banner {
-  id: string;
-  title: string;
-  imageUrl: string;
-  status: boolean;
-  position: number;
-  isDeleted: boolean;
+// This function now runs on the server.
+async function getBanners(collectionName: 'webBanners' | 'mobileBanners'): Promise<Banner[]> {
+  try {
+    await initializeAdminApp();
+    const db = getAdminFirestore();
+    
+    const bannersRef = db.collection(collectionName);
+    const snapshot = await bannersRef.orderBy('position').get();
+
+    if (snapshot.empty) {
+      return [];
+    }
+    
+    const banners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+
+    // Filter in code instead of in the query.
+    return banners.filter(banner => banner.status === true && banner.isDeleted === false);
+  } catch (error: any) {
+    console.error(`Error fetching ${collectionName}:`, error);
+    // Don't re-throw the error, just return an empty array to avoid crashing the page.
+    if (error.code === 'failed-precondition' && error.message.includes('requires an index')) {
+        console.error("Firestore index missing. Please create it in the Firebase console.");
+    }
+    return [];
+  }
 }
 
-const HeroCarousel = ({
-  banners,
-  isLoading,
-}: {
-  banners: Banner[] | null;
-  isLoading: boolean;
-}) => {
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    if (!api) return;
-    setCurrent(api.selectedScrollSnap());
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
-    api.on('select', onSelect);
-    return () => { api.off('select', onSelect) };
-  }, [api]);
-
-  if (isLoading) {
-    return <Skeleton className="w-full h-full" />;
-  }
-
-  if (!banners || banners.length === 0) {
-    return (
-        <div className="w-full h-full bg-muted flex items-center justify-center">
-            <p className="text-muted-foreground">No active banners found.</p>
-        </div>
-    );
-  }
-
-  return (
-    <div className="relative w-full h-full">
-      <Carousel
-        setApi={setApi}
-        className="w-full h-full"
-        plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-        opts={{ loop: true }}
-      >
-        <CarouselContent>
-          {banners.map((banner) => (
-            <CarouselItem key={banner.id}>
-              <div className="relative w-full h-full">
-                <Image
-                  src={banner.imageUrl}
-                  alt={banner.title}
-                  fill
-                  priority
-                  className="object-cover"
-                />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-2">
-        {banners.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => api?.scrollTo(i)}
-            className={cn(
-              'h-2 w-2 rounded-full transition-all duration-300',
-              'bg-white/50 backdrop-blur-sm',
-              current === i ? 'w-4 bg-white' : 'hover:bg-white/80'
-            )}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-
-const HeroSection = () => {
-    const [webBanners, setWebBanners] = useState<Banner[]>([]);
-    const [mobileBanners, setMobileBanners] = useState<Banner[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const firestore = useFirestore();
-
-    useEffect(() => {
-        const fetchBanners = async () => {
-            if (!firestore) return;
-            setIsLoading(true);
-            try {
-                // Fetch Web Banners
-                const webBannersQuery = query(
-                    collection(firestore, 'webBanners'),
-                    where('status', '==', true),
-                    where('isDeleted', '==', false),
-                    orderBy('position')
-                );
-                const webBannersSnapshot = await getDocs(webBannersQuery);
-                const webBannersData = webBannersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
-                setWebBanners(webBannersData);
-
-                // Fetch Mobile Banners
-                const mobileBannersQuery = query(
-                    collection(firestore, 'mobileBanners'),
-                    where('status', '==', true),
-                    where('isDeleted', '==', false),
-                    orderBy('position')
-                );
-                const mobileBannersSnapshot = await getDocs(mobileBannersQuery);
-                const mobileBannersData = mobileBannersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
-                setMobileBanners(mobileBannersData);
-
-            } catch (error) {
-                console.error("Error fetching banners:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchBanners();
-    }, [firestore]);
-
-
+// This is the new Server Component
+export default async function HeroSectionServerWrapper() {
+  const webBanners = await getBanners('webBanners');
+  const mobileBanners = await getBanners('mobileBanners');
+  
   return (
     <>
       {/* Desktop + Medium Screens */}
       <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block pt-20">
         <HeroCarousel
             banners={webBanners}
-            isLoading={isLoading}
+            isLoading={false}
         />
       </section>
 
@@ -154,11 +49,9 @@ const HeroSection = () => {
       <section className="relative w-full h-[60vh] block md:hidden pt-20">
          <HeroCarousel
             banners={mobileBanners}
-            isLoading={isLoading}
+            isLoading={false}
         />
       </section>
     </>
   );
-};
-
-export default HeroSection;
+}
