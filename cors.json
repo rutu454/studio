@@ -6,9 +6,8 @@
       "http://localhost:5173",
       "http://localhost",
       "http://localhost:9002",
-      "https://super-squirrel-7cfbe.web.app",
-      "https://super-squirrel-7cfbe.firebaseapp.com",
-      "https://6000-firebase-studio-1763101400645.cluster-ejd22kqny5htuv5dfowoyipt52.cloudworkstations.dev"
+      "https://prasthan-group.web.app",
+      "https://prasthan-group.firebaseapp.com"
     ],
     "method": [
       "GET",
