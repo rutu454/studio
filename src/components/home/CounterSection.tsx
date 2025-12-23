@@ -96,7 +96,7 @@ const CounterSection = () => {
 
 
   return (
-    <SectionWrapper ref={sectionRef} className="bg-primary/10 py-0 sm:py-0">
+    <SectionWrapper ref={sectionRef} id= "counter" className="bg-primary/10 py-0 sm:py-0">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12">
         {allCounters.map((item, index) => (
             <div 

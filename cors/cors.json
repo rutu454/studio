@@ -1,0 +1,13 @@
+[
+  {
+    "origin": [
+      "http://localhost:9002",
+      "http://localhost",
+      "https://prasthan-group.web.app",
+      "https://prasthan-group.firebaseapp.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization"]
+  }
+]

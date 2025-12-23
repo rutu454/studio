@@ -28,7 +28,7 @@ import BannerActions from './_components/BannerActions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
+import { Switch } from "@/components/ui/switch";
 interface Banner {
   id: string;
   title: string;
