@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import {
   Card,
@@ -29,7 +29,7 @@ interface ContactFormSubmission {
   email: string;
   contactNumber?: string;
   message: string;
-  submissionDate: string;
+  submissionDate: Timestamp | string;
 }
 
 export default function ContactSubmissionsPage() {
@@ -51,6 +51,20 @@ export default function ContactSubmissionsPage() {
   }, [user, isUserLoading, router]);
 
   const isLoading = isUserLoading || submissionsLoading;
+
+  const formatDate = (date: Timestamp | string) => {
+    if (!date) return 'N/A';
+    // Firestore Timestamps have a toDate() method.
+    if (typeof (date as Timestamp).toDate === 'function') {
+      return format((date as Timestamp).toDate(), 'PPP');
+    }
+    // Fallback for string or other date types
+    try {
+      return format(new Date(date), 'PPP');
+    } catch (e) {
+      return 'Invalid Date';
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -86,7 +100,7 @@ export default function ContactSubmissionsPage() {
                 submissions.map((submission) => (
                   <TableRow key={submission.id}>
                     <TableCell className="hidden sm:table-cell">
-                      {format(new Date(submission.submissionDate), 'PPP')}
+                      {formatDate(submission.submissionDate)}
                     </TableCell>
                     <TableCell className="font-medium">{submission.fullName}</TableCell>
                     <TableCell>
