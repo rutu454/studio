@@ -60,6 +60,33 @@
         }
       },
       "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Banner": {
+      "title": "Banner",
+      "type": "object",
+      "description": "A banner image for the website hero section.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of banner, either 'web' or 'mobile'.",
+          "enum": ["web", "mobile"]
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image stored in Firebase Storage."
+        },
+        "altText": {
+          "type": "string",
+          "description": "Alternative text for the banner image."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the banner was created."
+        }
+      },
+      "required": ["type", "imageUrl", "altText", "createdAt"]
     }
   },
   "auth": {
@@ -77,6 +104,12 @@
         "$ref": "#/entities/AdminUser"
       },
       "description": "Stores information about administrator users."
+    },
+    "/banners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/Banner"
+      },
+      "description": "Stores information about homepage banners."
     }
   }
 }

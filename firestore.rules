@@ -17,5 +17,11 @@ service cloud.firestore {
       // Only the authenticated owner of the document or another admin can read/update it.
       allow read, update, delete: if request.auth != null && (request.auth.uid == adminId || get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin');
     }
+
+    // Rules for banners
+    match /banners/{bannerId} {
+      // Admins can perform all actions
+      allow read, create, update, delete: if request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
+    }
   }
 }
