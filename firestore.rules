@@ -4,35 +4,36 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/admin_user/$(request.auth.uid)).data.role == 'admin';
+      // Check if the user is authenticated and has an admin role document.
+      return request.auth != null && exists(/databases/$(database)/documents/admin_user/$(request.auth.uid));
     }
 
-    // Allow admins to read submissions, and anyone to create them.
     match /contactFormSubmissions/{submissionId} {
       allow read: if isAdmin();
       allow create: if true;
       allow update, delete: if false;
     }
 
-    // Rules for admin users
     match /admin_user/{adminId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null && (request.auth.uid == adminId || isAdmin());
     }
 
-    // Rules for web banners
     match /webBanners/{bannerId} {
-      // Public can read active banners
-      allow get, list: if resource.data.status == true && resource.data.isDeleted == false;
-      // Admins can do anything
+      // Public can list active, non-deleted banners.
+      allow list: if request.auth == null && resource.data.status == true && resource.data.isDeleted == false;
+      allow get: if resource.data.status == true && resource.data.isDeleted == false;
+      
+      // Admins can perform any action.
       allow read, write, delete: if isAdmin();
     }
 
-    // Rules for mobile banners
     match /mobileBanners/{bannerId} {
-      // Public can read active banners
-      allow get, list: if resource.data.status == true && resource.data.isDeleted == false;
-      // Admins can do anything
+      // Public can list active, non-deleted banners.
+      allow list: if request.auth == null && resource.data.status == true && resource.data.isDeleted == false;
+      allow get: if resource.data.status == true && resource.data.isDeleted == false;
+      
+      // Admins can perform any action.
       allow read, write, delete: if isAdmin();
     }
   }
