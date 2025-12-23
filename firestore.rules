@@ -30,17 +30,17 @@ service cloud.firestore {
 
     // Rules for both web and mobile banners
     match /webBanners/{bannerId} {
-      // Public can read active, non-deleted banners
-      allow get, list: if resource.data.status == true && resource.data.isDeleted == false;
-      // Admins have full read/write access
-      allow read, write: if isAdmin();
+      // Public can read banners. The client-side query must filter for active ones.
+      allow get, list: if true;
+      // Admins have full write access
+      allow write: if isAdmin();
     }
     
     match /mobileBanners/{bannerId} {
-      // Public can read active, non-deleted banners
-      allow get, list: if resource.data.status == true && resource.data.isDeleted == false;
-      // Admins have full read/write access
-      allow read, write: if isAdmin();
+      // Public can read banners. The client-side query must filter for active ones.
+      allow get, list: if true;
+      // Admins have full write access
+      allow write: if isAdmin();
     }
   }
 }
