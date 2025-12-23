@@ -1,8 +1,10 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyBIb8VKTSMyRz7fA0l9FKkna33LOkuNfcY",
   authDomain: "studio-8466476924-ce943.firebaseapp.com",
+  databaseURL: "https://studio-8466476924-ce943-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "studio-8466476924-ce943",
   storageBucket: "studio-8466476924-ce943.firebasestorage.app",
   messagingSenderId: "886653697105",
-  appId: "1:886653697105:web:91961f7400f61b8c6b0c70"
+  appId: "1:886653697105:web:91961f7400f61b8c6b0c70",
+  measurementId: "G-W49BVQ9XFQ"
 };
