@@ -1,10 +1,11 @@
 // IMPORTANT: This file should not be used on the client side.
 // It is intended for server-side use only (e.g., in Next.js server actions or API routes).
 
-import { initializeApp, getApps, getApp, cert, type App } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 
-// It is crucial to use environment variables for service account credentials
-// and not to hardcode them in the source code.
+// In a managed environment like Firebase App Hosting or Cloud Functions,
+// the SDK can auto-discover credentials. We can provide them via an environment
+// variable for local development outside of such environments.
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
   ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
   : undefined;
@@ -24,14 +25,12 @@ export async function initializeAdminApp(): Promise<App> {
     return alreadyInitialized;
   }
 
-  if (!serviceAccount) {
-    throw new Error('Firebase service account credentials are not set in the environment variables.');
-  }
-  
   // Initialize the Firebase Admin SDK.
+  // If serviceAccount is undefined, the SDK will attempt to discover credentials
+  // automatically from the environment, which is the case in App Hosting.
   const adminApp = initializeApp(
     {
-      credential: cert(serviceAccount),
+      credential: serviceAccount ? cert(serviceAccount) : undefined,
     },
     'firebase-admin' // Use a unique name for the admin app instance
   );
