@@ -26,15 +26,36 @@ import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 
+// const formSchema = z.object({
+//   title: z.string().min(2, 'Title is required'),
+//   position: z.coerce.number().min(0, 'Position must be a positive number'),
+//   status: z.boolean().default(true),
+//   // The image is now optional during validation
+//   image: z.string().refine(val => val.startsWith('data:image/'), {
+//     message: 'Image must be a valid data URI.',
+//   }).optional(),
+// });
+
 const formSchema = z.object({
   title: z.string().min(2, 'Title is required'),
-  position: z.coerce.number().min(0, 'Position must be a positive number'),
+  position: z.coerce.number().min(0),
   status: z.boolean().default(true),
-  // The image is now optional during validation
-  image: z.string().refine(val => val.startsWith('data:image/'), {
-    message: 'Image must be a valid data URI.',
-  }).optional(),
+  image: z
+    .string()
+    .optional()
+    .refine(
+      val =>
+        !val ||
+        val.startsWith('data:image/') ||
+        val.startsWith('http'),
+      {
+        message: 'Invalid image format',
+      }
+    ),
 });
+
+
+
 
 export type BannerFormValues = z.infer<typeof formSchema>;
 
@@ -88,8 +109,11 @@ export default function BannerForm({ initialData, bannerType }: BannerFormProps)
     
     // For new banners, an image is always required.
     if (!initialData && !values.image) {
-        form.setError('image', { type: 'manual', message: 'Image is required for a new banner.' });
-        return;
+      form.setError('image', {
+        type: 'manual',
+        message: 'Image is required for a new banner.',
+      });
+      return;
     }
 
     setIsLoading(true);

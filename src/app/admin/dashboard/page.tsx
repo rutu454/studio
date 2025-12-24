@@ -40,7 +40,7 @@ export default function AdminDashboardPage() {
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <Card>
             <CardHeader>
-            <CardTitle>Welcome, {user.email}</CardTitle>
+            <CardTitle>Welcome, {user.displayName}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
             <p>This is your dashboard. You can manage your site from here.</p>

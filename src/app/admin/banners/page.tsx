@@ -88,13 +88,16 @@ const BannerTable = ({
                         // height={64}
                         className="rounded-md object-cover"
                       /> */}
-                      {banner.imageUrl && (<img
-                  src={banner.imageUrl}
-                  alt={banner.title}
-                  // fill
-                  // priority
-                  className="object-cover"
-                />)}
+                      {banner.imageUrl && (  <Image
+    src={banner.imageUrl}
+    alt={banner.title}
+    width={200}
+    height={100}
+    priority
+    unoptimized
+    quality={100}
+    className=" object-contain"
+  />)}
                     </TableCell>
                     <TableCell className="font-medium">{banner.title}</TableCell>
                     <TableCell>
