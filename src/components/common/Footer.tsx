@@ -62,8 +62,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="text-center text-sm mt-8 text-white">
-        <p>
+        <div className="text-center text-sm mt-8 text-gray-300">
+  <p>
     Designed and Developed By{" "}
     <a
       href="https://sparkdigishine.com"
@@ -74,7 +74,8 @@ const Footer = () => {
       Sparkdigishine
     </a>.
   </p>
-        </div>
+</div>
+
 
       </div>
     </footer>
