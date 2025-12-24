@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
-import AppShell from '@/components/common/AppShell';
 import SmoothScrollHandler from '@/components/common/SmoothScrollHandler';
 
 export const metadata: Metadata = {
@@ -25,9 +24,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <FirebaseClientProvider>
           <SmoothScrollHandler />
-          <AppShell>
-            {children}
-          </AppShell>
+          {children}
           <Toaster />
         </FirebaseClientProvider>
       </body>

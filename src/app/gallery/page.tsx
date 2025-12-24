@@ -1,136 +1,156 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import AppShell from '@/components/common/AppShell';
 import SectionWrapper from '@/components/common/SectionWrapper';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-// ✅ Import local images
-import img1 from '@/assets/1.png';
-import img8 from '@/assets/8.png';
-import img9 from '@/assets/9.png';
-import img7 from '@/assets/7.png';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 
-const galleryCategories = ['All', 'Diwali', 'Sarad Utsav', 'Events'];
-
-type GalleryImageItem = {
-  id: string;
-  description: string;
-  category: string;
-  type: 'image';
-  images: {
-    url: string;
-    hint: string;
-  }[];
+/* ===============================
+   FIREBASE
+================================ */
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
 };
 
-// ✅ Add 4 static local image items
-const staticLocalImages: GalleryImageItem[] = [
-  {
-    id: 'local-1',
-    description: 'દિવાળી ઉજવણી - દિવ્યાંગ અને મેન્ટલી ડિસેબલ સાથે પ્રસ્થાન ગ્રુપની અનોખી ઉજવણી',
-    category: 'Diwali',
-    type: 'image',
-    images: [{ url: img1.src, hint: 'local image 1' }],
-  },
-  {
-    id: 'local-2',
-    description: 'પ્રસ્થાન ગ્રુપ દ્વારા આયોજિત “સરદોત્સવ ૨૦૨૫” - એકતા, સંસ્કૃતિ અને ઉત્સવનો મેળો',
-    category: 'Sarad Utsav',
-    type: 'image',
-    images: [{ url: img8.src, hint: 'local image 2' }],
-  },
-  {
-    id: 'local-3',
-    description: 'દેશ અને સમાજ માટે પ્રસ્થાન ગ્રુપનું કલ્યાણકારી કાર્ય - દ્રષ્ટાંત અને પ્રતિબદ્ધતા',
-    category: 'Events',
-    type: 'image',
-    images: [{ url: img9.src, hint: 'local image 3' }],
-  },
-  {
-    id: 'local-4',
-    description: 'સાપ્તાહિક બેઠક અને નવી વિચારસરણી - સતત મंथન અને અમલ માટેનું માધ્યમ',
-    category: 'Events',
-    type: 'image',
-    images: [{ url: img7.src, hint: 'local image 4' }],
-  },
-];
+function getClientDB() {
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  return getFirestore(app);
+}
 
+/* ===============================
+   TYPES
+================================ */
+type GalleryItem = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  thumbnailBase64?: string;
+};
 
-// ✅ Combine all items (local images only)
-const allItems = [...staticLocalImages].sort((a, b) =>
-  a.id.localeCompare(b.id)
-);
-
+/* ===============================
+   PAGE
+================================ */
 export default function GalleryPage() {
-  const [filter, setFilter] = useState('All');
+  const [items, setItems] = useState<GalleryItem[]>([]);
+  const [filter, setFilter] = useState<string>('All');
 
+  /* ===============================
+     FETCH DATA
+  ================================ */
+  useEffect(() => {
+    const db = getClientDB();
+
+    const q = query(
+      collection(db, 'galleryItems'),
+      where('status', '==', true),
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      setItems(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<GalleryItem, 'id'>),
+        }))
+      );
+    });
+
+    return () => unsub();
+  }, []);
+
+  /* ===============================
+     DYNAMIC CATEGORIES
+  ================================ */
+  const categories = useMemo(() => {
+    const unique = Array.from(
+      new Set(items.map((i) => i.category).filter(Boolean))
+    );
+    return ['All', ...unique];
+  }, [items]);
+
+  /* ===============================
+     FILTERED ITEMS
+  ================================ */
   const filteredItems =
     filter === 'All'
-      ? allItems
-      : allItems.filter((item) => item.category === filter);
+      ? items
+      : items.filter((i) => i.category === filter);
 
   return (
-    <div className="pt-24 md:pt-28">
-      <SectionWrapper id="contact" className="pt-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Moments that Inspire
-          </h1>
-          <p className="text-lg text-foreground/80 max-w-2xl mx-auto">
-            A collection of moments from our events, celebrations, and community work.
-          </p>
-        </div>
+    <AppShell>
+      <div className="pt-24">
+        <SectionWrapper id="gallery">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-primary mb-2">
+              Moments that Inspire
+            </h1>
+            <p className="text-muted-foreground">
+              Events, celebrations & community work
+            </p>
+          </div>
 
-        <div className="flex justify-center flex-wrap gap-2 mb-6">
-          {galleryCategories.map((category) => (
-            <Button
-              key={category}
-              variant={filter === category ? 'default' : 'outline'}
-              onClick={() => setFilter(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
+          {/* 🔥 DYNAMIC CATEGORY FILTER */}
+          <div className="flex justify-center flex-wrap gap-2 mb-6">
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                variant={filter === cat ? 'default' : 'outline'}
+                onClick={() => setFilter(cat)}
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className="overflow-hidden group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col"
-            >
-              <CardContent className="p-0 flex-grow flex flex-col">
-                <div className="relative w-full aspect-[4/3]">
-                  <Link
-                    href={`/gallery/${item.id}`}
-                    className="block relative w-full h-full cursor-pointer"
-                  >
-                    <Image
-                      src={item.images[0].url}
-                      alt={item.description}
-                      fill
-                      className="object-cover"
-                    />
+          {/* 🖼 GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredItems.map((item) => (
+              <Card key={item.id} className="overflow-hidden group">
+                <CardContent className="p-0">
+                  <Link href={`/gallery/${item.id}`}>
+                    <div className="relative aspect-[4/3]">
+                      {item.thumbnailBase64 ? (
+                        <Image
+                          src={item.thumbnailBase64}
+                          alt={item.title}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-muted w-full h-full flex items-center justify-center text-xs">
+                          No Image
+                        </div>
+                      )}
+                    </div>
                   </Link>
-                </div>
-                <Link href={`/gallery/${item.id}`}>
-                  <div className="p-4 mt-auto bg-card">
-                    <p className="text-md font-semibold text-foreground truncate">
-                      {item.description}
-                    </p>
+
+                  <div className="p-4">
+                    <p className="font-semibold truncate">{item.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {item.category}
                     </p>
                   </div>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </SectionWrapper>
-    </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </SectionWrapper>
+      </div>
+    </AppShell>
   );
 }

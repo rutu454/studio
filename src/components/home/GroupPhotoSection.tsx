@@ -33,7 +33,7 @@ const GroupPhotoSection = () => {
   }, []);
 
   return (
-    <SectionWrapper ref={sectionRef}>
+    <SectionWrapper ref={sectionRef} id="group" className='py-20'>
       <div
         className={cn(
           'flex justify-center items-center transition-all duration-1000',

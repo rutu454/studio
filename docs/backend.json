@@ -28,16 +28,158 @@
           "description": "The date and time of the submission."
         }
       },
-      "required": [
-        "fullName",
-        "email",
-        "message",
-        "submissionDate"
-      ]
+      "required": ["fullName", "email", "message", "submissionDate"]
+    },
+    "AdminUser": {
+      "title": "Admin User",
+      "type": "object",
+      "description": "An administrator user for the website.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Auth."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The admin's email address."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user, e.g., 'admin'."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the user was created."
+        }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "WebBanner": {
+      "title": "Web Banner",
+      "type": "object",
+      "description": "A desktop banner for the website hero section.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the banner."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image in Firebase Storage."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Indicates if the banner is active or inactive."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Flag for soft deletion."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the banner was created."
+        }
+      },
+      "required": ["title", "imageUrl", "status", "position", "isDeleted", "createdAt"]
+    },
+    "MobileBanner": {
+      "title": "Mobile Banner",
+      "type": "object",
+      "description": "A mobile banner for the website hero section.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the banner."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the banner image in Firebase Storage."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Indicates if the banner is active or inactive."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the banner."
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Flag for soft deletion."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the banner was created."
+        }
+      },
+      "required": ["title", "imageUrl", "status", "position", "isDeleted", "createdAt"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "type": "object",
+      "description": "An item for the website gallery, can be an image or a video.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["image", "video"],
+          "description": "The type of the gallery item."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the gallery item."
+        },
+        "description": {
+            "type": "string",
+            "description": "A longer description for the item."
+        },
+        "category": {
+            "type": "string",
+            "description": "The category of the gallery item (e.g., Events, Charity)."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the thumbnail (from Storage for images, from YouTube for videos)."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the external video (for video type)."
+        },
+        "status": {
+          "type": "boolean",
+          "description": "Indicates if the item is active or inactive."
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Flag for soft deletion."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the item was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the item was last updated."
+        }
+      },
+      "required": ["type", "title", "category", "status", "isDeleted", "createdAt", "updatedAt"]
     }
   },
   "auth": {
-    "providers": []
+    "providers": ["email"]
   },
   "firestore": {
     "/contactFormSubmissions/{submissionId}": {
@@ -45,6 +187,30 @@
         "$ref": "#/entities/ContactFormSubmission"
       },
       "description": "Stores all submissions from the contact form."
+    },
+    "/admin_user/{adminId}": {
+      "schema": {
+        "$ref": "#/entities/AdminUser"
+      },
+      "description": "Stores information about administrator users."
+    },
+    "/webBanners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/WebBanner"
+      },
+      "description": "Stores desktop banners for the homepage."
+    },
+    "/mobileBanners/{bannerId}": {
+      "schema": {
+        "$ref": "#/entities/MobileBanner"
+      },
+      "description": "Stores mobile banners for the homepage."
+    },
+    "/galleryItems/{itemId}": {
+      "schema": {
+        "$ref": "#/entities/GalleryItem"
+      },
+      "description": "Stores gallery items (images or videos)."
     }
   }
 }

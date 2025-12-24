@@ -1,171 +1,149 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, notFound } from 'next/navigation';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 
-// ✅ Import same local images
-import img1 from '@/assets/1.png';
-import img8 from '@/assets/8.png';
-import img9 from '@/assets/9.png';
-import img7 from '@/assets/7.png';
+import AppShell from '@/components/common/AppShell';
 
-type GalleryImageItem = {
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+/* ===============================
+   FIREBASE CONFIG
+================================ */
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+};
+
+function getClientDB() {
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  return getFirestore(app);
+}
+
+/* ===============================
+   TYPES
+================================ */
+type GalleryItem = {
   id: string;
   description: string;
-  category: string;
-  type: 'image';
-  images: {
-    url: string;
-    hint: string;
+  category?: string;
+  title: string;
+  thumbnailBase64: string;
+  images?: {
+    url?: string;
+    hint?: string;
   }[];
 };
 
-// ✅ Local static images (same as in main gallery)
-const staticLocalImages: GalleryImageItem[] = [
-  {
-    id: 'local-1',
-    description: 'દિવાળી ઉજવણી - દિવ્યાંગ અને મેન્ટલી ડિસેબલ સાથે પ્રસ્થાન ગ્રુપની અનોખી ઉજવણી',
-    category: 'Diwali',
-    type: 'image',
-    images: [{ url: img1.src, hint: 'local image 1' }],
-  },
-  {
-    id: 'local-2',
-    description: 'પ્રસ્થાન ગ્રુપ દ્વારા આયોજિત “સરદોત્સવ ૨૦૨૫” - એકતા, સંસ્કૃતિ અને ઉત્સવનો મેળો',
-    category: 'Sarad Utsav',
-    type: 'image',
-    images: [{ url: img8.src, hint: 'local image 2' }],
-  },
-  {
-    id: 'local-3',
-    description: 'દેશ અને સમાજ માટે પ્રસ્થાન ગ્રુપનું કલ્યાણકારી કાર્ય - દ્રષ્ટાંત અને પ્રતિબદ્ધતા',
-    category: 'Events',
-    type: 'image',
-    images: [{ url: img9.src, hint: 'local image 3' }],
-  },
-  {
-    id: 'local-4',
-    description: 'સાપ્તાહિક બેઠક અને નવી વિચારસરણી-સતત મंथન અને અમલ માટેનું માધ્યમ',
-    category: 'Events',
-    type: 'image',
-    images: [{ url: img7.src, hint: 'local image 4' }],
-  },
-];
-
-// ✅ Only use local static images
-const allItems = [...staticLocalImages];
-
+/* ===============================
+   PAGE
+================================ */
 export default function GalleryDetailPage() {
-  const params = useParams();
-  const { id } = params;
+  const { id } = useParams<{ id: string }>();
+  const [item, setItem] = useState<GalleryItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const item = allItems.find((itm) => itm.id === id);
+  /* ===============================
+     FETCH FIRESTORE DOC
+  ================================ */
+  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        const db = getClientDB();
+        const ref = doc(db, 'galleryItems', id);
+        const snap = await getDoc(ref);
 
-  if (!item) notFound();
+        if (!snap.exists()) {
+          notFound();
+          return;
+        }
+
+        setItem({
+          id: snap.id,
+          ...(snap.data() as Omit<GalleryItem, 'id'>),
+        });
+      } catch (error) {
+        console.error('Gallery fetch error:', error);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItem();
+  }, [id]);
+
+  if (loading) return null;
+  if (!item) return null;
+
+  /* ===============================
+     SAFE IMAGE URL
+  ================================ */
+  const imageUrl =
+    item.images?.[0]?.url && item.images[0].url.trim() !== ''
+      ? item.images[0].url
+      : '/placeholder.jpg';
 
   return (
-    <div className="pt-24 bg-background">
-      <div className="max-w-4xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center text-sm font-medium text-muted-foreground mb-4">
-          <Link
-            href="/gallery"
-            className="flex items-center hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Gallery
-          </Link>
-          <ChevronRight className="h-4 w-4 mx-1" />
-          <span className="text-primary truncate">{item.description}</span>
-        </nav>
+    <AppShell>
+      <div className="pt-24 pb-16  bg-background">
+        <div className="max-w-5xl mx-auto px-4 md:px-24">
 
-        <div className="flex justify-between items-start mb-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground max-w-3xl">
-            {item.description}
+          {/* 🔙 Back */}
+          <div className="flex items-center gap-2 mb-6 text-sm text-muted-foreground">
+            <Link
+              href="/gallery"
+              className="inline-flex items-center hover:text-primary"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Gallery
+            </Link>
+
+            <span className='text-xl'>›</span>
+
+            <span className="text-primary font-medium">
+              {item.title}
+            </span>
+          </div>
+
+
+          {/* 🏷 Title */}
+          <h1 className="text-3xl md:text-4xl font-bold mb-6">
+            {item.title}
           </h1>
-        </div>
 
-        {item.type === 'image' && (
-          <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg aspect-[3/2]">
+          {/* 🖼 Image */}
+          <div className="relative aspect-[3/2] rounded-lg overflow-hidden shadow-lg mb-8">
             <Image
-              src={item.images[0].url}
-              alt={item.description}
+              src={item.thumbnailBase64}
+              alt={item.description || 'Gallery image'}
               fill
               className="object-cover"
-              data-ai-hint={item.images[0].hint}
+              priority
             />
           </div>
-        )}
 
-        {/* ✅ Your Gujarati dynamic content stays unchanged */}
-        <div className="prose prose-lg max-w-none text-foreground/80">
-        {item.category === 'Diwali' && (
-          <>
-        <p>
-        દિવાળીની ઉજવણીમાં પ્રકાશ અને ખુશી તો આવતી જ હોય છે — પણ જ્યારે તે ખુશી જુદાં જ સ્થળોએ પહોંચાડવામાં આવે અને કેટલાંક લોકો માટે આશા અને સ્મિતનું કારણ બને ત્યાંથી તે ઉજવણી પવિત્ર અને અર્થપૂર્ણ બની જાય છે. પ્રસ્થાન ગ્રુપે આ વર્ષની દિવાળી એવી જ સમૃદ્ધિ અને લાગણીથી ભરી, જેમાં મુખ્યત્વે દિવ્યાંગ અને મેન્ટલી ડિસેબલ બાળકોને મુખ્ય સ્થાન આપવામાં આવ્યું. આનંદભાઈ ભટ્ટના હૈયાથી થતા પ્રેરણાદાયી નેતૃત્વ હેઠળ એ કાર્યક્રમને માત્ર એક પાર્ટી નહીં પરંતુ સમૃદ્ધ માનવતાનું ઉજ્જવલ પ્રદર્શન બનાવવામાં આવ્યું.
-</p>
-          <p>
-          પ્રથમ ઝળહળાટ: સભ્યોએ બાળકો માટે રંગબેરંગી દીવાઓ, કપડા અને મીઠાઇના પેકેટ તૈયાર કર્યા. દરેક પેકેટમાં નાનું સંદેશો અને હાથે બનાવેલ કાર્ડ નાખ્યો, જેના પર ‘તમે અમાગા હીરો છો’ જેવા શબ્દો લખેલા હતા. આ થકી બાળકોને માત્ર સામગ્રી જ નહિ, પણ આત્મવિશ્વાસ અને દિલથી આવકાર્ય લાગણી પણ મળી. ઘરેણાં જેવા નાનાં ભેટો અને રમતો માટે 小小 ગેમ સ્ટોલ પણ ગોઠવવામાં આવ્યા — જ્યાં બાળકો હસીને અને રમીને દિવાળીની સાચી મજા માણતા દેખાયા.
-          </p>
-          <p>
-          અનેક સભ્યો દ્વારા સંગીત, નાટક અને નાનાં નાટ્યપ્રદર્શનોએ બાળકોના હ્રદયને સ્પર્શ્યું. કાર્યક્રમ દરમિયાન પ્રસન્નતા અને ભાવનાત્મક પળ બંને જોવા મળ્યા — કેટલાક ગણાના નાનાં બાળકો અને તેમના માતાઓના આંખોમાં ખુશીના અંસુ પણ દેખાયા. આ બધા પળો մարդկտના મર્મને દેખાડતા હતા: જ્યારે સમાજનો હૃદય સબને જોડાય તો જ સાચી ઉજવણી બની શકે છે.
-          </p>
-          <p>
-          સંસ્થાની ટીમે અનિવાર્ય સેવાઓ પણ આપેલી: કેક, સ્વચ્છતા વ્યવસ્થા, અને જરૂરિયાતમંદ પરિવાર માટે રોટલી/રસોઈ વ્યવસ્થા રાખીને તમામની સહાય કરવામાં આવી. કાર્યક્રમનો અંતે આનંદભાઈએ સંઘટિત પ્રવચન આપ્યું — જેણે કહ્યું, “દિવાળીનો ભાવ તો પ્રકાશની છે, પણ એ પ્રકાશ ચાર દીવાલો સુધી મર્યાદિત ન રહે; એ પ્રકાશ દરેક હૃદય સુધી પહોંચે.” આ સમારોહ એ યાદી બનાવ્યો કે સમાનતા, સન્માન અને પ્રેમથી આપણું સમાજ વધુ હસતુ, લાગણીશીલ અને સહાયક બની શકે છે.
-          </p>
-          </>
-  )}
+          {/* 📂 Category */}
+          {/* {item.category && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Category:{' '}
+              <span className="font-medium">{item.category}</span>
+            </p>
+          )} */}
 
-{item.category === 'Sarad Utsav' && (
-    <>
-<p>પ્રસ્થાન ગ્રુપનું સ્વભાવ — સમુદાયના સંતુલન અને સાંસ્કૃતિક જીવંતતાનો પ્રદર્શન — આ વર્ષે “સરદોત્સવ ૨૦૨૫” દ્વારા કેટલીક નવી ઊંચાઇ પર પહોંચ્યું. શરૂઆતથી અંત સુધી આ મેળામાં એવી ઉર્જા અને ઉત્સાહ જોવા મળ્યો કે જ્યાં શહેરવાસીઓ અને ગામના લોકો એક મંચ પર આવી સાથોસાથ હસ્યા, ઊમટ્યા અને એકબીજા સાથે જોડાયા.</p>
-
-<p>પ્રથમ દિવસે જ વિવિધ સંગીત કાર્યક્રમો શરૂ થયા — લોકગીતો, નૃત્ય અને નવી પેઢી દ્વારા તૈયાર કરાયેલા એન્કાઉંટર્સ. કાર્યક્રમોમાં બાળકોથી લઈને વૃદ્ધ સુધીના બધા વર્ગોએ ભાગ લીધો. નવયુવાનોએ જેનાથી ઈન્માટેવ અને દ્રમેટિક પ્લે રજૂ કર્યા, જે સમાજની વર્તમાન સમસ્યાઓ અને ધરોહર સ્નેહ પર પ્રકાશ પાડતા હતા. વિદ્યાર્થીઓએ શાળા/કોલેજ પ્રોજેક્ટ્સ પણ પ્રદર્શિત કર્યા — જેમાં તેમના સક્રિય અને રાષ્ટ્રીય વિચારને વધુ આધાર મળ્યો.</p>
-
-<p>આ વર્ષે સ્પોટલાઇટ મળ્યો સામાજિક સંદેશવાળી અત્યારાની વિવિધ પ્રવૃત્તિઓને: સ્વચ્છતા અભિયાન, પર્યાવરણ માટેની પ્રવૃત્તિઓ અને આરોગ્ય શિબિર. પ્રસ્થાન ગ્રુપે નાનાં વોલન્ટિયર્સ અને નિર્ણાયક સભ્યો સાથે મળી જગ્યાએ જ ફ્રી હેલ્થ ચેકઅપ ક્યાર્યો — જેમાં દ્રષ્ટિ ચકાસણીથી લઈને સામાન્ય સારવાર સુધીની સેવા આપવામાં આવી. બાળકો માટે ખાસ કોર્નર — કલાકૃતિ, ચિત્રકલા અને હસ્તકલા સ્ટોલ — એ બાળકોને તેમની કળા રજૂ કરવાની પાટીઓ આપી.</p>
-
-<p>મેળાની હાઇટલાઇટ: કમ્યુનિટી કુકિંગ કોન્ટેસ્ટ — જ્યાં અલગ-અલગ વિસ્તારોના પરિવારો પોતાની પરંપરાગત રેસિપિ લઈને આવ્યો અને જનને સ્વાદનો ઉપચાર આપ્યો. local cuisine ના સ્વાદ અને વાર્તાઓના માધ્યમથી સમુદાયની બહુવિધતા ઉજાગર થઇ. રાત્રે લાઇટિંગ અને લોકસંગ્રહ સાથે મુખ્ય મંચ પર આયોજિત સ્મરણસભાએ લોકોના હૈયામાં એક નવી અનુભૂતિ ભરી.</p>
-
-<p>આ આખા કાર્યક્રમનું સંચાલન અને આયોજન પ્રસ્થાન ગ્રુપના સુગઠિત પ્રયાસ અને સભ્યોના મનોભાવના કારણે શક્ય બન્યું. સરદોત્સવ માત્ર એક મેળો નહીં — એ સંસ્કૃતિનો ઉજાસ, યુવાનો માટે વૈકલ્પિક પ્લેટફોર્મ અને પરિવાર માટે એક સદા યાદગાર અર્પણ ગુજરાતી સમુદાય માટે. આ પ્રકારના આયોજનોથી લોકો એકબીજાની પાસે નજદીક આવે છે અને એકતા વધુ મજબૂત બને છે.</p>
-    
-
-    </>
-  )}
-  {item.category === 'Events' && (
-    <>
-      <p>
-      પ્રસ્થાન ગ્રુપ એ માત્ર સામુદાયિક સંસ્થા નથી — એ એક એવી પ્રેરણાદાયી ચળવળ છે જે પોતાના દરેક પગલામાં સમાજસેવાનું લક્ષ્યાંક રાખે છે. વર્ષો દરમિયાન સંસ્થાએ વિવિધ કલ્યાણકારી પ્રોજેક્ટોને જન્મ આપ્યો — જેમાં શિક્ષણ પ્રોત્સાહન, આરોગ્ય કેન્દ્રો, સ્વચ્છતા અભિયાન અને ખોરાક વિતરણ જેવા કાર્યક્રમો નોંધપાત્ર છે. આ બધામાંનો મુખ્ય આધાર એ છે કે સભ્યોની નૈતિક પ્રતિબદ્ધતા અને સમયની બલિદાન કૃતી.
-      </p>
-      <p>
-      શિક્ષણ ક્ષેત્રે પ્રસ્થાન ગ્રુપે સ્કૂલિંગ માટે ગ્રાંટ અને સ્ટડિશિપ્સની વ્યવસ્થા કરી છે. ઘણા એવા નાનાં-નાનાં વિદ્યાર્થી, જેઓ મેળવ્યા વિના આગળ વધતા હતા, આજે અભ્યાસમાં આગળ વધી રહ્યા છે અને પોતાની એક અલગ ઓળખ બનાવી રહ્યા છે. ગ્રુપ દ્વારા આયોજિત સેમિનારો અને વર્કશોપ્સમાં વ્યવસાયિક તાલીમ, કમ્પ્યુટર શિક્ષણ અને આત્મનિર્ભર બનવાની તક આપવામાં આવે છે. આ રીતે ગ્રુપ સસ્તી અને સઘન શૈક્ષણિક તક પ્રદાન કરે છે જે લાંબા ગાળાની ગેરંટી પ્રદાન કરે છે.
-      </p>
-      <p>આરોગ્ય અને સ્વચ્છતા ક્ષેત્રો પર પણ સંસ્થાનું ખાસ ધ્યાન છે. રિમોટ વિસ્તારમાં આરોગ્ય કેમ્પ અને નિત્યજરૂરી સારવાર માટે મેડિકલ કેમ્પ્સનું આયોજન કરીને, અનેક પરિવારોને સમયસર સારવાર મળી છે. સ્વચ્છતા વિષયક પ્રોજેક્ટ્સમાં ગટર સફાઈ, ઝાડારોપણ અને પબ્લિક હોળ્ડિંગ માટેની સફાઈ અભિયાનો પણ સામેલ છે — જેથી સ્થાનિક પર્યાવરણ સુધરવા અને સામાન્ય સ્વાસ્થ્યમાં સુધારો લાવી શકાય.</p>
-      <p>સામાજિક સહાયની બાજુમાં ગુરુત્વાકર્ષણની વિશેષતાએ ગ્રુપને ખાસ બનાવ્યું: આપત્તિ કાળમાં ત્વરિત સહાય, આર્થિક પ્રતિબંધી લોકોને સહાય અને વરસાદ/પ્રાકૃતિક આપત્તિ પછી પુનઃસાર ઉપરાંતની કામગીરી સહિ. પ્રસ્થાન ગ્રુપનું મંતવ્ય છે કે ચારેકોએ હાથ મિલાવીને સમાજને વધુ સુરક્ષિત અને સન્માનીત બનાવવું જોઈએ. સંસ્થા સ્થાનિક વેપારીઓ, દાનદાતાઓ અને સરકારી સંસ્થાઓ સાથે સાથ જોડીને પ્રોજેક્ટસને વધુ અસરકારક રીતે અમલમાં લાવે છે.</p>
-   <p>આ કાર્ય માત્ર એક પક્ષનું કામ નથી — એ સમુદાય ની ગાળખિયાત કામદારી છે. પ્રસ્થા ને ગણતરી માટે ન માત્ર પૈસા પણ સમય અને વ્યક્તિગત ધ્યાન જરૂર છે — જે પ્રસ્થાન ગ્રુપના સભ્યો દિલથી આપે છે. આ પ્રેરણાદાયી કાર્યોથી સમાજમાં શક્તિ, નિર્ભરતા અને આત્મવિશ્વાસનું બીજ વાવવામાં આવે છે.</p>
-    </>
-  )}
-
-  
-{item.category === 'Charity' && (
-    <>
-      <p>
-      પ્રસ્થાન ગ્રુપની એક અતિપ્રિય પરંપરા છે — deren સભ્યો સાથેની સાપ્તાહિક બેઠક. આ બેઠક માત્ર કોઈ રૂટીન મીલન નથી, પરંતુ એક એવી જગ્યા છે જ્યાં વિચારવ્યવહાર થાય, આયોજનોની યોજના બનાવવામાં આવે અને વ્યાવહારિક નિર્ણયો લેવામાં આવે. દરેક બેઠકમાં સંસ્થાના વિવિધ અંગો પાસેથી રિપોર્ટ, સૂચન અને નવા વિચારો રજૂ થાય છે — અને આ વિચારોને પ્રયોગાત્મક રીતે અજમાવવામાં મોટો ઇત્તફાક થાય છે.
-      </p>
-      <p>
-      બેઠકનું માળખું વ્યાવસાયિક છે પણ હૈયાથી ભરેલું પણ: પ્રથમ સેશનમાં ગયા અઠવાડિયાના પ્રવૃત્તિઓનું મૂલ્યાંકન થાય, પછી નવા આયોજન માટે ટેસ્ટ અને ચર્ચા. ખાસ મહેમાનો અને પ્રશસ્તિ પ્રાપ્ત વ્યક્તિઓને આમંત્રણ આપવામાં આવે — જેઓ પોતાના અનુભવો અને સફળતાના પદ્ધતિઓ વહેંચે છે. આવા ગેસ્ટ્સ સાથેની મુલાકાતો સભ્યોને પ્રેરણા આપતી હોય છે અને તેમને નવી દિશા અને ઇનોવેટિવ વિચારો અપનાવવા માટે પ્રોત્સાહિત કરે છે.
-      </p>
-      <p>
-      પ્રસ્થાન ગ્રુપે આ બેઠકમાં સતત નવી રીતો અજમાવી રહી છે: ભાષણો સત્ર, વર્કશોપ્સ, કેઝ-સ્ટડી અને બ્લૂપ્રિન્ટ સદ્ગુણોમાં ફેરફાર લાવવા માટે નોન-ફોર્મલ ‘બ્રેઇનસ્ટોર્મિંગ’ સેશનો પણ આયોજિત થાય છે. તેમાં દરેક સભ્ય પોતાના વિચારો નિર્ભયતાપૂર્વક રજૂ કરે છે — અને સર્વસે ધ્યાનથી અંદાજવી શકાય તેવા નાના પ્રોજેક્ટસને પ્રાથમિકતા મળે છે. આ વપરાશી ગતિએ સંસ્થા નાનું પરિક્ષણ કરીને સફળ સ્વરૂપે મોટા પાયે અમલમાં લાવે છે.
-      </p>
-      <p>
-      આ સવારની બેઠકમાં વધુ એક ખાસ બાબત છે — સામાજિક ઈન્ટરએક્શન અને નેટવર્કિંગ. સભ્યો પોતાનો અનુભવ વહેંચે છે, પોતાની નિપુણતા દર્શાવે છે અને નવી કોમી દિશા માટે સહયોગની માંગ કરે છે. પરિણામે, પાઠો, સિદ્ધાંતો અને પ્રેક્ટિકલ નીતિઓ વચ્ચે સારો તફાવત ન રહેતા ભાગીદાર બની જાય છે. આ પ્રસ્થાન ગ્રુપને સતત નવી ઉર્જા અને સર્જનાત્મકતા મળતી રહે છે અને તે જ સંસ્થાને સમય પ્રમાણે આગળ ધપાવે છે.
-      </p>
-    </>
-  )}
+          {/* 📝 Description */}
+          <div className="text-base text-foreground/80 leading-relaxed space-y-4">
+            {item.description.split('\n\n').map((para, index) => (
+              <p key={index}>{para}</p>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

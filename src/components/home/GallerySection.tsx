@@ -1,100 +1,112 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionWrapper from '../common/SectionWrapper';
 import { Button } from '@/components/ui/button';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
 
-// ✅ Import local images
-import img1 from '@/assets/1.png';
-import img8 from '@/assets/8.png';
-import img9 from '@/assets/9.png';
-import img7 from '@/assets/7.png';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  onSnapshot,
+} from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+
+/* ===============================
+   FIREBASE
+================================ */
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+};
+
+function getClientDB() {
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  return getFirestore(app);
+}
 
 type GalleryItem = {
   id: string;
-  description: string;
-  category: string;
-  images: {
-    url: string;
-    hint: string;
-  }[];
+  title: string;
+  description?: string;
+  category?: string;
+  thumbnailBase64?: string;
 };
 
-// ✅ Use the same static local images
-const galleryItemsData: GalleryItem[] = [
-  {
-    id: 'local-1',
-    description: 'દિવાળી ઉજવણી',
-    category: 'Diwali',
-    images: [{ url: img1.src, hint: 'local image 1' }],
-  },
-  {
-    id: 'local-2',
-    description: '“સરદોત્સવ ૨૦૨૫”',
-    category: 'Sarad Utsav',
-    images: [{ url: img8.src, hint: 'local image 2' }],
-  },
-  {
-    id: 'local-3',
-    description: 'કલ્યાણકારી કાર્ય',
-    category: 'Events',
-    images: [{ url: img9.src, hint: 'local image 3' }],
-  },
-  {
-    id: 'local-4',
-    description: 'સાપ્તાહિક બેઠક',
-    category: 'Events',
-    images: [{ url: img7.src, hint: 'local image 4' }],
-  },
-];
+export default function GallerySection() {
+  const [items, setItems] = useState<GalleryItem[]>([]);
 
+  useEffect(() => {
+    const db = getClientDB();
 
-const GallerySection = () => {
+    const q = query(
+      collection(db, 'galleryItems'),
+      where('status', '==', true),
+      limit(4) // 🔥 ONLY 4 IMAGES
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      setItems(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<GalleryItem, 'id'>),
+        }))
+      );
+    });
+
+    return () => unsub();
+  }, []);
+
   return (
     <SectionWrapper id="gallery">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary">Moments that Inspire</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-primary">
+          Moments that Inspire
+        </h2>
         <p className="text-lg text-foreground/80 mt-2">
           Moments from our journey
         </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {galleryItemsData.map((item) => (
-            <Link
-              href={`/gallery/${item.id}`}
-              key={item.id}
-              className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
-            >
+        {items.map((item) => (
+          <Link
+            key={item.id}
+            href={`/gallery/${item.id}`}
+            className="relative aspect-square rounded-lg overflow-hidden group"
+          >
+            {item.thumbnailBase64 ? (
               <Image
-                src={item.images[0].url}
-                alt={item.description}
+                src={item.thumbnailBase64}
+                alt={item.title}
                 fill
-                className="object-cover transition-transform duration-300 group-hover:scale-110"
-                data-ai-hint={item.images[0].hint}
+                className="object-content"
               />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                <h3 className="text-white font-bold truncate">{item.description}</h3>
+            ) : (
+              <div className="bg-muted w-full h-full flex items-center justify-center text-xs">
+                No Image
               </div>
-            </Link>
+            )}
+
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40" />
+            <div className="absolute bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent w-full">
+              <h3 className="text-white font-bold truncate">{item.title}</h3>
+            </div>
+          </Link>
         ))}
       </div>
 
       <div className="text-center mt-12">
-        <Button asChild size="lg" className="rounded-md">
+        <Button asChild size="lg">
           <Link href="/gallery">View More</Link>
         </Button>
       </div>
     </SectionWrapper>
   );
-};
-
-export default GallerySection;
+}

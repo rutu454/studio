@@ -1,3 +1,4 @@
+import AppShell from '@/components/common/AppShell';
 import HeroSection from '@/components/home/HeroSection';
 import AboutSection from '@/components/home/AboutSection';
 import CounterSection from '@/components/home/CounterSection';
@@ -11,7 +12,7 @@ import ContactSection from '@/components/home/ContactSection';
 
 export default function Home() {
   return (
-    <>
+    <AppShell>
       <HeroSection />
       <AboutSection />
       <CounterSection />
@@ -24,6 +25,6 @@ export default function Home() {
      
       <GroupPhotoSection />
       <ContactSection />
-    </>
+    </AppShell>
   );
 }

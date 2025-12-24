@@ -1,165 +1,85 @@
 'use client';
 
-import Image from 'next/image';
-import b1 from '../../assets/prasthan group banner.webp';
-import b2 from '../../assets/prasthan group banner (1).webp';
-import b3 from '../../assets/prasthan group banner (3).webp';
-import b4 from '../../assets/prasthan group responsive banner (1).webp';
-import b5 from '../../assets/prasthan group responsive banner (2).webp';
-import b6 from '../../assets/prasthan group responsive banner.webp';
+import { useState, useEffect } from 'react';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import HeroCarousel from '@/components/home/HeroCarousel';
 
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
+// 1. Setup Firebase Client Configuration (using your existing ENV variables)
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
 
-const HeroSection = () => {
-  const [api, setApi] = useState<CarouselApi>();
-  const [mobileApi, setMobileApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [currentMobile, setCurrentMobile] = useState(0);
+// Singleton to ensure we don't initialize twice
+function getClientDB() {
+  const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  return getFirestore(app);
+}
 
-  const heroImages = [
-    { id: 1, src: b1, alt: 'Banner 1' },
-    { id: 2, src: b2, alt: 'Banner 2' },
-    { id: 3, src: b3, alt: 'Banner 3' },
-  ];
+export default function HeroSection() {
+  const [webBanners, setWebBanners] = useState<any[]>([]);
+  const [mobileBanners, setMobileBanners] = useState<any[]>([]);
+  // Start loading as true so the carousel knows to show a skeleton/spinner
+  const [isLoading, setIsLoading] = useState(true);
 
-  const mobileImages = [
-    { id: 4, src: b4, alt: 'Mobile Banner 1' },
-    { id: 5, src: b5, alt: 'Mobile Banner 2' },
-    { id: 6, src: b6, alt: 'Mobile Banner 3' },
-  ];
   useEffect(() => {
-    if (!api) return undefined; 
-  
-    setCurrent(api.selectedScrollSnap());
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
-    api.on('select', onSelect);
-    onSelect();
-  
-    return () => {
-      api.off('select', onSelect);
-    };
-  }, [api]);
-  
-  
-  useEffect(() => {
-    if (!mobileApi) return undefined; // ✅ Explicitly return undefined
-  
-    setCurrentMobile(mobileApi.selectedScrollSnap());
-    const onSelect = () => setCurrentMobile(mobileApi.selectedScrollSnap());
-    mobileApi.on('select', onSelect);
-    onSelect();
-  
-    return () => {
-      mobileApi.off('select', onSelect);
-    };
-  }, [mobileApi]);
-  
+    async function fetchBanners() {
+      try {
+        const db = getClientDB();
 
-  const scrollTo = (index: number) => api?.scrollTo(index);
-  const scrollToMobile = (index: number) => mobileApi?.scrollTo(index);
+        // 2. Fetch both collections in parallel for speed
+        // We fetch ordered by 'position' and filter status in JS (matching your previous logic)
+        const [webSnap, mobileSnap] = await Promise.all([
+          getDocs(query(collection(db, 'webBanners'), orderBy('position'))),
+          getDocs(query(collection(db, 'mobileBanners'), orderBy('position')))
+        ]);
+
+        // Process Web Banners
+        // Process Web Banners
+const webData = webSnap.docs
+.map((doc) => ({ id: doc.id, ...doc.data() }))
+.filter((b: any) => b.status === true && b.isDeleted !== true);
+
+// Process Mobile Banners
+const mobileData = mobileSnap.docs
+.map((doc) => ({ id: doc.id, ...doc.data() }))
+.filter((b: any) => b.status === true && b.isDeleted !== true);
+
+
+        setWebBanners(webData);
+        setMobileBanners(mobileData);
+      } catch (error) {
+        console.error('Error fetching banners client-side:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchBanners();
+  }, []);
 
   return (
     <>
-      {/* ✅ Desktop + Medium Screens */}
-      <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block">
-        <Carousel
-          setApi={setApi}
-          className="w-full h-full pt-20"
-          plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-          opts={{ loop: true }}
-        >
-          <CarouselContent>
-            {heroImages.map((img) => (
-              <CarouselItem key={img.id}>
-              <div className="relative w-full h-[65vh] md:h-[80vh] lg:h-[85vh] items-center">
-  <Image
-    src={img.src}
-    alt={img.alt}
-    width={1920}
-    height={1080}
-    priority
-    unoptimized
-    quality={100}
-    className=" object-contain"
-  />
-</div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-
-        {/* Navigation Dots */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-2">
-          {heroImages.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollTo(i)}
-              className={cn(
-                'h-2 w-2 rounded-full transition-all duration-300',
-                'bg-white/50 backdrop-blur-sm',
-                current === i ? 'w-4 bg-white' : 'hover:bg-white/80'
-              )}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
+      {/* Desktop + Medium Screens */}
+      <section className="relative w-full sm:h-[70vh] md:h-[40vh] lg:h-[90vh] hidden md:block py-20">
+        <HeroCarousel
+            banners={webBanners}
+            isLoading={isLoading}
+        />
       </section>
 
-      {/* ✅ Mobile Screens */}
-      <section className="relative w-full h-[60vh] block md:hidden">
-        <Carousel
-          setApi={setMobileApi}
-          className="w-full h-full pt-20"
-          plugins={[Autoplay({ delay: 3000, stopOnInteraction: true })]}
-          opts={{ loop: true }}
-        >
-          <CarouselContent>
-            {mobileImages.map((img) => (
-              <CarouselItem key={img.id}>
-                <div className="relative w-full h-[60vh]  items-center">
-  <Image
-    src={img.src}
-    alt={img.alt}
-    width={1080}
-    height={1080}
-    priority
-    unoptimized
-    quality={100}
-    className="max-w-full max-h-full object-contain"
-  />
-</div>
-
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-
-        {/* Mobile Navigation Dots */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-2">
-          {mobileImages.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollToMobile(i)}
-              className={cn(
-                'h-2 w-2 rounded-full transition-all duration-300',
-                'bg-white/50 backdrop-blur-sm',
-                currentMobile === i ? 'w-4 bg-white' : 'hover:bg-white/80'
-              )}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
+      {/* Mobile Screens */}
+      <section className="relative w-full h-[60vh] block md:hidden pt-20">
+         <HeroCarousel
+            banners={mobileBanners}
+            isLoading={isLoading}
+        />
       </section>
     </>
   );
-};
-
-export default HeroSection;
+}
