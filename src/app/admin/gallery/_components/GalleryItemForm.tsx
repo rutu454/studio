@@ -30,9 +30,11 @@ import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long'),
+  description: z.string().optional(),
+  category: z.string().min(2, 'Category is required'),
   type: z.enum(['image', 'video']),
   status: z.boolean().default(true),
-  videoUrl: z.string().optional(),
+  url: z.string().optional(), // For video URL
   imageFile: z.instanceof(File).optional(),
 });
 
@@ -42,12 +44,32 @@ interface GalleryItemFormProps {
   initialData?: {
     id: string;
     title: string;
+    description?: string;
+    category: string;
     type: 'image' | 'video';
     status: boolean;
-    imageUrl?: string;
-    videoUrl?: string;
+    imageUrl?: string; // For image type, becomes `thumbnailUrl` for consistency
+    url?: string; // For video type
   };
 }
+
+// Function to extract YouTube Video ID
+const getYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname === 'youtu.be') {
+            return urlObj.pathname.slice(1);
+        }
+        if (urlObj.hostname.includes('youtube.com')) {
+            return urlObj.searchParams.get('v');
+        }
+    } catch (e) {
+        // Not a valid URL
+    }
+    return null;
+}
+
 
 export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
   const router = useRouter();
@@ -60,23 +82,23 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialData?.title || '',
+      description: initialData?.description || '',
+      category: initialData?.category || '',
       type: initialData?.type || 'image',
       status: initialData?.status ?? true,
-      videoUrl: initialData?.videoUrl || '',
+      url: initialData?.url || '',
     },
   });
 
   const itemType = form.watch('type');
 
   useEffect(() => {
-    // When switching from video to image, clear the videoUrl
     if(itemType === 'image') {
-        form.setValue('videoUrl', '');
+        form.setValue('url', '');
     }
-    // When switching from image to video, clear imageFile and preview
     if(itemType === 'video') {
         form.setValue('imageFile', undefined);
-        setImagePreview(initialData?.imageUrl || null); // revert to original if it exists
+        setImagePreview(initialData?.imageUrl || null);
     }
   }, [itemType, form, initialData]);
 
@@ -102,8 +124,8 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
         form.setError('imageFile', { type: 'manual', message: 'An image is required.' });
         return;
     }
-    if (values.type === 'video' && !values.videoUrl) {
-        form.setError('videoUrl', { type: 'manual', message: 'A video URL is required.' });
+    if (values.type === 'video' && !values.url) {
+        form.setError('url', { type: 'manual', message: 'A video URL is required.' });
         return;
     }
 
@@ -111,22 +133,35 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
     setIsLoading(true);
 
     try {
-        let imageUrl = initialData?.imageUrl;
+        let thumbnailUrl = initialData?.imageUrl; // Keep existing image by default
 
+        // Handle image upload for 'image' type
         if (values.type === 'image' && values.imageFile) {
-            // If there's an old image and we are uploading a new one, delete the old one first.
-            if(initialData?.imageUrl) {
-                await deleteImage(initialData.imageUrl).catch(e => console.warn("Old image deletion failed, might not exist", e));
+            if(initialData?.imageUrl && initialData.imageUrl.includes('firebasestorage')) {
+                await deleteImage(initialData.imageUrl).catch(e => console.warn("Old image deletion failed", e));
             }
-            imageUrl = await uploadImage(values.imageFile, 'galleryItems');
+            thumbnailUrl = await uploadImage(values.imageFile, 'galleryItems');
         }
+
+        // Handle thumbnail for 'video' type
+        if (values.type === 'video' && values.url) {
+            const videoId = getYouTubeVideoId(values.url);
+            if (videoId) {
+                thumbnailUrl = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+            } else {
+                 thumbnailUrl = ''; // Or a default placeholder
+            }
+        }
+
 
         const dataToSave = {
             title: values.title,
+            description: values.description,
+            category: values.category,
             type: values.type,
             status: values.status,
-            imageUrl: values.type === 'image' ? imageUrl : '',
-            videoUrl: values.type === 'video' ? values.videoUrl : '',
+            url: values.type === 'video' ? values.url : '',
+            thumbnailUrl: values.type === 'image' ? thumbnailUrl : thumbnailUrl, // Use same var for both
             updatedAt: serverTimestamp(),
         };
 
@@ -205,14 +240,42 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title / Description</FormLabel>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="A brief description of the item" {...field} disabled={isLoading} />
+                    <Input placeholder="A brief title for the item" {...field} disabled={isLoading} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+             <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="A longer description for the item (optional)" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+             <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Events, Charity" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
 
             {itemType === 'image' && (
                <FormField
@@ -255,14 +318,14 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
             {itemType === 'video' && (
                  <FormField
                     control={form.control}
-                    name="videoUrl"
+                    name="url"
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Video URL</FormLabel>
                         <FormControl>
                         <Input placeholder="e.g. https://www.youtube.com/watch?v=..." {...field} disabled={isLoading} />
                         </FormControl>
-                        <FormDescription>Enter the full URL of the video (e.g., from YouTube or Vimeo).</FormDescription>
+                        <FormDescription>Enter the full URL of the video (YouTube supported for thumbnails).</FormDescription>
                         <FormMessage />
                     </FormItem>
                     )}

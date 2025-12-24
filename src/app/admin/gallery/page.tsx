@@ -33,8 +33,8 @@ interface GalleryItem {
   id: string;
   type: 'image' | 'video';
   title: string;
-  imageUrl?: string;
-  videoUrl?: string;
+  category: string;
+  thumbnailUrl?: string; // Combined field for both image and video thumbs
   status: boolean;
   isDeleted: boolean;
   createdAt: Timestamp;
@@ -96,6 +96,7 @@ export default function GalleryItemsPage() {
               <TableRow>
                 <TableHead className="w-[100px]">Thumbnail</TableHead>
                 <TableHead>Title</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -107,6 +108,7 @@ export default function GalleryItemsPage() {
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-16 w-16 rounded" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
@@ -116,9 +118,9 @@ export default function GalleryItemsPage() {
                 filteredItems.map((item) => (
                   <TableRow key={item.id} className={cn(item.isDeleted && 'bg-muted/50')}>
                     <TableCell>
-                      {item.type === 'image' && item.imageUrl ? (
+                      {item.thumbnailUrl ? (
                         <Image
-                          src={item.imageUrl}
+                          src={item.thumbnailUrl}
                           alt={item.title}
                           width={64}
                           height={64}
@@ -126,11 +128,12 @@ export default function GalleryItemsPage() {
                         />
                       ) : (
                         <div className="h-16 w-16 rounded-md bg-muted flex items-center justify-center">
-                          <Video className="h-8 w-8 text-muted-foreground" />
+                          {item.type === 'image' ? <ImageIcon className="h-8 w-8 text-muted-foreground"/> : <Video className="h-8 w-8 text-muted-foreground" />}
                         </div>
                       )}
                     </TableCell>
                     <TableCell className="font-medium max-w-xs truncate">{item.title}</TableCell>
+                    <TableCell>{item.category}</TableCell>
                     <TableCell>
                         <Badge variant="outline" className="capitalize">
                             {item.type === 'image' ? <ImageIcon className="mr-1 h-3 w-3" /> : <Video className="mr-1 h-3 w-3" />}
@@ -143,13 +146,13 @@ export default function GalleryItemsPage() {
                         </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                       <GalleryActions itemId={item.id} isDeleted={item.isDeleted} imageUrl={item.imageUrl}/>
+                       <GalleryActions itemId={item.id} isDeleted={item.isDeleted} imageUrl={item.thumbnailUrl}/>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     No gallery items found.
                   </TableCell>
                 </TableRow>

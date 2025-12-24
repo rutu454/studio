@@ -11,8 +11,10 @@ interface GalleryItemData {
   id: string;
   type: 'image' | 'video';
   title: string;
-  imageUrl?: string;
-  videoUrl?: string;
+  description?: string;
+  category: string;
+  thumbnailUrl?: string; // This will be used for both image src and video thumbs
+  url?: string; // Video URL
   status: boolean;
   isDeleted: boolean;
   createdAt: Timestamp;
@@ -58,10 +60,13 @@ export default function EditGalleryItemPage() {
   const initialData = {
       id: item.id,
       title: item.title,
+      description: item.description,
+      category: item.category,
       type: item.type,
       status: item.status,
-      imageUrl: item.imageUrl,
-      videoUrl: item.videoUrl
+      // Pass thumbnailUrl as 'imageUrl' to the form for preview
+      imageUrl: item.thumbnailUrl, 
+      url: item.url
   }
 
   return (

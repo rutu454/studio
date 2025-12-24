@@ -57,7 +57,10 @@ export default function GalleryActions({ itemId, isDeleted, imageUrl }: GalleryA
             const itemRef = doc(firestore, 'galleryItems', itemId);
             if (isPermanentDelete) {
               if (imageUrl) {
-                await deleteImage(imageUrl);
+                // Ensure we only try to delete images from our own storage
+                if (imageUrl.includes('firebasestorage.googleapis.com')) {
+                    await deleteImage(imageUrl);
+                }
               }
               await deleteDoc(itemRef);
             } else {
@@ -93,9 +96,9 @@ export default function GalleryActions({ itemId, isDeleted, imageUrl }: GalleryA
                 Edit
             </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => setIsAlertOpen(true)} className={cn(isDeleted ? '' : 'text-destructive')}>
+        <DropdownMenuItem onClick={() => setIsAlertOpen(true)} className={cn(isPermanentDelete ? 'text-destructive' : '')}>
           <OperationIcon className="mr-2 h-4 w-4" />
-          {isDeleted ? 'Delete Permanently' : 'Delete'}
+          {isPermanentDelete ? 'Delete Permanently' : 'Delete'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

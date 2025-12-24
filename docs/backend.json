@@ -136,14 +136,22 @@
         },
         "title": {
           "type": "string",
-          "description": "The title or description of the gallery item."
+          "description": "The title of the gallery item."
         },
-        "imageUrl": {
+        "description": {
+            "type": "string",
+            "description": "A longer description for the item."
+        },
+        "category": {
+            "type": "string",
+            "description": "The category of the gallery item (e.g., Events, Charity)."
+        },
+        "thumbnailUrl": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the image in Firebase Storage (for image type)."
+          "description": "The URL of the thumbnail (from Storage for images, from YouTube for videos)."
         },
-        "videoUrl": {
+        "url": {
           "type": "string",
           "format": "uri",
           "description": "The URL of the external video (for video type)."
@@ -167,7 +175,7 @@
           "description": "The date and time the item was last updated."
         }
       },
-      "required": ["type", "title", "status", "isDeleted", "createdAt", "updatedAt"]
+      "required": ["type", "title", "category", "status", "isDeleted", "createdAt", "updatedAt"]
     }
   },
   "auth": {
