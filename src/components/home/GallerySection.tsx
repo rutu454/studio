@@ -37,6 +37,7 @@ type GalleryItem = {
   description?: string;
   category?: string;
   thumbnailBase64?: string;
+  isDeleted?: boolean;
 };
 
 export default function GallerySection() {
@@ -47,8 +48,9 @@ export default function GallerySection() {
 
     const q = query(
       collection(db, 'galleryItems'),
-      where('status', '==', true),
-      limit(4) // 🔥 ONLY 4 IMAGES
+      where('status', '==', true,),
+      limit(4), //  ONLY 4 IMAGES
+      where('isDeleted', '==', false),
     );
 
     const unsub = onSnapshot(q, (snap) => {

@@ -41,6 +41,7 @@ type GalleryItem = {
   description: string;
   category: string;
   thumbnailBase64?: string;
+  isDeleted?: boolean;
 };
 
 /* ===============================
@@ -87,9 +88,11 @@ export default function GalleryPage() {
      FILTERED ITEMS
   ================================ */
   const filteredItems =
-    filter === 'All'
-      ? items
-      : items.filter((i) => i.category === filter);
+  filter === 'All'
+    ? items.filter(i => !i.isDeleted)
+    : items.filter(
+        (i) => i.category === filter && !i.isDeleted
+      );
 
   return (
     <AppShell>
