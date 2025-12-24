@@ -53,7 +53,7 @@ const HeroCarousel = ({
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full">
       <Carousel
         setApi={setApi}
         className="w-full h-full"
@@ -63,16 +63,16 @@ const HeroCarousel = ({
         <CarouselContent>
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
-              <div className="relative w-full h-full">
+              <div className="relative w-full">
                 {banner.imageUrl && (  <Image
     src={banner.imageUrl}
     alt="banner"
     width={1920}
-    height={1080}
+    height={10}
     priority
     unoptimized
     quality={100}
-    className=" object-contain"
+    className="object-contain"
   />)}
               </div>
             </CarouselItem>

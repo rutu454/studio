@@ -38,7 +38,7 @@ const SectionWrapper = forwardRef<HTMLDivElement, SectionWrapperProps>(
       <section
         ref={ref}
         className={cn(
-          'py-20 px-4 sm:px-6 lg:px-20 ',
+          'px-4 sm:px-6 lg:px-20 ',
           className,
           id
         )}

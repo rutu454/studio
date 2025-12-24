@@ -66,7 +66,7 @@ const mobileData = mobileSnap.docs
   return (
     <>
       {/* Desktop + Medium Screens */}
-      <section className="relative w-full h-[70vh] md:h-[85vh] lg:h-[90vh] hidden md:block pt-20">
+      <section className="relative w-full sm:h-[70vh] md:h-[40vh] lg:h-[90vh] hidden md:block py-20">
         <HeroCarousel
             banners={webBanners}
             isLoading={isLoading}

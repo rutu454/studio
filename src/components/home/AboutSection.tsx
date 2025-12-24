@@ -28,11 +28,11 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <SectionWrapper ref={sectionRef} id="about">
+    <SectionWrapper ref={sectionRef} id="about" className='py-20 my-20 md:my-0'>
     <div className="grid md:grid-cols-2 gap-12 items-center">
       <div
         className={cn(
-          'space-y-6 transition-all duration-700 ease-in-out',
+          'transition-all duration-700 ease-in-out',
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         )}
       >

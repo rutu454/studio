@@ -1,13 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
-import { collection, addDoc, doc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
-import { uploadImage, deleteImage } from '@/firebase/storage';
+import {
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -20,25 +25,34 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Video, Image as ImageIcon } from 'lucide-react';
+import { Video, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 
+/* ===============================
+   SCHEMA (BASE64 SAFE)
+================================ */
 const formSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters long'),
+  title: z.string().min(3, 'Title is required'),
   description: z.string().optional(),
   category: z.string().min(2, 'Category is required'),
   type: z.enum(['image', 'video']),
-  status: z.boolean().default(true),
-  url: z.string().optional(), // For video URL
-  imageFile: z.instanceof(File).optional(),
+  status: z.boolean(),
+  url: z.string().optional(),
+  imageBase64: z.string().optional(),
 });
 
-export type GalleryFormValues = z.infer<typeof formSchema>;
+type GalleryFormValues = z.infer<typeof formSchema>;
 
 interface GalleryItemFormProps {
   initialData?: {
@@ -48,36 +62,39 @@ interface GalleryItemFormProps {
     category: string;
     type: 'image' | 'video';
     status: boolean;
-    imageUrl?: string; // For image type, becomes `thumbnailUrl` for consistency
-    url?: string; // For video type
+    thumbnailBase64?: string;
+    url?: string;
   };
 }
 
-// Function to extract YouTube Video ID
-const getYouTubeVideoId = (url: string): string | null => {
-    if (!url) return null;
-    try {
-        const urlObj = new URL(url);
-        if (urlObj.hostname === 'youtu.be') {
-            return urlObj.pathname.slice(1);
-        }
-        if (urlObj.hostname.includes('youtube.com')) {
-            return urlObj.searchParams.get('v');
-        }
-    } catch (e) {
-        // Not a valid URL
-    }
-    return null;
+/* ===============================
+   YOUTUBE VIDEO ID
+================================ */
+function getYouTubeVideoId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'youtu.be') return u.pathname.slice(1);
+    if (u.hostname.includes('youtube.com'))
+      return u.searchParams.get('v');
+  } catch {}
+  return null;
 }
 
-
-export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
+/* ===============================
+   COMPONENT
+================================ */
+export default function GalleryItemForm({
+  initialData,
+}: GalleryItemFormProps) {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
+
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null);
-  
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initialData?.thumbnailBase64 || null
+  );
+
   const form = useForm<GalleryFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,154 +104,159 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
       type: initialData?.type || 'image',
       status: initialData?.status ?? true,
       url: initialData?.url || '',
+      imageBase64: initialData?.thumbnailBase64 || '',
     },
   });
 
   const itemType = form.watch('type');
 
-  useEffect(() => {
-    if(itemType === 'image') {
-        form.setValue('url', '');
-    }
-    if(itemType === 'video') {
-        form.setValue('imageFile', undefined);
-        setImagePreview(initialData?.imageUrl || null);
-    }
-  }, [itemType, form, initialData]);
+  /* ===============================
+     IMAGE → BASE64 (NO SIZE LIMIT)
+  ================================ */
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      form.setValue('imageFile', file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setImagePreview(base64);
+      form.setValue('imageBase64', base64, {
+        shouldValidate: false,
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
+  /* ===============================
+     SUBMIT
+  ================================ */
   async function onSubmit(values: GalleryFormValues) {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Firestore is not initialized.' });
+    if (!firestore) return;
+
+    // Manual validation
+    if (values.type === 'image' && !values.imageBase64) {
+      toast({
+        variant: 'destructive',
+        title: 'Image required',
+        description: 'Please upload an image',
+      });
       return;
     }
 
-    if (values.type === 'image' && !initialData && !values.imageFile) {
-        form.setError('imageFile', { type: 'manual', message: 'An image is required.' });
-        return;
-    }
     if (values.type === 'video' && !values.url) {
-        form.setError('url', { type: 'manual', message: 'A video URL is required.' });
-        return;
+      toast({
+        variant: 'destructive',
+        title: 'Video URL required',
+        description: 'Please enter a video URL',
+      });
+      return;
     }
-
 
     setIsLoading(true);
 
     try {
-        let thumbnailUrl = initialData?.imageUrl; // Keep existing image by default
+      let thumbnailBase64 = values.imageBase64 || '';
 
-        // Handle image upload for 'image' type
-        if (values.type === 'image' && values.imageFile) {
-            if(initialData?.imageUrl && initialData.imageUrl.includes('firebasestorage')) {
-                await deleteImage(initialData.imageUrl).catch(e => console.warn("Old image deletion failed", e));
-            }
-            thumbnailUrl = await uploadImage(values.imageFile, 'galleryItems');
-        }
+      // Video thumbnail
+      if (values.type === 'video' && values.url) {
+        const id = getYouTubeVideoId(values.url);
+        thumbnailBase64 = id
+          ? `https://img.youtube.com/vi/${id}/0.jpg`
+          : '';
+      }
 
-        // Handle thumbnail for 'video' type
-        if (values.type === 'video' && values.url) {
-            const videoId = getYouTubeVideoId(values.url);
-            if (videoId) {
-                thumbnailUrl = `https://img.youtube.com/vi/${videoId}/0.jpg`;
-            } else {
-                 thumbnailUrl = ''; // Or a default placeholder
-            }
-        }
+      const payload = {
+        title: values.title,
+        description: values.description || '',
+        category: values.category,
+        type: values.type,
+        status: values.status,
+        url: values.type === 'video' ? values.url : '',
+        thumbnailBase64,
+        isDeleted: false,
+        updatedAt: serverTimestamp(),
+      };
 
+      if (initialData) {
+        await setDoc(
+          doc(firestore, 'galleryItems', initialData.id),
+          payload,
+          { merge: true }
+        );
+        toast({ title: 'Gallery item updated' });
+      } else {
+        await addDoc(collection(firestore, 'galleryItems'), {
+          ...payload,
+          createdAt: serverTimestamp(),
+        });
+        toast({ title: 'Gallery item created' });
+      }
 
-        const dataToSave = {
-            title: values.title,
-            description: values.description,
-            category: values.category,
-            type: values.type,
-            status: values.status,
-            url: values.type === 'video' ? values.url : '',
-            thumbnailUrl: values.type === 'image' ? thumbnailUrl : thumbnailUrl, // Use same var for both
-            updatedAt: serverTimestamp(),
-        };
-
-        if (initialData) {
-            const docRef = doc(firestore, 'galleryItems', initialData.id);
-            await setDoc(docRef, dataToSave, { merge: true });
-            toast({ title: 'Success', description: 'Gallery item updated.' });
-        } else {
-            await addDoc(collection(firestore, 'galleryItems'), {
-                ...dataToSave,
-                isDeleted: false,
-                createdAt: serverTimestamp(),
-            });
-            toast({ title: 'Success', description: 'Gallery item created.' });
-        }
-
-        router.push('/admin/gallery');
-        router.refresh();
-
-    } catch (error: any) {
-      console.error('Error submitting gallery item: ', error);
+      router.push('/admin/gallery');
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
       toast({
         variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: error.message || 'There was a problem with your request.',
+        title: 'Error',
+        description: err.message || 'Something went wrong',
       });
     } finally {
       setIsLoading(false);
     }
   }
 
+  /* ===============================
+     UI
+  ================================ */
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? 'Edit Gallery Item' : 'Create New Gallery Item'}</CardTitle>
-        <CardDescription>Fill out the form to add an image or video to your gallery.</CardDescription>
+        <CardTitle>
+          {initialData ? 'Edit Gallery Item' : 'Create Gallery Item'}
+        </CardTitle>
+        <CardDescription>
+          Upload an image or add a video.
+        </CardDescription>
       </CardHeader>
+
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
+            {/* TYPE */}
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Item Type</FormLabel>
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
                   <FormControl>
                     <RadioGroup
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex items-center space-x-4"
-                      disabled={isLoading}
+                      className="flex gap-6"
                     >
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="image" />
-                        </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2"><ImageIcon/> Image</FormLabel>
+                      <FormItem className="flex items-center gap-2">
+                        <RadioGroupItem value="image" />
+                        <ImageIcon /> Image
                       </FormItem>
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="video" />
-                        </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2"><Video/> Video</FormLabel>
+                      <FormItem className="flex items-center gap-2">
+                        <RadioGroupItem value="video" />
+                        <Video /> Video
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* TITLE */}
             <FormField
               control={form.control}
               name="title"
@@ -242,125 +264,110 @@ export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="A brief title for the item" {...field} disabled={isLoading} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
+
+            {/* DESCRIPTION */}
+            <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="A longer description for the item (optional)" {...field} disabled={isLoading} />
+                    <Textarea {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
 
-             <FormField
+            {/* CATEGORY */}
+            <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Events, Charity" {...field} disabled={isLoading} />
+                    <Input {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
 
-
+            {/* IMAGE */}
             {itemType === 'image' && (
-               <FormField
+              <FormItem>
+                <FormLabel>Image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                {imagePreview && (
+                  <Image
+                    src={imagePreview}
+                    alt="preview"
+                    width={160}
+                    height={160}
+                    unoptimized
+                    className="mt-2 rounded"
+                  />
+                )}
+              </FormItem>
+            )}
+
+            {/* VIDEO */}
+            {itemType === 'video' && (
+              <FormField
                 control={form.control}
-                name="imageFile"
+                name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image</FormLabel>
-                     <FormControl>
-                       <div className="flex items-center gap-4">
-                         <Input 
-                           type="file" 
-                           accept="image/*" 
-                           onChange={handleImageChange}
-                           className="hidden"
-                           id="image-upload"
-                           disabled={isLoading}
-                         />
-                         <label htmlFor="image-upload" className="cursor-pointer">
-                           <Button type="button" variant="outline" asChild disabled={isLoading}>
-                             <div>
-                               <Upload className="mr-2 h-4 w-4" />
-                               <span>{imagePreview ? 'Change Image' : 'Upload Image'}</span>
-                             </div>
-                           </Button>
-                         </label>
-                         {imagePreview && (
-                             <div className="relative w-32 h-32 rounded-md border overflow-hidden">
-                               <Image src={imagePreview} alt="Image preview" fill className="object-cover" />
-                             </div>
-                         )}
-                       </div>
-                     </FormControl>
-                    <FormMessage />
+                    <FormLabel>Video URL</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                   </FormItem>
                 )}
               />
             )}
 
-            {itemType === 'video' && (
-                 <FormField
-                    control={form.control}
-                    name="url"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Video URL</FormLabel>
-                        <FormControl>
-                        <Input placeholder="e.g. https://www.youtube.com/watch?v=..." {...field} disabled={isLoading} />
-                        </FormControl>
-                        <FormDescription>Enter the full URL of the video (YouTube supported for thumbnails).</FormDescription>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-            )}
-            
+            {/* STATUS */}
             <FormField
               control={form.control}
               name="status"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel>Status</FormLabel>
-                    <FormDescription>
-                      Inactive items will not be shown on the website.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
+                <FormItem className="flex justify-between items-center border p-4 rounded">
+                  <FormLabel>Status</FormLabel>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormItem>
               )}
             />
-            
+
+            {/* ACTIONS */}
             <div className="flex gap-2">
-                <Button type="submit" disabled={isLoading}>
-                {isLoading ? (initialData ? 'Saving...' : 'Creating...') : (initialData ? 'Save Changes' : 'Create Item')}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>
-                    Cancel
-                </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading
+                  ? 'Saving...'
+                  : initialData
+                  ? 'Save Changes'
+                  : 'Create'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
+                Cancel
+              </Button>
             </div>
           </form>
         </Form>

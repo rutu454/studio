@@ -31,7 +31,7 @@ const BehindSection = () => {
   }, []);
 
   return (
-    <SectionWrapper ref={sectionRef} className="bg-[#CC0000]">
+    <SectionWrapper id="behind"  ref={sectionRef} className="bg-[#CC0000] py-20 my-20">
       <div
         className={cn(
           'text-center max-w-3xl mx-auto transition-all duration-1000 ease-in-out',
