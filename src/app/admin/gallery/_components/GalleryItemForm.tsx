@@ -22,7 +22,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -39,8 +38,9 @@ import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 
+
 /* ===============================
-   SCHEMA (BASE64 SAFE)
+   SCHEMA FOR MULTIPLE IMAGES
 ================================ */
 const formSchema = z.object({
   title: z.string().min(3, 'Title is required'),
@@ -49,7 +49,7 @@ const formSchema = z.object({
   type: z.enum(['image', 'video']),
   status: z.boolean(),
   url: z.string().optional(),
-  imageBase64: z.string().optional(),
+  images: z.array(z.string()).optional(), // ← multiple base64 images
 });
 
 type GalleryFormValues = z.infer<typeof formSchema>;
@@ -62,13 +62,14 @@ interface GalleryItemFormProps {
     category: string;
     type: 'image' | 'video';
     status: boolean;
-    thumbnailBase64?: string;
+    images?: string[];
     url?: string;
   };
 }
 
+
 /* ===============================
-   YOUTUBE VIDEO ID
+   YOUTUBE ID
 ================================ */
 function getYouTubeVideoId(url: string): string | null {
   try {
@@ -80,19 +81,18 @@ function getYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+
 /* ===============================
    COMPONENT
 ================================ */
-export default function GalleryItemForm({
-  initialData,
-}: GalleryItemFormProps) {
+export default function GalleryItemForm({ initialData }: GalleryItemFormProps) {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    initialData?.thumbnailBase64 || null
+  const [imagePreviews, setImagePreviews] = useState<string[]>(
+    initialData?.images || []
   );
 
   const form = useForm<GalleryFormValues>({
@@ -104,44 +104,57 @@ export default function GalleryItemForm({
       type: initialData?.type || 'image',
       status: initialData?.status ?? true,
       url: initialData?.url || '',
-      imageBase64: initialData?.thumbnailBase64 || '',
+      images: initialData?.images || [],
     },
   });
 
   const itemType = form.watch('type');
 
-  /* ===============================
-     IMAGE → BASE64 (NO SIZE LIMIT)
-  ================================ */
-  const handleImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setImagePreview(base64);
-      form.setValue('imageBase64', base64, {
-        shouldValidate: false,
+  /* ==================================
+     MULTIPLE IMAGE TO BASE64
+  =================================== */
+  const handleMultiImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const promises = files.map((file) => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
       });
-    };
-    reader.readAsDataURL(file);
+    });
+
+    Promise.all(promises).then((base64Array) => {
+      const updatedImages = [...imagePreviews, ...base64Array]; // append
+      setImagePreviews(updatedImages);
+      form.setValue('images', updatedImages, { shouldValidate: false });
+    });
   };
 
-  /* ===============================
+
+  /* ==================================
+     REMOVE IMAGE FROM PREVIEW
+  =================================== */
+  const removeImage = (index: number) => {
+    const updated = imagePreviews.filter((_, i) => i !== index);
+    setImagePreviews(updated);
+    form.setValue('images', updated);
+  };
+
+
+  /* ==================================
      SUBMIT
-  ================================ */
+  =================================== */
   async function onSubmit(values: GalleryFormValues) {
     if (!firestore) return;
 
-    // Manual validation
-    if (values.type === 'image' && !values.imageBase64) {
+    if (values.type === 'image' && (!values.images || values.images.length === 0)) {
       toast({
         variant: 'destructive',
-        title: 'Image required',
-        description: 'Please upload an image',
+        title: 'Images required',
+        description: 'Please upload at least one image',
       });
       return;
     }
@@ -150,7 +163,7 @@ export default function GalleryItemForm({
       toast({
         variant: 'destructive',
         title: 'Video URL required',
-        description: 'Please enter a video URL',
+        description: 'Please enter a YouTube video URL',
       });
       return;
     }
@@ -158,14 +171,10 @@ export default function GalleryItemForm({
     setIsLoading(true);
 
     try {
-      let thumbnailBase64 = values.imageBase64 || '';
-
-      // Video thumbnail
+      let videoThumb = '';
       if (values.type === 'video' && values.url) {
         const id = getYouTubeVideoId(values.url);
-        thumbnailBase64 = id
-          ? `https://img.youtube.com/vi/${id}/0.jpg`
-          : '';
+        videoThumb = id ? `https://img.youtube.com/vi/${id}/0.jpg` : '';
       }
 
       const payload = {
@@ -175,7 +184,8 @@ export default function GalleryItemForm({
         type: values.type,
         status: values.status,
         url: values.type === 'video' ? values.url : '',
-        thumbnailBase64,
+        images: values.type === 'image' ? values.images || [] : [],
+        videoThumbnail: videoThumb,
         isDeleted: false,
         updatedAt: serverTimestamp(),
       };
@@ -198,37 +208,31 @@ export default function GalleryItemForm({
       router.push('/admin/gallery');
       router.refresh();
     } catch (err: any) {
-      console.error(err);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: err.message || 'Something went wrong',
+        description: err.message,
       });
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   }
 
-  /* ===============================
+
+  /* ==================================
      UI
-  ================================ */
+  =================================== */
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {initialData ? 'Edit Gallery Item' : 'Create Gallery Item'}
-        </CardTitle>
-        <CardDescription>
-          Upload an image or add a video.
-        </CardDescription>
+        <CardTitle>{initialData ? 'Edit Gallery Item' : 'Create Gallery Item'}</CardTitle>
+        <CardDescription>Upload multiple images or add a video.</CardDescription>
       </CardHeader>
 
       <CardContent>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
             {/* TYPE */}
             <FormField
               control={form.control}
@@ -244,7 +248,7 @@ export default function GalleryItemForm({
                     >
                       <FormItem className="flex items-center gap-2">
                         <RadioGroupItem value="image" />
-                        <ImageIcon /> Image
+                        <ImageIcon /> Images
                       </FormItem>
                       <FormItem className="flex items-center gap-2">
                         <RadioGroupItem value="video" />
@@ -263,9 +267,7 @@ export default function GalleryItemForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <FormControl><Input {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -278,9 +280,7 @@ export default function GalleryItemForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
+                  <FormControl><Textarea {...field} /></FormControl>
                 </FormItem>
               )}
             />
@@ -292,32 +292,38 @@ export default function GalleryItemForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <FormControl><Input {...field} /></FormControl>
                 </FormItem>
               )}
             />
 
-            {/* IMAGE */}
+            {/* MULTIPLE IMAGES */}
             {itemType === 'image' && (
               <FormItem>
-                <FormLabel>Image</FormLabel>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-                {imagePreview && (
-                  <Image
-                    src={imagePreview}
-                    alt="preview"
-                    width={160}
-                    height={160}
-                    unoptimized
-                    className="mt-2 rounded"
-                  />
-                )}
+                <FormLabel>Images (Multiple)</FormLabel>
+                <Input type="file" accept="image/*" multiple onChange={handleMultiImageChange} />
+
+                <div className="flex flex-wrap gap-3 mt-4">
+                  {imagePreviews.map((img, i) => (
+                    <div key={i} className="relative group">
+                      <Image
+                        src={img}
+                        width={120}
+                        height={120}
+                        unoptimized
+                        alt="preview"
+                        className="rounded border"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-600 text-white text-xs px-1 rounded"
+                        onClick={() => removeImage(i)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </FormItem>
             )}
 
@@ -328,10 +334,8 @@ export default function GalleryItemForm({
                 name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Video URL</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <FormLabel>YouTube Video URL</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
                   </FormItem>
                 )}
               />
@@ -344,10 +348,7 @@ export default function GalleryItemForm({
               render={({ field }) => (
                 <FormItem className="flex justify-between items-center border p-4 rounded">
                   <FormLabel>Status</FormLabel>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormItem>
               )}
             />
@@ -355,17 +356,9 @@ export default function GalleryItemForm({
             {/* ACTIONS */}
             <div className="flex gap-2">
               <Button type="submit" disabled={isLoading}>
-                {isLoading
-                  ? 'Saving...'
-                  : initialData
-                  ? 'Save Changes'
-                  : 'Create'}
+                {isLoading ? 'Saving...' : initialData ? 'Save Changes' : 'Create'}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-              >
+              <Button type="button" variant="outline" onClick={() => router.back()}>
                 Cancel
               </Button>
             </div>

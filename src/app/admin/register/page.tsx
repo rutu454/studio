@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
 import Link from 'next/link';
+import Logo from '@/components/common/Logo';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -72,7 +73,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-muted">
+       <div className="mb-8">
+        <Logo />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Admin Registration</CardTitle>
@@ -110,15 +114,15 @@ export default function RegisterPage() {
                 disabled={isLoading}
               />
             </div>
-            <Button onClick={handleRegister} className="w-full" disabled={isLoading}>
+            {/* <Button onClick={handleRegister} className="w-full" disabled={isLoading}>
               {isLoading ? 'Registering...' : 'Register'}
-            </Button>
-            <div className="text-center text-sm">
+            </Button> */}
+            {/* <div className="text-center text-sm">
               Already have an account?{' '}
               <Link href="/admin" className="underline">
                 Login
               </Link>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import Link from 'next/link';
+import Logo from '@/components/common/Logo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -48,7 +49,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-muted">
+       <div className="mb-8">
+        <Logo className='h-auto w-full'/>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
@@ -79,12 +83,12 @@ export default function LoginPage() {
             <Button onClick={handleLogin} className="w-full" disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
-            <div className="text-center text-sm">
+            {/* <div className="text-center text-sm">
               Don't have an account?{' '}
               <Link href="/admin/register" className="underline">
                 Register
               </Link>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
